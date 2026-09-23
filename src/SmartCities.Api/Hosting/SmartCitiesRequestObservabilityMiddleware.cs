@@ -67,24 +67,30 @@ public sealed class SmartCitiesRequestObservabilityMiddleware
     {
       await next(context).ConfigureAwait(false);
 
-      RequestObservabilityLog.RequestCompleted(
-        logger,
-        context.Request.Method,
-        context.Request.Path.Value ?? "/",
-        context.Response.StatusCode,
-        Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
-        correlationId,
-        traceId);
+      if (logger.IsEnabled(LogLevel.Information))
+      {
+        RequestObservabilityLog.RequestCompleted(
+          logger,
+          context.Request.Method,
+          context.Request.Path.Value ?? "/",
+          context.Response.StatusCode,
+          Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
+          correlationId,
+          traceId);
+      }
     }
     catch
     {
-      RequestObservabilityLog.RequestFailed(
-        logger,
-        context.Request.Method,
-        context.Request.Path.Value ?? "/",
-        Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
-        correlationId,
-        traceId);
+      if (logger.IsEnabled(LogLevel.Warning))
+      {
+        RequestObservabilityLog.RequestFailed(
+          logger,
+          context.Request.Method,
+          context.Request.Path.Value ?? "/",
+          Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
+          correlationId,
+          traceId);
+      }
 
       throw;
     }
