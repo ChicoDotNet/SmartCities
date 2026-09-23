@@ -31,7 +31,7 @@ public sealed record SmartCitiesPersistenceOptions
     DbProvider provider,
     string connectionString)
   {
-    if (!Enum.IsDefined(typeof(DbProvider), provider))
+    if (!Enum.IsDefined(provider))
     {
       throw new ArgumentOutOfRangeException(
         nameof(provider),
