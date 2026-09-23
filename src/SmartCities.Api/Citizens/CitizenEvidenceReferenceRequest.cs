@@ -12,8 +12,8 @@ namespace SmartCities.Api.Citizens;
 /// <param name="SourceReference">Public-safe source reference within that system.</param>
 /// <param name="ObservedAt">Time at which the evidence was observed.</param>
 public sealed record CitizenEvidenceReferenceRequest(
-  [property: Required] string EvidenceId,
-  [property: EnumDataType(typeof(EvidenceKind))] EvidenceKind Kind,
-  [property: Required] string SourceSystem,
-  [property: Required] string SourceReference,
+  [param: Required] string EvidenceId,
+  [param: EnumDataType(typeof(EvidenceKind))] EvidenceKind Kind,
+  [param: Required] string SourceSystem,
+  [param: Required] string SourceReference,
   DateTimeOffset ObservedAt);

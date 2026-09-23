@@ -12,9 +12,9 @@ namespace SmartCities.Api.Citizens;
 /// <param name="Description">Citizen-provided problem description.</param>
 /// <param name="EvidenceReferences">Optional public-safe evidence references.</param>
 public sealed record CreateCitizenMobilityReportRequest(
-  [property: Required] string ReportId,
-  [property: Required] string CaseId,
-  [property: Required] string CategoryKey,
-  [property: Required] string LocationReference,
-  [property: Required] string Description,
+  [param: Required] string ReportId,
+  [param: Required] string CaseId,
+  [param: Required] string CategoryKey,
+  [param: Required] string LocationReference,
+  [param: Required] string Description,
   IReadOnlyList<CitizenEvidenceReferenceRequest>? EvidenceReferences);

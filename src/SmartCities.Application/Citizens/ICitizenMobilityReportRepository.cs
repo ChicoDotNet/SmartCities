@@ -3,7 +3,7 @@ using SmartCities.Evidence;
 namespace SmartCities.Application.Citizens;
 
 /// <summary>
-/// Defines the persistence boundary for idempotent citizen mobility report acceptance.
+/// Defines the persistence boundary for idempotent citizen mobility report acceptance and recovery.
 /// </summary>
 /// <remarks>
 /// Implementations must treat <paramref name="reportId"/> as the idempotency key and atomically return the
@@ -12,6 +12,14 @@ namespace SmartCities.Application.Citizens;
 /// </remarks>
 public interface ICitizenMobilityReportRepository
 {
+  /// <summary>Gets the authoritative persisted case associated with a report.</summary>
+  /// <param name="reportId">Stable report identifier.</param>
+  /// <param name="cancellationToken">Token used to cancel the operation.</param>
+  /// <returns>The persisted report/case association, or <see langword="null"/> when no report exists.</returns>
+  Task<CitizenMobilityReportCase?> GetAsync(
+    string reportId,
+    CancellationToken cancellationToken = default);
+
   /// <summary>
   /// Gets the authoritative case for a report, creating it from <paramref name="candidateCase"/> only when the
   /// report has not previously been accepted.
