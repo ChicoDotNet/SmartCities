@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SmartCities.Application.Citizens;
 using SmartCities.Infrastructure.Persistence;
 using SmartCities.Infrastructure.Persistence.Citizens;
@@ -39,6 +40,13 @@ public static class SmartCitiesServiceCollectionExtensions
     services.AddScoped<
       ICitizenMobilityReportService,
       CitizenMobilityReportService>();
+
+    services
+      .AddHealthChecks()
+      .AddDbContextCheck<SmartCitiesDbContext>(
+        name: "database",
+        failureStatus: HealthStatus.Unhealthy,
+        tags: ["ready"]);
 
     return services;
   }
