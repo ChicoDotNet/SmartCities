@@ -3,10 +3,12 @@
     <Project Path="src/SmartCities.Application/SmartCities.Application.csproj" />
     <Project Path="src/SmartCities.Core/SmartCities.Core.csproj" />
     <Project Path="src/SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
+    <Project Path="src/SmartCities.Infrastructure.SqlServer/SmartCities.Infrastructure.SqlServer.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SmartCities.Application.Tests/SmartCities.Application.Tests.csproj" />
     <Project Path="tests/SmartCities.Core.Tests/SmartCities.Core.Tests.csproj" />
     <Project Path="tests/SmartCities.Infrastructure.Tests/SmartCities.Infrastructure.Tests.csproj" />
+    <Project Path="tests/SmartCities.Infrastructure.SqlServer.Tests/SmartCities.Infrastructure.SqlServer.Tests.csproj" />
   </Folder>
 </Solution>
