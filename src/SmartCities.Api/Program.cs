@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSmartCitiesFromConfiguration(
   builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddSmartCitiesApiControllers();
 
 var app = builder.Build();
 
