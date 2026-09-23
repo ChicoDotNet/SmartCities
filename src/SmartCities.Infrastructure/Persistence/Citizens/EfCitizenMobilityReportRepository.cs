@@ -5,7 +5,7 @@ using SmartCities.Evidence;
 namespace SmartCities.Infrastructure.Persistence.Citizens;
 
 /// <summary>
-/// Persists citizen mobility report acceptance through EF Core.
+/// Persists citizen mobility report acceptance and recovery through EF Core.
 /// </summary>
 /// <remarks>
 /// The report identifier is the idempotency key. The database primary-key constraint is the final arbitration
@@ -24,6 +24,25 @@ public sealed class EfCitizenMobilityReportRepository
   {
     ArgumentNullException.ThrowIfNull(dbContext);
     this.dbContext = dbContext;
+  }
+
+  /// <inheritdoc />
+  public async Task<CitizenMobilityReportCase?> GetAsync(
+    string reportId,
+    CancellationToken cancellationToken = default)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(reportId);
+
+    var record = await FindAsync(
+        reportId,
+        cancellationToken)
+      .ConfigureAwait(false);
+
+    return record is null
+      ? null
+      : CitizenMobilityReportCase.Create(
+          reportId,
+          ToEvidenceCase(record));
   }
 
   /// <inheritdoc />

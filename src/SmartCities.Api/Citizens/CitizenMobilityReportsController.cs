@@ -6,7 +6,7 @@ using SmartCities.Evidence;
 namespace SmartCities.Api.Citizens;
 
 /// <summary>
-/// Exposes the citizen mobility report acceptance use case over HTTP.
+/// Exposes citizen mobility report acceptance and retrieval use cases over HTTP.
 /// </summary>
 /// <remarks>
 /// The controller depends only on the application service. It does not know about repositories,
@@ -19,12 +19,44 @@ public sealed class CitizenMobilityReportsController : ControllerBase
   private readonly ICitizenMobilityReportService service;
 
   /// <summary>Initializes the controller with the citizen mobility application service.</summary>
-  /// <param name="service">Application service responsible for accepting validated reports.</param>
+  /// <param name="service">Application service responsible for citizen mobility report use cases.</param>
   public CitizenMobilityReportsController(
     ICitizenMobilityReportService service)
   {
     ArgumentNullException.ThrowIfNull(service);
     this.service = service;
+  }
+
+  /// <summary>Gets the authoritative persisted case for a citizen report.</summary>
+  /// <param name="reportId">Stable report identifier.</param>
+  /// <param name="cancellationToken">Request-abort cancellation token.</param>
+  /// <returns>HTTP 200 with the authoritative case, or HTTP 404 when the report is unknown.</returns>
+  [HttpGet("{reportId}")]
+  [ProducesResponseType<CitizenMobilityReportCaseResponse>(
+    StatusCodes.Status200OK)]
+  [ProducesResponseType(
+    StatusCodes.Status404NotFound)]
+  public async Task<ActionResult<CitizenMobilityReportCaseResponse>> GetAsync(
+    string reportId,
+    CancellationToken cancellationToken)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(reportId);
+
+    var persisted = await service
+      .GetAsync(
+        reportId,
+        cancellationToken)
+      .ConfigureAwait(false);
+
+    if (persisted is null)
+    {
+      return NotFound();
+    }
+
+    return Ok(
+      new CitizenMobilityReportCaseResponse(
+        persisted.ReportId,
+        persisted.EvidenceCase.CaseId));
   }
 
   /// <summary>Accepts a citizen mobility report.</summary>

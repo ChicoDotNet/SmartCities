@@ -148,6 +148,8 @@ public sealed class CitizenMobilityReportsControllerTests
   private sealed class RecordingCitizenMobilityReportService
     : ICitizenMobilityReportService
   {
+    private readonly Dictionary<string, EvidenceCase> casesByReportId =
+      new(StringComparer.Ordinal);
     private readonly bool wasCreated;
 
     public RecordingCitizenMobilityReportService(bool wasCreated)
@@ -158,6 +160,18 @@ public sealed class CitizenMobilityReportsControllerTests
     public CitizenMobilityReport? LastReport { get; private set; }
 
     public string? LastCaseId { get; private set; }
+
+    public Task<CitizenMobilityReportCase?> GetAsync(
+      string reportId,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      return Task.FromResult(
+        casesByReportId.TryGetValue(reportId, out var evidenceCase)
+          ? CitizenMobilityReportCase.Create(reportId, evidenceCase)
+          : null);
+    }
 
     public Task<CitizenMobilityReportAcceptance> AcceptAsync(
       CitizenMobilityReport report,
@@ -173,6 +187,8 @@ public sealed class CitizenMobilityReportsControllerTests
         wasCreated
           ? caseId
           : "case-authoritative");
+
+      casesByReportId[report.ReportId] = authoritativeCase;
 
       return Task.FromResult(
         wasCreated

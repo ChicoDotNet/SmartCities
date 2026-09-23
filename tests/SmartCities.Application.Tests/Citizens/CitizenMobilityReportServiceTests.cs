@@ -128,6 +128,18 @@ public sealed class CitizenMobilityReportServiceTests
 
     public EvidenceCase? LastCandidateCase { get; private set; }
 
+    public Task<CitizenMobilityReportCase?> GetAsync(
+      string reportId,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      return Task.FromResult(
+        casesByReportId.TryGetValue(reportId, out var evidenceCase)
+          ? CitizenMobilityReportCase.Create(reportId, evidenceCase)
+          : null);
+    }
+
     public Task<CitizenMobilityReportAcceptance> GetOrCreateAsync(
       string reportId,
       EvidenceCase candidateCase,
