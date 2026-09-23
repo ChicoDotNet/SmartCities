@@ -54,7 +54,7 @@ public sealed class AuthenticationCanonicalizerTests
       "external-subject",
       []);
 
-    await Assert.ThrowsAsync<InvalidOperationException>(
+    await Assert.ThrowsAsync<AuthenticationCanonicalizationException>(
       () => canonicalizer.CanonicalizeAsync(
         context,
         external,
