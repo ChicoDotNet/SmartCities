@@ -44,7 +44,7 @@ public static class SmartCitiesServiceCollectionExtensions
   }
 
   private static void ConfigureProvider(
-    DbContextOptionsBuilder<SmartCitiesDbContext> builder,
+    DbContextOptionsBuilder builder,
     SmartCitiesPersistenceOptions options)
   {
     switch (options.Provider)
