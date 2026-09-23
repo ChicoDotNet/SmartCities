@@ -17,5 +17,6 @@
     <ProjectReference Include="../../src/SmartCities.Composition/SmartCities.Composition.csproj" />
     <ProjectReference Include="../../src/SmartCities.Core/SmartCities.Core.csproj" />
     <ProjectReference Include="../../src/SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/SmartCities.Identity/SmartCities.Identity.csproj" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SmartCities.Identity</AssemblyName>
+    <RootNamespace>SmartCities.Identity</RootNamespace>
+    <Description>Provider-neutral identity, claims, permission, and policy contracts for SmartCities.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>

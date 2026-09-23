@@ -1,0 +1,151 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Api.Identity;
+using SmartCities.Decisions;
+using SmartCities.Identity;
+using Xunit;
+
+namespace SmartCities.Api.Tests.Identity;
+
+public sealed class SmartCitiesAuthorizationTests
+{
+  [Theory]
+  [InlineData("provider-a")]
+  [InlineData("provider-b")]
+  public async Task Finalize_review_policy_accepts_any_authenticated_provider_after_canonicalization(
+    string authenticationType)
+  {
+    using var provider = BuildServices();
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+    var principal = CreateCanonicalReviewer(
+      authenticationType);
+
+    var result = await authorization.AuthorizeAsync(
+      principal,
+      resource: null,
+      SmartCitiesPolicies.FinalizeDecisionReview);
+
+    Assert.True(result.Succeeded);
+  }
+
+  [Fact]
+  public async Task Finalize_review_policy_rejects_a_principal_without_the_required_permission()
+  {
+    using var provider = BuildServices();
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+    var principal = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "reviewer-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+        ],
+        authenticationType: "provider-a"));
+
+    var result = await authorization.AuthorizeAsync(
+      principal,
+      resource: null,
+      SmartCitiesPolicies.FinalizeDecisionReview);
+
+    Assert.False(result.Succeeded);
+  }
+
+  [Fact]
+  public async Task Provider_native_claims_do_not_bypass_the_canonical_claim_boundary()
+  {
+    using var provider = BuildServices();
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+    var principal = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim("sub", "reviewer-42"),
+          new Claim("role", "mobility-reviewer"),
+          new Claim(
+            "permission",
+            SmartCitiesPermissions.FinalizeDecisionReview),
+        ],
+        authenticationType: "provider-a"));
+
+    var result = await authorization.AuthorizeAsync(
+      principal,
+      resource: null,
+      SmartCitiesPolicies.FinalizeDecisionReview);
+
+    Assert.False(result.Succeeded);
+  }
+
+  [Fact]
+  public void Canonical_principal_maps_to_the_existing_human_authority_contract()
+  {
+    var principal = CreateCanonicalReviewer(
+      "provider-b");
+
+    HumanAuthority authority =
+      principal.ToHumanAuthority();
+
+    Assert.Equal(
+      "reviewer-42",
+      authority.SubjectId);
+    Assert.Equal(
+      "mobility-reviewer",
+      authority.Role);
+  }
+
+  [Fact]
+  public void Human_authority_mapping_rejects_ambiguous_canonical_subjects()
+  {
+    var principal = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "reviewer-42"),
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "reviewer-99"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+        ],
+        authenticationType: "provider-a"));
+
+    Assert.Throws<InvalidOperationException>(
+      principal.ToHumanAuthority);
+  }
+
+  private static ServiceProvider BuildServices()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+    services.AddSmartCitiesAuthorization();
+
+    return services.BuildServiceProvider();
+  }
+
+  private static ClaimsPrincipal CreateCanonicalReviewer(
+    string authenticationType) =>
+    new(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "reviewer-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            authenticationType),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.FinalizeDecisionReview),
+        ],
+        authenticationType));
+}
