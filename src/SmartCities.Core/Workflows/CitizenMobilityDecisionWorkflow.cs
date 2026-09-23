@@ -56,8 +56,7 @@ public static class CitizenMobilityDecisionWorkflow
 
     ValidateTraceability(criterionRequest, criterionTrace);
 
-    var humanReview = DecisionReview.Pending(
-      criterionTrace.RecommendationId);
+    var humanReview = DecisionReview.Pending(criterionTrace);
 
     return new CitizenMobilityDecisionSnapshot(
       report,
