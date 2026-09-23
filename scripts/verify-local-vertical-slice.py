@@ -52,7 +52,7 @@ def wait_until_ready() -> None:
         try:
             status, _ = request(
                 "GET",
-                "/api/localization/resources/es-MX",
+                "/health/live",
             )
             if status == 200:
                 return
@@ -71,6 +71,32 @@ def require(condition: bool, message: str) -> None:
 
 def main() -> None:
     wait_until_ready()
+
+    live_status, live = request(
+        "GET",
+        "/health/live",
+    )
+    require(live_status == 200, f"Expected live 200, got {live_status}: {live}")
+    require(live["status"] == "Healthy", "Liveness is not healthy.")
+    require(live["checks"] == {}, "Liveness unexpectedly depends on readiness checks.")
+
+    ready_status, ready = request(
+        "GET",
+        "/health/ready",
+    )
+    require(ready_status == 200, f"Expected ready 200, got {ready_status}: {ready}")
+    require(ready["status"] == "Healthy", "Readiness is not healthy.")
+    require(ready["checks"]["database"] == "Healthy", "Database readiness check is not healthy.")
+
+    openapi_status, openapi = request(
+        "GET",
+        "/openapi/v1.json",
+    )
+    require(openapi_status == 200, f"Expected OpenAPI 200, got {openapi_status}: {openapi}")
+    require(
+        "/api/citizen/mobility-reports" in openapi["paths"],
+        "OpenAPI does not expose the citizen mobility POST route.",
+    )
 
     report_id = "e2e-report-001"
     original_case_id = "e2e-case-original"
@@ -113,7 +139,7 @@ def main() -> None:
     require(recovered["reportId"] == report_id, "Recovered report ID changed.")
     require(recovered["caseId"] == original_case_id, "Recovered case is not authoritative.")
 
-    print("Local vertical slice verified: create -> replay -> recover.")
+    print("Local vertical slice verified: live -> ready -> OpenAPI -> create -> replay -> recover.")
 
 
 if __name__ == "__main__":
