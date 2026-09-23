@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SmartCities.Api.Citizens;
+using SmartCities.Api.Hosting;
 using SmartCities.Application.Citizens;
 using SmartCities.Infrastructure.Persistence;
 using Xunit;
