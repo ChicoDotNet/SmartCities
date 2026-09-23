@@ -13,6 +13,8 @@
   <ItemGroup>
     <ProjectReference Include="../../src/SmartCities.Api/SmartCities.Api.csproj" />
     <ProjectReference Include="../../src/SmartCities.Application/SmartCities.Application.csproj" />
+    <ProjectReference Include="../../src/SmartCities.Composition/SmartCities.Composition.csproj" />
     <ProjectReference Include="../../src/SmartCities.Core/SmartCities.Core.csproj" />
+    <ProjectReference Include="../../src/SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
   </ItemGroup>
 </Project>

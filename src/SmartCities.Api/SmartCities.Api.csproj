@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../SmartCities.Application/SmartCities.Application.csproj" />
+    <ProjectReference Include="../SmartCities.Composition/SmartCities.Composition.csproj" />
     <ProjectReference Include="../SmartCities.Core/SmartCities.Core.csproj" />
   </ItemGroup>
 </Project>
