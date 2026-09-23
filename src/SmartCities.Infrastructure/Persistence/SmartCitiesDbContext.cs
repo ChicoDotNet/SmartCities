@@ -29,7 +29,11 @@ public sealed class SmartCitiesDbContext : DbContext
     ArgumentNullException.ThrowIfNull(modelBuilder);
 
     var report = modelBuilder.Entity<CitizenMobilityReportRecord>();
+    report.ToTable("CitizenMobilityReports");
     report.HasKey(static entity => entity.ReportId);
+    report.Property(static entity => entity.ReportId).HasMaxLength(128);
+    report.Property(static entity => entity.CaseId).HasMaxLength(128);
+    report.Property(static entity => entity.Subject).HasMaxLength(2048);
     report.HasIndex(static entity => entity.CaseId).IsUnique();
 
     report
@@ -39,11 +43,17 @@ public sealed class SmartCitiesDbContext : DbContext
       .OnDelete(DeleteBehavior.Cascade);
 
     var evidence = modelBuilder.Entity<EvidenceReferenceRecord>();
+    evidence.ToTable("CitizenMobilityEvidenceReferences");
     evidence.HasKey(static entity => new
     {
       entity.ReportId,
       entity.EvidenceId,
     });
+
+    evidence.Property(static entity => entity.ReportId).HasMaxLength(128);
+    evidence.Property(static entity => entity.EvidenceId).HasMaxLength(128);
+    evidence.Property(static entity => entity.SourceSystem).HasMaxLength(128);
+    evidence.Property(static entity => entity.SourceReference).HasMaxLength(512);
 
     evidence
       .HasIndex(static entity => new
