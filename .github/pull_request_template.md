@@ -23,6 +23,12 @@
 - CI state:
 - Known unavailable validation:
 
+## Open-source and provenance check
+
+- [ ] Reusable product code introduced by this PR is committed to this public repository.
+- [ ] Contribution provenance and licensing are clear.
+- [ ] Material AI assistance is disclosed when it affected implementation or evidence.
+
 ## Public/private boundary check
 
 - [ ] No secrets or credentials.

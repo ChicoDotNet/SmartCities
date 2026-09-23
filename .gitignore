@@ -1,0 +1,17 @@
+bin/
+obj/
+artifacts/
+TestResults/
+.coverage/
+coverage/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+node_modules/
+docs/site/dist/
+docs/site/.vite/
+.env
+.env.*
+!.env.example

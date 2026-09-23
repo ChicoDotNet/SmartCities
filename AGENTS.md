@@ -27,11 +27,21 @@ Use the smallest sufficient skill set. Project-local decisions in this repositor
 - `main` is stable and receives deliberate promotion from `dev`.
 - `dev` is the integration branch.
 - Working branches use `features/*`, `bugs/*`, `releases/*`, `hotfixes/*`, or `tags/*`.
-- Working branches keep their internal history and are squash merged into `dev`.
-- `dev` is squash merged into `main`.
+- Working branches keep their internal history and are **squash merged into `dev`**.
+- `dev` stays intentionally clean: one integration commit per accepted working-branch outcome.
+- `dev` is **squash merged into `main`** so `main` stays intentionally clean: one stable promotion commit per release/promotion outcome.
 - Working branches are retained by default as delivery history.
 - No direct product work on `main` or `dev` after bootstrap.
 - After each `dev → main` squash promotion, synchronize `main → dev` with a content-neutral merge commit after exact-state validation.
+
+## Implementation language policy
+
+- C# / .NET is the default implementation language.
+- The bootstrap executable surface is a class library only.
+- React UI code uses TypeScript: `.tsx` components and `.ts` non-visual modules.
+- Do not introduce application `.jsx` or plain `.js` when TypeScript can express the same code.
+- Rust is introduced only after measurable evidence justifies it.
+- .NET-consumed Rust components should prefer FerrumWeave instead of project-specific native FFI; an exception requires an accepted ADR.
 
 ## TDD contract
 
