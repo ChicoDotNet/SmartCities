@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -102,58 +103,35 @@ public sealed class CitizenInputProblemDetailsTests
   }
 
   [Fact]
-  public void Citizen_report_http_contract_marks_required_fields_as_required()
+  public void Citizen_report_http_contract_marks_primary_constructor_inputs_as_required()
   {
-    var request = new CreateCitizenMobilityReportRequest(
-      " ",
-      " ",
-      " ",
-      " ",
-      " ",
-      []);
-
-    var results = new List<ValidationResult>();
-
-    var valid = Validator.TryValidateObject(
-      request,
-      new ValidationContext(request),
-      results,
-      validateAllProperties: true);
-
-    Assert.False(valid);
-    AssertRequired(results, nameof(CreateCitizenMobilityReportRequest.ReportId));
-    AssertRequired(results, nameof(CreateCitizenMobilityReportRequest.CaseId));
-    AssertRequired(results, nameof(CreateCitizenMobilityReportRequest.CategoryKey));
-    AssertRequired(results, nameof(CreateCitizenMobilityReportRequest.LocationReference));
-    AssertRequired(results, nameof(CreateCitizenMobilityReportRequest.Description));
+    AssertRequiredParameter<CreateCitizenMobilityReportRequest>(
+      nameof(CreateCitizenMobilityReportRequest.ReportId));
+    AssertRequiredParameter<CreateCitizenMobilityReportRequest>(
+      nameof(CreateCitizenMobilityReportRequest.CaseId));
+    AssertRequiredParameter<CreateCitizenMobilityReportRequest>(
+      nameof(CreateCitizenMobilityReportRequest.CategoryKey));
+    AssertRequiredParameter<CreateCitizenMobilityReportRequest>(
+      nameof(CreateCitizenMobilityReportRequest.LocationReference));
+    AssertRequiredParameter<CreateCitizenMobilityReportRequest>(
+      nameof(CreateCitizenMobilityReportRequest.Description));
   }
 
   [Fact]
-  public void Evidence_http_contract_validates_required_provenance_and_evidence_kind()
+  public void Evidence_http_contract_validates_primary_constructor_provenance_and_evidence_kind()
   {
-    var evidence = new CitizenEvidenceReferenceRequest(
-      " ",
-      (EvidenceKind)999,
-      " ",
-      " ",
-      DateTimeOffset.UtcNow);
-    var results = new List<ValidationResult>();
+    AssertRequiredParameter<CitizenEvidenceReferenceRequest>(
+      nameof(CitizenEvidenceReferenceRequest.EvidenceId));
+    AssertRequiredParameter<CitizenEvidenceReferenceRequest>(
+      nameof(CitizenEvidenceReferenceRequest.SourceSystem));
+    AssertRequiredParameter<CitizenEvidenceReferenceRequest>(
+      nameof(CitizenEvidenceReferenceRequest.SourceReference));
 
-    var valid = Validator.TryValidateObject(
-      evidence,
-      new ValidationContext(evidence),
-      results,
-      validateAllProperties: true);
+    var kind = GetPrimaryConstructorParameter<CitizenEvidenceReferenceRequest>(
+      nameof(CitizenEvidenceReferenceRequest.Kind));
 
-    Assert.False(valid);
-    AssertRequired(results, nameof(CitizenEvidenceReferenceRequest.EvidenceId));
-    AssertRequired(results, nameof(CitizenEvidenceReferenceRequest.SourceSystem));
-    AssertRequired(results, nameof(CitizenEvidenceReferenceRequest.SourceReference));
-    Assert.Contains(
-      results,
-      result => result.MemberNames.Contains(
-        nameof(CitizenEvidenceReferenceRequest.Kind),
-        StringComparer.Ordinal));
+    Assert.NotNull(
+      kind.GetCustomAttribute<EnumDataTypeAttribute>());
   }
 
   private static ActionContext CreateActionContext(
@@ -164,14 +142,27 @@ public sealed class CitizenInputProblemDetailsTests
       new ActionDescriptor(),
       modelState);
 
-  private static void AssertRequired(
-    IEnumerable<ValidationResult> results,
-    string memberName)
+  private static void AssertRequiredParameter<T>(
+    string parameterName)
   {
-    Assert.Contains(
-      results,
-      result => result.MemberNames.Contains(
-        memberName,
-        StringComparer.Ordinal));
+    var parameter = GetPrimaryConstructorParameter<T>(
+      parameterName);
+
+    Assert.NotNull(
+      parameter.GetCustomAttribute<RequiredAttribute>());
+  }
+
+  private static ParameterInfo GetPrimaryConstructorParameter<T>(
+    string parameterName)
+  {
+    var constructor = Assert.Single(
+      typeof(T).GetConstructors());
+
+    return Assert.Single(
+      constructor.GetParameters(),
+      parameter => string.Equals(
+        parameter.Name,
+        parameterName,
+        StringComparison.Ordinal));
   }
 }
