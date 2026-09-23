@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using SmartCities.Evidence;
 
 namespace SmartCities.Criterion;
@@ -90,7 +91,7 @@ public sealed record CriterionDecisionRequest
       evidence);
   }
 
-  private static IReadOnlyList<string> CopyAndValidateEvidence(
+  private static ReadOnlyCollection<string> CopyAndValidateEvidence(
     IEnumerable<string> evidenceReferenceIds)
   {
     var evidence = evidenceReferenceIds.ToArray();
