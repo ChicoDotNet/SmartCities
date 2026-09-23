@@ -49,6 +49,9 @@ public sealed class ApiDiagnosticsTests
       path => path.StartsWith(
         "/api/localization/resources",
         StringComparison.Ordinal));
+    Assert.Contains(
+      "/api/system/build",
+      paths);
   }
 
   [Fact]

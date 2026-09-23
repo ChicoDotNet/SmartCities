@@ -6,7 +6,8 @@ builder.Services.AddSmartCitiesFromConfiguration(
   builder.Configuration);
 builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
-builder.Services.AddSmartCitiesApiObservability();
+builder.Services.AddSmartCitiesApiObservability(
+  builder.Configuration);
 
 var app = builder.Build();
 
@@ -17,5 +18,6 @@ app.UseRequestLocalization();
 
 app.MapControllers();
 app.MapSmartCitiesApiDiagnostics();
+app.MapSmartCitiesBuildMetadata();
 
 app.Run();

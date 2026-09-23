@@ -59,7 +59,11 @@ jobs:
           SmartCities__Persistence__DbProvider: PostgreSql
           SmartCities__Persistence__ConnectionString: Host=127.0.0.1;Port=5432;Database=smartcities;Username=smartcities;Password=smartcities-ci-only
           SmartCities__Persistence__ApplyMigrationsOnStartup: 'true'
+          SmartCities__Build__CommitSha: ${{ github.sha }}
+          SmartCities__Build__BuildId: ${{ github.run_id }}
           SMARTCITIES_API_BASE_URL: http://127.0.0.1:5000
+          SMARTCITIES_EXPECTED_COMMIT: ${{ github.sha }}
+          SMARTCITIES_EXPECTED_BUILD_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
 
