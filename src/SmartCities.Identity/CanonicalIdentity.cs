@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace SmartCities.Identity;
 
 /// <summary>
@@ -61,7 +63,7 @@ public sealed record CanonicalIdentity
         nameof(permissions)));
   }
 
-  private static IReadOnlyList<string> ValidateAuthorizationValues(
+  private static ReadOnlyCollection<string> ValidateAuthorizationValues(
     IEnumerable<string> values,
     string parameterName)
   {
