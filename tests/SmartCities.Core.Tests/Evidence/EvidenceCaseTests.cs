@@ -57,7 +57,7 @@ public sealed class EvidenceCaseTests
       EvidenceProvenance.Create(
         "municipal-system",
         "document-099",
-        DateTimeOffset.Parse("2026-09-23T16:45:00+00:00")));
+        new DateTimeOffset(2026, 9, 23, 16, 45, 0, TimeSpan.Zero)));
 
     Assert.Throws<ArgumentException>(
       () => EvidenceCase.Create(
