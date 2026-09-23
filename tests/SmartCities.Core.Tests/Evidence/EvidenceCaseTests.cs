@@ -104,5 +104,5 @@ public sealed class EvidenceCaseTests
       EvidenceProvenance.Create(
         "citizen-portal",
         $"submission:{evidenceId}",
-        DateTimeOffset.Parse("2026-09-23T16:45:00+00:00")));
+        new DateTimeOffset(2026, 9, 23, 16, 45, 0, TimeSpan.Zero)));
 }
