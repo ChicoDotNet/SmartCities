@@ -1,0 +1,124 @@
+:root {
+  font-family: "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
+  color: #17202a;
+  background: #ffffff;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(0, 120, 212, 0.08), transparent 26rem),
+    #ffffff;
+}
+
+a { font-weight: 600; }
+
+.hero {
+  border-bottom: 1px solid #e6edf3;
+  background: linear-gradient(180deg, #f8fbfe 0%, #ffffff 100%);
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #0078d4;
+  border-radius: 12px;
+  color: #005a9e;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: #005a9e;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(3.4rem, 9vw, 7rem);
+  line-height: 0.92;
+  letter-spacing: -0.075em;
+}
+
+h2 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 4vw, 3rem);
+  letter-spacing: -0.04em;
+}
+
+.lead-copy {
+  max-width: 52rem;
+  margin-top: 1.5rem;
+  font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  line-height: 1.45;
+  color: #3c4a55;
+}
+
+.city-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(40px, 1fr));
+  gap: 12px;
+  padding: 2rem;
+}
+
+.city-grid span {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  background: #dceefb;
+  border: 1px solid #b7d9f2;
+}
+
+.city-grid span:nth-child(3n) { transform: translateY(-10px); background: #c7e6f8; }
+.city-grid span:nth-child(4n) { transform: translateY(14px); background: #eaf4fb; }
+
+.principle-card {
+  position: relative;
+  padding: 1.5rem;
+  border: 1px solid #dde5eb;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(23, 32, 42, 0.04);
+}
+
+.principle-card p {
+  margin: 2.25rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.card-index {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: #70808d;
+  font-family: "Cascadia Mono", "Consolas", monospace;
+  font-size: 0.8rem;
+}
+
+.modules {
+  background: #0b2239;
+  color: #ffffff;
+}
+
+.module-pill {
+  padding: 1.1rem 1.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  line-height: 1.45;
+}
+
+footer {
+  border-top: 1px solid #e6edf3;
+  color: #65737e;
+  font-size: 0.9rem;
+}
