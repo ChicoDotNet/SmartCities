@@ -69,12 +69,15 @@ public sealed class SmartCitiesRequestObservabilityMiddleware
 
       if (logger.IsEnabled(LogLevel.Information))
       {
+        var elapsedMilliseconds =
+          Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
+
         RequestObservabilityLog.RequestCompleted(
           logger,
           context.Request.Method,
           context.Request.Path.Value ?? "/",
           context.Response.StatusCode,
-          Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
+          elapsedMilliseconds,
           correlationId,
           traceId);
       }
@@ -83,11 +86,14 @@ public sealed class SmartCitiesRequestObservabilityMiddleware
     {
       if (logger.IsEnabled(LogLevel.Warning))
       {
+        var elapsedMilliseconds =
+          Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds;
+
         RequestObservabilityLog.RequestFailed(
           logger,
           context.Request.Method,
           context.Request.Path.Value ?? "/",
-          Stopwatch.GetElapsedTime(startedAt).TotalMilliseconds,
+          elapsedMilliseconds,
           correlationId,
           traceId);
       }
