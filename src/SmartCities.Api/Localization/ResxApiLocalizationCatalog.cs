@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Resources;
@@ -15,18 +16,6 @@ public sealed class ResxApiLocalizationCatalog : IApiLocalizationCatalog
   /// <summary>Mexico Spanish culture supported by the first citizen experience.</summary>
   public const string MexicanSpanishCulture = "es-MX";
 
-  private const string InvalidInputTitleKey =
-    "problem.invalidInput.title";
-
-  private const string InvalidInputDetailKey =
-    "problem.invalidInput.detail";
-
-  private static readonly string[] PublicKeys =
-  [
-    InvalidInputDetailKey,
-    InvalidInputTitleKey,
-  ];
-
   private static readonly CultureInfo NeutralEnglish =
     CultureInfo.GetCultureInfo(NeutralEnglishCulture);
 
@@ -37,6 +26,9 @@ public sealed class ResxApiLocalizationCatalog : IApiLocalizationCatalog
     new(
       "SmartCities.Api.Resources.ApiResources",
       typeof(ResxApiLocalizationCatalog).Assembly);
+
+  private static readonly string[] PublicKeys =
+    LoadPublicKeys();
 
   /// <inheritdoc />
   public ApiLocalizationResourceResponse GetResources(
@@ -74,6 +66,24 @@ public sealed class ResxApiLocalizationCatalog : IApiLocalizationCatalog
     return GetStringForResolvedCulture(
       key,
       ResolveCulture(culture.Name));
+  }
+
+  private static string[] LoadPublicKeys()
+  {
+    var resourceSet = ResourceManager.GetResourceSet(
+        CultureInfo.InvariantCulture,
+        createIfNotExists: true,
+        tryParents: true)
+      ?? throw new InvalidOperationException(
+        "Neutral API localization resources could not be loaded.");
+
+    return resourceSet
+      .Cast<DictionaryEntry>()
+      .Select(static entry => entry.Key as string)
+      .Where(static key => key is not null)
+      .Cast<string>()
+      .Order(StringComparer.Ordinal)
+      .ToArray();
   }
 
   private static CultureInfo ResolveCulture(
