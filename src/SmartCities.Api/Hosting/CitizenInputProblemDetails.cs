@@ -74,7 +74,7 @@ internal static class CitizenInputProblemDetails
 
         return string.Concat(
           char.ToLowerInvariant(segment[0]),
-          segment.AsSpan(1));
+          segment[1..]);
       }));
   }
 }
