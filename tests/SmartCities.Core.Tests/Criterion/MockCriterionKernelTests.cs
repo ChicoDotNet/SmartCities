@@ -15,8 +15,8 @@ public sealed class MockCriterionKernelTests
 
     var kernel = new MockCriterionKernel();
 
-    var first = await kernel.EvaluateAsync(request);
-    var second = await kernel.EvaluateAsync(request);
+    var first = await kernel.EvaluateAsync(request, TestContext.Current.CancellationToken);
+    var second = await kernel.EvaluateAsync(request, TestContext.Current.CancellationToken);
 
     Assert.Equal(first.RequestId, second.RequestId);
     Assert.Equal(first.RecommendationId, second.RecommendationId);
@@ -33,7 +33,7 @@ public sealed class MockCriterionKernelTests
       "Evaluate a reported transit stop accessibility problem.",
       ["evidence-photo", "evidence-location"]);
 
-    var trace = await new MockCriterionKernel().EvaluateAsync(request);
+    var trace = await new MockCriterionKernel().EvaluateAsync(request, TestContext.Current.CancellationToken);
 
     Assert.Equal("request-002", trace.RequestId);
     Assert.Equal(
