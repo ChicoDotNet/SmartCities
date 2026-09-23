@@ -104,6 +104,47 @@ public sealed class CitizenMobilityReportsControllerTests
     Assert.False(payload.WasCreated);
   }
 
+  [Fact]
+  public async Task Get_returns_the_persisted_authoritative_case()
+  {
+    var service = new RecordingCitizenMobilityReportService(wasCreated: true);
+    var controller = new CitizenMobilityReportsController(service);
+
+    await controller.CreateAsync(
+      new CreateCitizenMobilityReportRequest(
+        "report-get",
+        "case-persisted",
+        "road-safety",
+        "Intersection AGS-200",
+        "Unsafe turning movement.",
+        []),
+      TestContext.Current.CancellationToken);
+
+    var result = await controller.GetAsync(
+      "report-get",
+      TestContext.Current.CancellationToken);
+
+    var response = Assert.IsType<OkObjectResult>(result.Result);
+    var payload = Assert.IsType<CitizenMobilityReportCaseResponse>(
+      response.Value);
+
+    Assert.Equal("report-get", payload.ReportId);
+    Assert.Equal("case-persisted", payload.CaseId);
+  }
+
+  [Fact]
+  public async Task Get_returns_404_when_the_report_is_unknown()
+  {
+    var controller = new CitizenMobilityReportsController(
+      new RecordingCitizenMobilityReportService(wasCreated: true));
+
+    var result = await controller.GetAsync(
+      "report-missing",
+      TestContext.Current.CancellationToken);
+
+    Assert.IsType<NotFoundResult>(result.Result);
+  }
+
   private sealed class RecordingCitizenMobilityReportService
     : ICitizenMobilityReportService
   {

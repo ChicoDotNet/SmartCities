@@ -58,6 +58,48 @@ public sealed class EfCitizenMobilityReportRepositoryTests
   }
 
   [Fact]
+  public async Task Repository_recovers_a_persisted_case_through_a_fresh_context()
+  {
+    await using var connection = new SqliteConnection("Data Source=:memory:");
+    await connection.OpenAsync(TestContext.Current.CancellationToken);
+
+    var options = new DbContextOptionsBuilder<SmartCitiesDbContext>()
+      .UseSqlite(connection)
+      .Options;
+
+    await using (var setup = new SmartCitiesDbContext(options))
+    {
+      await setup.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
+    }
+
+    var report = CreateReport("report-recover");
+
+    await using (var firstContext = new SmartCitiesDbContext(options))
+    {
+      var repository = new EfCitizenMobilityReportRepository(firstContext);
+
+      await repository.GetOrCreateAsync(
+        report.ReportId,
+        report.CreateEvidenceCase("case-persisted"),
+        TestContext.Current.CancellationToken);
+    }
+
+    await using (var freshContext = new SmartCitiesDbContext(options))
+    {
+      var repository = new EfCitizenMobilityReportRepository(freshContext);
+
+      var recovered = await repository.GetAsync(
+        report.ReportId,
+        TestContext.Current.CancellationToken);
+
+      Assert.NotNull(recovered);
+      Assert.Equal("report-recover", recovered.ReportId);
+      Assert.Equal("case-persisted", recovered.EvidenceCase.CaseId);
+      Assert.Equal(report.Description, recovered.EvidenceCase.Subject);
+    }
+  }
+
+  [Fact]
   public async Task Repository_round_trip_preserves_order_kind_and_provenance()
   {
     await using var connection = new SqliteConnection("Data Source=:memory:");

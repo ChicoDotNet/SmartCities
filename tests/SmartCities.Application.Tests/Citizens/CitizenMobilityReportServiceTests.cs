@@ -48,6 +48,40 @@ public sealed class CitizenMobilityReportServiceTests
   }
 
   [Fact]
+  public async Task Getting_an_existing_report_returns_its_authoritative_case()
+  {
+    var repository = new RecordingCitizenMobilityReportRepository();
+    var service = new CitizenMobilityReportService(repository);
+    var report = CreateReport("report-recover");
+
+    await service.AcceptAsync(
+      report,
+      "case-persisted",
+      TestContext.Current.CancellationToken);
+
+    var recovered = await service.GetAsync(
+      report.ReportId,
+      TestContext.Current.CancellationToken);
+
+    Assert.NotNull(recovered);
+    Assert.Equal("report-recover", recovered.ReportId);
+    Assert.Equal("case-persisted", recovered.EvidenceCase.CaseId);
+  }
+
+  [Fact]
+  public async Task Getting_an_unknown_report_returns_null()
+  {
+    var service = new CitizenMobilityReportService(
+      new RecordingCitizenMobilityReportRepository());
+
+    var recovered = await service.GetAsync(
+      "report-missing",
+      TestContext.Current.CancellationToken);
+
+    Assert.Null(recovered);
+  }
+
+  [Fact]
   public async Task Service_passes_the_domain_case_to_the_repository_contract()
   {
     var repository = new RecordingCitizenMobilityReportRepository();
