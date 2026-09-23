@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using SmartCities.Api.Citizens;
 using SmartCities.Api.Hosting;
+using SmartCities.Api.Localization;
 using SmartCities.Evidence;
 using Xunit;
 
@@ -53,7 +54,8 @@ public sealed class CitizenInputProblemDetailsTests
   [Fact]
   public void Domain_argument_errors_for_known_input_fields_use_the_same_problem_contract()
   {
-    var filter = new InvalidCitizenInputExceptionFilter();
+    var filter = new InvalidCitizenInputExceptionFilter(
+      new ResxApiLocalizationCatalog());
     var context = new ExceptionContext(
       CreateActionContext(new ModelStateDictionary()),
       [])
@@ -82,7 +84,8 @@ public sealed class CitizenInputProblemDetailsTests
   [Fact]
   public void Unknown_argument_errors_are_not_reclassified_as_citizen_input()
   {
-    var filter = new InvalidCitizenInputExceptionFilter();
+    var filter = new InvalidCitizenInputExceptionFilter(
+      new ResxApiLocalizationCatalog());
     var context = new ExceptionContext(
       CreateActionContext(new ModelStateDictionary()),
       [])

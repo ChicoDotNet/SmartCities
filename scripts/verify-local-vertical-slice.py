@@ -36,7 +36,13 @@ def request(method: str, path: str, payload: dict | None = None) -> tuple[int, d
             return response.status, json.loads(body) if body else {}
     except urllib.error.HTTPError as exc:
         body = exc.read().decode("utf-8")
-        return exc.code, json.loads(body) if body else {}
+
+        try:
+            parsed = json.loads(body) if body else {}
+        except json.JSONDecodeError:
+            parsed = {"raw": body}
+
+        return exc.code, parsed
 
 
 def wait_until_ready() -> None:

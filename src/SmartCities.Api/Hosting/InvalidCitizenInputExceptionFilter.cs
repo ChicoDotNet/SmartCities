@@ -15,18 +15,6 @@ public sealed class InvalidCitizenInputExceptionFilter : IExceptionFilter
 {
   private readonly IApiLocalizationCatalog catalog;
 
-  /// <summary>
-  /// Initializes a filter with the neutral-English .resx catalog.
-  /// </summary>
-  /// <remarks>
-  /// This constructor preserves direct filter construction for lightweight tests and tooling.
-  /// Dependency-injection composition uses the catalog-aware constructor.
-  /// </remarks>
-  public InvalidCitizenInputExceptionFilter()
-    : this(new ResxApiLocalizationCatalog())
-  {
-  }
-
   /// <summary>Initializes a filter with the configured API localization catalog.</summary>
   /// <param name="catalog">API localization catalog.</param>
   public InvalidCitizenInputExceptionFilter(
