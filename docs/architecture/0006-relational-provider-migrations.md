@@ -25,8 +25,11 @@ Schema evolution therefore remains conceptually aligned but physically independe
 
 ## Current state
 
-SQL Server is the first implemented production provider. Its migration assembly is `SmartCities.Infrastructure.SqlServer`.
+Both first-class production providers are implemented:
 
-PostgreSQL is declared by the provider contract and will receive its own implementation and migration assembly in the next provider increment.
+- SQL Server uses `SmartCities.Infrastructure.SqlServer` as its migrations assembly;
+- PostgreSQL uses `SmartCities.Infrastructure.PostgreSql` as its migrations assembly.
+
+Each provider owns an independent initial migration and model snapshot while sharing the provider-neutral `SmartCitiesDbContext`, persistence records, and repository behavior.
 
 SQLite remains a relational contract-test provider only and is not a production migration target.
