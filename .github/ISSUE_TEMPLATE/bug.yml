@@ -1,0 +1,55 @@
+name: Bug report
+description: Report a reproducible problem in SmartCities code, documentation, website, tooling, or CI.
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping SmartCities improve.
+
+        **Do not report security vulnerabilities, citizen personal data, or confidential municipal information here. See SECURITY.md.**
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Core class library
+        - Documentation / website
+        - Repository / CI
+        - Localization
+        - Criterion integration
+        - Urban domain model
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe observed and expected behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Provide the smallest useful steps or code.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, .NET SDK, browser/Node when relevant, branch and commit.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Logs, screenshots, traces, or other non-sensitive evidence.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: I removed secrets, personal data, and confidential information.
+          required: true

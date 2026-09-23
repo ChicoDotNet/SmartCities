@@ -1,0 +1,46 @@
+name: Design proposal
+description: Propose a cross-cutting SmartCities capability or public contract before a large implementation.
+title: "design: "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / capability
+      description: What concrete need or public contract is missing?
+    validations:
+      required: true
+  - type: textarea
+    id: users
+    attributes:
+      label: Affected users
+      description: Citizen, operator, planner, engineer, authority, integrator, contributor, or other.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: Proposed observable contract
+      description: What should a caller or user be able to rely on?
+    validations:
+      required: true
+  - type: textarea
+    id: authority
+    attributes:
+      label: Human authority / privacy impact
+      description: Describe authority, review, PII, geospatial sensitivity, or governance implications.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / prior art
+      description: Prefer standards, measurements, reproducible experiments, or public references.
+  - type: textarea
+    id: slice
+    attributes:
+      label: Smallest vertical slice
+      description: What is the smallest end-to-end experiment that can validate the proposal?
+    validations:
+      required: true

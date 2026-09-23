@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security policy
+    url: https://github.com/ChicoDotNet/SmartCities/security/policy
+    about: Read private-reporting guidance before disclosing a security vulnerability.
+  - name: Contribution guide
+    url: https://github.com/ChicoDotNet/SmartCities/blob/dev/CONTRIBUTING.md
+    about: Read contribution, DCO, branch, language, and technology rules before a large change.

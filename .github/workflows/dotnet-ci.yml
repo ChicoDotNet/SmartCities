@@ -1,0 +1,45 @@
+name: .NET CI
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+    paths:
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.props'
+      - '**/*.targets'
+      - '**/*.slnx'
+      - 'global.json'
+      - 'scripts/validate-branch-name.mjs'
+      - '.github/workflows/dotnet-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Validate working branch
+        if: github.event_name == 'pull_request' && github.head_ref != 'main' && github.actor != 'dependabot[bot]'
+        run: node scripts/validate-branch-name.mjs "$GITHUB_HEAD_REF"
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore SmartCities.slnx
+
+      - name: Build
+        run: dotnet build SmartCities.slnx --configuration Release --no-restore
+
+      - name: Pack class library
+        run: dotnet pack src/SmartCities.Core/SmartCities.Core.csproj --configuration Release --no-build --output artifacts/nuget
