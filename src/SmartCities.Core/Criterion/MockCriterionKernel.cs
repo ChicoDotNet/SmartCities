@@ -22,7 +22,8 @@ public sealed class MockCriterionKernel : ICriterionKernel
       CriterionRecommendation.RequiresHumanReview,
       requiresHumanReview: true,
       request.EvidenceReferenceIds,
-      "Mock criterion evaluation completed. An accountable human review is required before final civic disposition.");
+      "Mock criterion evaluation completed. An accountable human review is required before final civic disposition.",
+      evidenceCaseId: request.EvidenceCaseId);
 
     return Task.FromResult(trace);
   }

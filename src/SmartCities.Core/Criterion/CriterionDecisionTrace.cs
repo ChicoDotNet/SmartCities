@@ -10,6 +10,7 @@ public sealed record CriterionDecisionTrace
 {
   private CriterionDecisionTrace(
     string requestId,
+    string? evidenceCaseId,
     string recommendationId,
     CriterionRecommendation recommendation,
     bool requiresHumanReview,
@@ -17,6 +18,7 @@ public sealed record CriterionDecisionTrace
     string publicExplanation)
   {
     RequestId = requestId;
+    EvidenceCaseId = evidenceCaseId;
     RecommendationId = recommendationId;
     Recommendation = recommendation;
     RequiresHumanReview = requiresHumanReview;
@@ -26,6 +28,12 @@ public sealed record CriterionDecisionTrace
 
   /// <summary>Gets the request identifier evaluated by the provider.</summary>
   public string RequestId { get; }
+
+  /// <summary>
+  /// Gets the originating Evidence Case identifier when the request was case-bound,
+  /// or <see langword="null"/> for a generic request.
+  /// </summary>
+  public string? EvidenceCaseId { get; }
 
   /// <summary>Gets the stable identifier of the provider recommendation.</summary>
   public string RecommendationId { get; }
@@ -49,6 +57,7 @@ public sealed record CriterionDecisionTrace
   /// <param name="requiresHumanReview">Whether human review is required before final disposition.</param>
   /// <param name="evidenceReferenceIds">Evidence identifiers represented by the trace.</param>
   /// <param name="publicExplanation">Non-empty public-safe explanation.</param>
+  /// <param name="evidenceCaseId">Optional originating Evidence Case identifier.</param>
   /// <returns>An immutable criterion trace.</returns>
   public static CriterionDecisionTrace Create(
     string requestId,
@@ -56,12 +65,18 @@ public sealed record CriterionDecisionTrace
     CriterionRecommendation recommendation,
     bool requiresHumanReview,
     IEnumerable<string> evidenceReferenceIds,
-    string publicExplanation)
+    string publicExplanation,
+    string? evidenceCaseId = null)
   {
     ArgumentException.ThrowIfNullOrWhiteSpace(requestId);
     ArgumentException.ThrowIfNullOrWhiteSpace(recommendationId);
     ArgumentNullException.ThrowIfNull(evidenceReferenceIds);
     ArgumentException.ThrowIfNullOrWhiteSpace(publicExplanation);
+
+    if (evidenceCaseId is not null)
+    {
+      ArgumentException.ThrowIfNullOrWhiteSpace(evidenceCaseId);
+    }
 
     var evidence = evidenceReferenceIds.ToArray();
 
@@ -74,10 +89,11 @@ public sealed record CriterionDecisionTrace
 
     return new CriterionDecisionTrace(
       requestId,
+      evidenceCaseId,
       recommendationId,
       recommendation,
       requiresHumanReview,
-      evidence,
+      Array.AsReadOnly(evidence),
       publicExplanation);
   }
 }
