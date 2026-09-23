@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/SmartCities.Core/SmartCities.Core.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SmartCities.Core.Tests/SmartCities.Core.Tests.csproj" />
+  </Folder>
 </Solution>
