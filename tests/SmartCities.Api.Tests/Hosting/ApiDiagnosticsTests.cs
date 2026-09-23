@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SmartCities.Api.Citizens;
 using SmartCities.Api.Hosting;
 using Xunit;
 
@@ -110,7 +111,10 @@ public sealed class ApiDiagnosticsTests
     var builder = WebApplication.CreateBuilder();
     builder.WebHost.UseTestServer();
 
-    builder.Services.AddSmartCitiesApiControllers();
+    builder.Services
+      .AddSmartCitiesApiControllers()
+      .AddApplicationPart(
+        typeof(CitizenMobilityReportsController).Assembly);
     builder.Services.AddSmartCitiesApiDiagnostics();
     builder.Services
       .AddHealthChecks()
