@@ -8,6 +8,7 @@ builder.Services.AddSmartCitiesApiControllers();
 
 var app = builder.Build();
 
+app.UseRequestLocalization();
 app.MapControllers();
 
 app.Run();

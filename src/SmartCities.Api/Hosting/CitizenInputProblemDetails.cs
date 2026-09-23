@@ -1,4 +1,6 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
+using SmartCities.Api.Localization;
 
 namespace SmartCities.Api.Hosting;
 
@@ -9,6 +11,19 @@ internal static class CitizenInputProblemDetails
 
   internal const string ProblemCode =
     "invalid_input";
+
+  private const string InvalidTitleKey =
+    "problem.invalidInput.title";
+
+  private const string InvalidDetailKey =
+    "problem.invalidInput.detail";
+
+  private static readonly ResxApiLocalizationCatalog DefaultCatalog =
+    new();
+
+  private static readonly CultureInfo NeutralEnglish =
+    CultureInfo.GetCultureInfo(
+      ResxApiLocalizationCatalog.NeutralEnglishCulture);
 
   private static readonly HashSet<string> KnownDomainInputParameters =
     new(StringComparer.Ordinal)
@@ -32,9 +47,20 @@ internal static class CitizenInputProblemDetails
     && KnownDomainInputParameters.Contains(parameterName);
 
   internal static ProblemDetails Create(
-    IEnumerable<string> fields)
+    IEnumerable<string> fields) =>
+    Create(
+      fields,
+      DefaultCatalog,
+      NeutralEnglish);
+
+  internal static ProblemDetails Create(
+    IEnumerable<string> fields,
+    IApiLocalizationCatalog catalog,
+    CultureInfo culture)
   {
     ArgumentNullException.ThrowIfNull(fields);
+    ArgumentNullException.ThrowIfNull(catalog);
+    ArgumentNullException.ThrowIfNull(culture);
 
     var normalizedFields = fields
       .Where(static field => !string.IsNullOrWhiteSpace(field))
@@ -46,9 +72,13 @@ internal static class CitizenInputProblemDetails
     var problem = new ProblemDetails
     {
       Type = ProblemType,
-      Title = "Invalid citizen input.",
+      Title = catalog.GetString(
+        InvalidTitleKey,
+        culture),
       Status = StatusCodes.Status400BadRequest,
-      Detail = "One or more supplied values are invalid.",
+      Detail = catalog.GetString(
+        InvalidDetailKey,
+        culture),
     };
 
     problem.Extensions["code"] = ProblemCode;

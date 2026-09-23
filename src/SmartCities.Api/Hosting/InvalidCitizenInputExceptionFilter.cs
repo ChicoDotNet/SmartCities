@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using SmartCities.Api.Localization;
 
 namespace SmartCities.Api.Hosting;
 
@@ -12,6 +13,29 @@ namespace SmartCities.Api.Hosting;
 /// </remarks>
 public sealed class InvalidCitizenInputExceptionFilter : IExceptionFilter
 {
+  private readonly IApiLocalizationCatalog catalog;
+
+  /// <summary>
+  /// Initializes a filter with the neutral-English .resx catalog.
+  /// </summary>
+  /// <remarks>
+  /// This constructor preserves direct filter construction for lightweight tests and tooling.
+  /// Dependency-injection composition uses the catalog-aware constructor.
+  /// </remarks>
+  public InvalidCitizenInputExceptionFilter()
+    : this(new ResxApiLocalizationCatalog())
+  {
+  }
+
+  /// <summary>Initializes a filter with the configured API localization catalog.</summary>
+  /// <param name="catalog">API localization catalog.</param>
+  public InvalidCitizenInputExceptionFilter(
+    IApiLocalizationCatalog catalog)
+  {
+    ArgumentNullException.ThrowIfNull(catalog);
+    this.catalog = catalog;
+  }
+
   /// <inheritdoc />
   public void OnException(ExceptionContext context)
   {
@@ -26,7 +50,10 @@ public sealed class InvalidCitizenInputExceptionFilter : IExceptionFilter
 
     context.Result = new BadRequestObjectResult(
       CitizenInputProblemDetails.Create(
-        [argumentException.ParamName!]));
+        [argumentException.ParamName!],
+        catalog,
+        ApiRequestCulture.GetUiCulture(
+          context.HttpContext)));
 
     context.ExceptionHandled = true;
   }
