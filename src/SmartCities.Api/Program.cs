@@ -9,6 +9,7 @@ builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
 builder.Services.AddSmartCitiesApiObservability(
   builder.Configuration);
+builder.Services.AddSmartCitiesAuthenticationCanonicalization();
 builder.Services.AddSmartCitiesAuthorization();
 
 var app = builder.Build();
@@ -17,6 +18,8 @@ await app.ApplySmartCitiesDevelopmentDatabaseAsync();
 
 app.UseSmartCitiesRequestObservability();
 app.UseRequestLocalization();
+app.UseAuthentication();
+app.UseSmartCitiesAuthenticationCanonicalization();
 app.UseAuthorization();
 
 app.MapControllers();
