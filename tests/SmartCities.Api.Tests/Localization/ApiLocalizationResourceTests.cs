@@ -82,6 +82,56 @@ public sealed class ApiLocalizationResourceTests
   }
 
   [Fact]
+  public void Citizen_mobility_ui_copy_is_available_in_neutral_english_and_es_mx()
+  {
+    var catalog = new ResxApiLocalizationCatalog();
+
+    var english = catalog.GetResources("en");
+    var spanish = catalog.GetResources("es-MX");
+
+    Assert.Equal(
+      "Report a mobility problem",
+      english.Resources["citizen.mobilityReport.title"]);
+    Assert.Equal(
+      "Reportar un problema de movilidad",
+      spanish.Resources["citizen.mobilityReport.title"]);
+
+    Assert.Equal(
+      "Location",
+      english.Resources["citizen.mobilityReport.location.label"]);
+    Assert.Equal(
+      "Ubicación",
+      spanish.Resources["citizen.mobilityReport.location.label"]);
+
+    Assert.Equal(
+      "Submit report",
+      english.Resources["citizen.mobilityReport.submit"]);
+    Assert.Equal(
+      "Enviar reporte",
+      spanish.Resources["citizen.mobilityReport.submit"]);
+
+    Assert.Equal(
+      "Pedestrian safety",
+      english.Resources["citizen.mobilityReport.category.pedestrianSafety"]);
+    Assert.Equal(
+      "Seguridad peatonal",
+      spanish.Resources["citizen.mobilityReport.category.pedestrianSafety"]);
+  }
+
+  [Fact]
+  public void Supported_locales_expose_the_same_public_resource_keys()
+  {
+    var catalog = new ResxApiLocalizationCatalog();
+
+    var english = catalog.GetResources("en");
+    var spanish = catalog.GetResources("es-MX");
+
+    Assert.Equal(
+      english.Resources.Keys.Order(StringComparer.Ordinal),
+      spanish.Resources.Keys.Order(StringComparer.Ordinal));
+  }
+
+  [Fact]
   public void Invalid_input_problem_details_use_the_negotiated_es_mx_ui_culture()
   {
     var services = new ServiceCollection();
