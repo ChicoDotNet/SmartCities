@@ -41,5 +41,8 @@ jobs:
       - name: Build
         run: dotnet build SmartCities.slnx --configuration Release --no-restore
 
+      - name: Test
+        run: dotnet test SmartCities.slnx --configuration Release --no-build
+
       - name: Pack class library
         run: dotnet pack src/SmartCities.Core/SmartCities.Core.csproj --configuration Release --no-build --output artifacts/nuget
