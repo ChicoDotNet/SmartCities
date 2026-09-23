@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/SmartCities.Application/SmartCities.Application.csproj" />
+    <Project Path="src/SmartCities.Composition/SmartCities.Composition.csproj" />
     <Project Path="src/SmartCities.Core/SmartCities.Core.csproj" />
     <Project Path="src/SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
     <Project Path="src/SmartCities.Infrastructure.PostgreSql/SmartCities.Infrastructure.PostgreSql.csproj" />
@@ -8,6 +9,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/SmartCities.Application.Tests/SmartCities.Application.Tests.csproj" />
+    <Project Path="tests/SmartCities.Composition.Tests/SmartCities.Composition.Tests.csproj" />
     <Project Path="tests/SmartCities.Core.Tests/SmartCities.Core.Tests.csproj" />
     <Project Path="tests/SmartCities.Infrastructure.Tests/SmartCities.Infrastructure.Tests.csproj" />
     <Project Path="tests/SmartCities.Infrastructure.PostgreSql.Tests/SmartCities.Infrastructure.PostgreSql.Tests.csproj" />
