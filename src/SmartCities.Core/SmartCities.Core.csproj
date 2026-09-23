@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SmartCities.Core</AssemblyName>
+    <RootNamespace>SmartCities</RootNamespace>
+    <Description>Open-source domain contracts and primitives for the SmartCities suite.</Description>
+    <PackageId>SmartCities.Core</PackageId>
+    <PackageTags>smart-cities;urban;mobility;civic-tech;dotnet</PackageTags>
+    <IsPackable>true</IsPackable>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+  </ItemGroup>
+</Project>
