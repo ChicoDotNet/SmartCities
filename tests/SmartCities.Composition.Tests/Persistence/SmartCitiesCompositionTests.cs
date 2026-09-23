@@ -1,0 +1,99 @@
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Application.Citizens;
+using SmartCities.Composition;
+using SmartCities.Infrastructure.Persistence;
+using Xunit;
+
+namespace SmartCities.Composition.Tests.Persistence;
+
+public sealed class SmartCitiesCompositionTests
+{
+  [Theory]
+  [InlineData(DbProvider.SqlServer, "Microsoft.EntityFrameworkCore.SqlServer", "SmartCities.Infrastructure.SqlServer")]
+  [InlineData(DbProvider.PostgreSql, "Npgsql.EntityFrameworkCore.PostgreSQL", "SmartCities.Infrastructure.PostgreSql")]
+  public void Composition_selects_the_requested_provider_and_its_migration_assembly(
+    DbProvider provider,
+    string expectedProviderName,
+    string expectedMigrationsAssembly)
+  {
+    var services = new ServiceCollection();
+
+    services.AddSmartCities(
+      SmartCitiesPersistenceOptions.Create(
+        provider,
+        ConnectionStringFor(provider)));
+
+    using var serviceProvider = services.BuildServiceProvider();
+    using var scope = serviceProvider.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<SmartCitiesDbContext>();
+
+    Assert.Equal(expectedProviderName, context.Database.ProviderName);
+    Assert.Equal(
+      expectedMigrationsAssembly,
+      context.GetService<IMigrationsAssembly>().Assembly.GetName().Name);
+  }
+
+  [Theory]
+  [InlineData(DbProvider.SqlServer)]
+  [InlineData(DbProvider.PostgreSql)]
+  public void Composition_registers_service_repository_and_db_context_as_scoped(
+    DbProvider provider)
+  {
+    var services = new ServiceCollection();
+
+    services.AddSmartCities(
+      SmartCitiesPersistenceOptions.Create(
+        provider,
+        ConnectionStringFor(provider)));
+
+    Assert.Contains(
+      services,
+      descriptor =>
+        descriptor.ServiceType == typeof(ICitizenMobilityReportService)
+        && descriptor.ImplementationType == typeof(CitizenMobilityReportService)
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
+        descriptor.ServiceType == typeof(ICitizenMobilityReportRepository)
+        && descriptor.ImplementationType?.Name == "EfCitizenMobilityReportRepository"
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
+        descriptor.ServiceType == typeof(SmartCitiesDbContext)
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+  }
+
+  [Fact]
+  public void Persistence_options_reject_an_unsupported_provider()
+  {
+    Assert.Throws<ArgumentOutOfRangeException>(
+      () => SmartCitiesPersistenceOptions.Create(
+        (DbProvider)999,
+        "Server=localhost"));
+  }
+
+  [Fact]
+  public void Persistence_options_reject_a_missing_connection_string()
+  {
+    Assert.Throws<ArgumentException>(
+      () => SmartCitiesPersistenceOptions.Create(
+        DbProvider.SqlServer,
+        " "));
+  }
+
+  private static string ConnectionStringFor(DbProvider provider) =>
+    provider switch
+    {
+      DbProvider.SqlServer =>
+        "Server=localhost;Database=SmartCitiesContract;User Id=sa;Password=NotARealPassword1!;TrustServerCertificate=True",
+      DbProvider.PostgreSql =>
+        "Host=localhost;Database=smartcities_contract;Username=postgres;Password=NotARealPassword1!",
+      _ => throw new ArgumentOutOfRangeException(nameof(provider), provider, null),
+    };
+}

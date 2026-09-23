@@ -22,6 +22,22 @@ public static class SqlServerPersistence
     string connectionString)
   {
     ArgumentNullException.ThrowIfNull(builder);
+
+    Configure((DbContextOptionsBuilder)builder, connectionString);
+    return builder;
+  }
+
+  /// <summary>
+  /// Configures a host-supplied non-generic options builder for SQL Server and this provider's migrations assembly.
+  /// </summary>
+  /// <param name="builder">DbContext options builder supplied by dependency injection composition.</param>
+  /// <param name="connectionString">Non-empty SQL Server connection string.</param>
+  /// <returns>The same builder for composition chaining.</returns>
+  public static DbContextOptionsBuilder Configure(
+    DbContextOptionsBuilder builder,
+    string connectionString)
+  {
+    ArgumentNullException.ThrowIfNull(builder);
     ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
     var migrationsAssembly = typeof(SqlServerPersistence).Assembly.GetName().Name
