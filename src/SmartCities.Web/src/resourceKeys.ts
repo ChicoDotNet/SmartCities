@@ -1,0 +1,25 @@
+export const resourceKeys = {
+  appTitle: 'app.title',
+  title: 'citizen.mobilityReport.title',
+  intro: 'citizen.mobilityReport.intro',
+  categoryLabel: 'citizen.mobilityReport.category.label',
+  categoryPlaceholder: 'citizen.mobilityReport.category.placeholder',
+  pedestrianSafety: 'citizen.mobilityReport.category.pedestrianSafety',
+  publicTransport: 'citizen.mobilityReport.category.publicTransport',
+  roadSafety: 'citizen.mobilityReport.category.roadSafety',
+  locationLabel: 'citizen.mobilityReport.location.label',
+  locationPlaceholder: 'citizen.mobilityReport.location.placeholder',
+  descriptionLabel: 'citizen.mobilityReport.description.label',
+  descriptionPlaceholder: 'citizen.mobilityReport.description.placeholder',
+  evidenceNote: 'citizen.mobilityReport.evidence.note',
+  submit: 'citizen.mobilityReport.submit',
+  submitting: 'citizen.mobilityReport.submitting',
+  offline: 'citizen.mobilityReport.offline',
+  submitError: 'citizen.mobilityReport.submitError',
+  successCreated: 'citizen.mobilityReport.success.created',
+  successExisting: 'citizen.mobilityReport.success.existing',
+  caseLabel: 'citizen.mobilityReport.case.label',
+} as const;
+
+export type ResourceKey =
+  (typeof resourceKeys)[keyof typeof resourceKeys];

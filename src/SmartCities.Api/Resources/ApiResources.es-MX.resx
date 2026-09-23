@@ -12,10 +12,70 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="app.title" xml:space="preserve">
+    <value>Ventanilla Digital Ciudadana</value>
+  </data>
   <data name="problem.invalidInput.title" xml:space="preserve">
     <value>Datos ciudadanos no válidos.</value>
   </data>
   <data name="problem.invalidInput.detail" xml:space="preserve">
     <value>Uno o más valores proporcionados no son válidos.</value>
+  </data>
+  <data name="citizen.mobilityReport.title" xml:space="preserve">
+    <value>Reportar un problema de movilidad</value>
+  </data>
+  <data name="citizen.mobilityReport.intro" xml:space="preserve">
+    <value>Cuéntanos qué está ocurriendo para que la ciudad pueda revisar la evidencia y responder.</value>
+  </data>
+  <data name="citizen.mobilityReport.category.label" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="citizen.mobilityReport.category.placeholder" xml:space="preserve">
+    <value>Selecciona una categoría</value>
+  </data>
+  <data name="citizen.mobilityReport.category.pedestrianSafety" xml:space="preserve">
+    <value>Seguridad peatonal</value>
+  </data>
+  <data name="citizen.mobilityReport.category.publicTransport" xml:space="preserve">
+    <value>Transporte público</value>
+  </data>
+  <data name="citizen.mobilityReport.category.roadSafety" xml:space="preserve">
+    <value>Seguridad vial</value>
+  </data>
+  <data name="citizen.mobilityReport.location.label" xml:space="preserve">
+    <value>Ubicación</value>
+  </data>
+  <data name="citizen.mobilityReport.location.placeholder" xml:space="preserve">
+    <value>Calle, cruce, punto de referencia o ubicación</value>
+  </data>
+  <data name="citizen.mobilityReport.description.label" xml:space="preserve">
+    <value>¿Qué está ocurriendo?</value>
+  </data>
+  <data name="citizen.mobilityReport.description.placeholder" xml:space="preserve">
+    <value>Describe el problema de movilidad y a quién afecta.</value>
+  </data>
+  <data name="citizen.mobilityReport.evidence.note" xml:space="preserve">
+    <value>Podrás agregar evidencia en un paso posterior.</value>
+  </data>
+  <data name="citizen.mobilityReport.submit" xml:space="preserve">
+    <value>Enviar reporte</value>
+  </data>
+  <data name="citizen.mobilityReport.submitting" xml:space="preserve">
+    <value>Enviando…</value>
+  </data>
+  <data name="citizen.mobilityReport.offline" xml:space="preserve">
+    <value>Estás sin conexión. Vuelve a conectarte antes de enviar este reporte.</value>
+  </data>
+  <data name="citizen.mobilityReport.submitError" xml:space="preserve">
+    <value>No pudimos enviar el reporte. Inténtalo de nuevo.</value>
+  </data>
+  <data name="citizen.mobilityReport.success.created" xml:space="preserve">
+    <value>Recibimos tu reporte y se creó un caso.</value>
+  </data>
+  <data name="citizen.mobilityReport.success.existing" xml:space="preserve">
+    <value>Este reporte ya había sido recibido. Este es su caso.</value>
+  </data>
+  <data name="citizen.mobilityReport.case.label" xml:space="preserve">
+    <value>Caso</value>
   </data>
 </root>

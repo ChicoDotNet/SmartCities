@@ -1,0 +1,8 @@
+{
+  "name": "SmartCities Digital Town Hall",
+  "short_name": "SmartCities",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff"
+}
