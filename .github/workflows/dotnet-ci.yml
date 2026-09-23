@@ -28,7 +28,7 @@ jobs:
           persist-credentials: false
 
       - name: Validate working branch
-        if: github.event_name == 'pull_request' && github.head_ref != 'main' && github.actor != 'dependabot[bot]'
+        if: github.event_name == 'pull_request' && github.head_ref != 'main' && github.head_ref != 'dev' && github.actor != 'dependabot[bot]'
         run: node scripts/validate-branch-name.mjs "$GITHUB_HEAD_REF"
 
       - uses: actions/setup-dotnet@v6
