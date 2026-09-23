@@ -88,6 +88,22 @@ def main() -> None:
     require(ready["status"] == "Healthy", "Readiness is not healthy.")
     require(ready["checks"]["database"] == "Healthy", "Database readiness check is not healthy.")
 
+    build_status, build = request(
+        "GET",
+        "/api/system/build",
+    )
+    require(build_status == 200, f"Expected build 200, got {build_status}: {build}")
+    require(build["serviceName"] == "SmartCities.Api", "Unexpected build service name.")
+    require(bool(build["version"]), "Build version is empty.")
+    require(
+        build["commitSha"] == os.environ["SMARTCITIES_EXPECTED_COMMIT"],
+        "Build commit does not match the running CI revision.",
+    )
+    require(
+        build["buildId"] == os.environ["SMARTCITIES_EXPECTED_BUILD_ID"],
+        "Build ID does not match the running CI job.",
+    )
+
     openapi_status, openapi = request(
         "GET",
         "/openapi/v1.json",
@@ -139,7 +155,7 @@ def main() -> None:
     require(recovered["reportId"] == report_id, "Recovered report ID changed.")
     require(recovered["caseId"] == original_case_id, "Recovered case is not authoritative.")
 
-    print("Local vertical slice verified: live -> ready -> OpenAPI -> create -> replay -> recover.")
+    print("Local vertical slice verified: live -> ready -> build -> OpenAPI -> create -> replay -> recover.")
 
 
 if __name__ == "__main__":

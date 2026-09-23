@@ -49,6 +49,9 @@ public sealed class ApiDiagnosticsTests
       path => path.StartsWith(
         "/api/localization/resources",
         StringComparison.Ordinal));
+    Assert.Contains(
+      "/api/system/build",
+      paths);
   }
 
   [Fact]
@@ -116,6 +119,7 @@ public sealed class ApiDiagnosticsTests
       .AddApplicationPart(
         typeof(CitizenMobilityReportsController).Assembly);
     builder.Services.AddSmartCitiesApiDiagnostics();
+    builder.Services.AddSmartCitiesApiObservability();
     builder.Services
       .AddHealthChecks()
       .AddCheck(
@@ -127,6 +131,7 @@ public sealed class ApiDiagnosticsTests
 
     app.MapControllers();
     app.MapSmartCitiesApiDiagnostics();
+    app.MapSmartCitiesBuildMetadata();
 
     await app.StartAsync(
       TestContext.Current.CancellationToken);
