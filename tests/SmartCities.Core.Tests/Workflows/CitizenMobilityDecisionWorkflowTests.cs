@@ -40,6 +40,15 @@ public sealed class CitizenMobilityDecisionWorkflowTests
       snapshot.CriterionTrace.RecommendationId,
       snapshot.HumanReview.RecommendationId);
     Assert.Equal(
+      snapshot.CriterionRequest.RequestId,
+      snapshot.HumanReview.CriterionRequestId);
+    Assert.Equal(
+      snapshot.EvidenceCase.CaseId,
+      snapshot.HumanReview.EvidenceCaseId);
+    Assert.Equal(
+      snapshot.CriterionTrace.EvidenceReferenceIds,
+      snapshot.HumanReview.EvidenceReferenceIds);
+    Assert.Equal(
       DecisionReviewStatus.PendingHumanReview,
       snapshot.HumanReview.Status);
     Assert.Null(snapshot.HumanReview.Authority);
