@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SmartCities.Infrastructure</AssemblyName>
+    <RootNamespace>SmartCities.Infrastructure</RootNamespace>
+    <Description>EF Core persistence and external infrastructure adapters for SmartCities.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SmartCities.Application/SmartCities.Application.csproj" />
+    <ProjectReference Include="../SmartCities.Core/SmartCities.Core.csproj" />
+  </ItemGroup>
+</Project>
