@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SmartCities.Api.Citizens;
 
 /// <summary>
@@ -10,9 +12,9 @@ namespace SmartCities.Api.Citizens;
 /// <param name="Description">Citizen-provided problem description.</param>
 /// <param name="EvidenceReferences">Optional public-safe evidence references.</param>
 public sealed record CreateCitizenMobilityReportRequest(
-  string ReportId,
-  string CaseId,
-  string CategoryKey,
-  string LocationReference,
-  string Description,
+  [property: Required] string ReportId,
+  [property: Required] string CaseId,
+  [property: Required] string CategoryKey,
+  [property: Required] string LocationReference,
+  [property: Required] string Description,
   IReadOnlyList<CitizenEvidenceReferenceRequest>? EvidenceReferences);
