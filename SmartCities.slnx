@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/SmartCities.Application/SmartCities.Application.csproj" />
     <Project Path="src/SmartCities.Core/SmartCities.Core.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/SmartCities.Application.Tests/SmartCities.Application.Tests.csproj" />
     <Project Path="tests/SmartCities.Core.Tests/SmartCities.Core.Tests.csproj" />
   </Folder>
 </Solution>
