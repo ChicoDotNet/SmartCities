@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <AssemblyName>SmartCities.Api</AssemblyName>
+    <RootNamespace>SmartCities.Api</RootNamespace>
+    <Description>ASP.NET Core API host for SmartCities.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SmartCities.Application/SmartCities.Application.csproj" />
+    <ProjectReference Include="../SmartCities.Core/SmartCities.Core.csproj" />
+  </ItemGroup>
+</Project>
