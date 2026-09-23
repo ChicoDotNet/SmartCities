@@ -111,6 +111,9 @@ export function App() {
     );
   }
 
+  const activeBundle = bundle;
+  const copy = labels;
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -124,7 +127,7 @@ export function App() {
 
     try {
       const result = await submitMobilityReport(
-        bundle.resolvedCulture,
+        activeBundle.resolvedCulture,
         category,
         location.trim(),
         description.trim(),
@@ -135,7 +138,7 @@ export function App() {
       if (error instanceof ApiProblemError && error.problem.detail) {
         setErrorDetail(error.problem.detail);
       } else {
-        setErrorDetail(labels.submitError);
+        setErrorDetail(copy.submitError);
       }
     } finally {
       setSubmitting(false);
