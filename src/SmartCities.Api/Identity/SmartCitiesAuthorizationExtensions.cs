@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using SmartCities.Api.Administration;
+using SmartCities.Application.FeatureFlags;
 using SmartCities.Identity;
 
 namespace SmartCities.Api.Identity;
@@ -63,6 +64,24 @@ public static class SmartCitiesAuthorizationExtensions
             policy.RequireClaim(
               SmartCitiesClaimTypes.Permission,
               SmartCitiesPermissions.ManageFeatureFlags);
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageCitizenMobility,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageFeatureFlags);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesFeaturePermissions.Manage(
+                SmartCitiesFeatures.CitizenMobility));
           });
 
         options.AddPolicy(
