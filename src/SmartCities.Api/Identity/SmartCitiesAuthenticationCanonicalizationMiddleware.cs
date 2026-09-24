@@ -155,9 +155,11 @@ public sealed class SmartCitiesAuthenticationCanonicalizationMiddleware
       identity.IdentityProvider,
       identity.SubjectId,
       identity.AuthorityRoles
-        .Concat(grants.AuthorityRoles),
+        .Concat(grants.AuthorityRoles)
+        .Distinct(StringComparer.Ordinal),
       identity.Permissions
-        .Concat(grants.Permissions),
+        .Concat(grants.Permissions)
+        .Distinct(StringComparer.Ordinal),
       identity.EmailAddress);
   }
 }
