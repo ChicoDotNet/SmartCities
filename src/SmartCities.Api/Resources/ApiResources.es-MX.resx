@@ -224,4 +224,15 @@
   <data name="administration.grants.empty" xml:space="preserve"><value>No hay asignaciones persistentes de autorización configuradas.</value></data>
   <data name="administration.grants.noPermission" xml:space="preserve"><value>Tu identidad no tiene permiso para administrar asignaciones persistentes de autorización.</value></data>
   <data name="administration.grants.bootstrapHint" xml:space="preserve"><value>Antes de agregar la primera regla de whitelist, preasigna permisos administrativos al dominio, correo o subject canónico que administrará este Ayuntamiento.</value></data>
+  <data name="administration.audit.title" xml:space="preserve"><value>Auditoría del plano de control</value></data>
+  <data name="administration.audit.intro" xml:space="preserve"><value>Cambios administrativos inmutables recientes de este Ayuntamiento.</value></data>
+  <data name="administration.audit.loading" xml:space="preserve"><value>Cargando historial de auditoría…</value></data>
+  <data name="administration.audit.empty" xml:space="preserve"><value>Aún no se han registrado cambios del plano de control.</value></data>
+  <data name="administration.audit.noPermission" xml:space="preserve"><value>Tu identidad no tiene permiso para consultar el historial de auditoría del plano de control.</value></data>
+  <data name="administration.audit.actor" xml:space="preserve"><value>Actor</value></data>
+  <data name="administration.audit.action" xml:space="preserve"><value>Acción</value></data>
+  <data name="administration.audit.resource" xml:space="preserve"><value>Recurso</value></data>
+  <data name="administration.audit.change" xml:space="preserve"><value>Cambio</value></data>
+  <data name="administration.audit.correlation" xml:space="preserve"><value>Correlación</value></data>
+  <data name="administration.audit.noChangeValue" xml:space="preserve"><value>—</value></data>
 </root>
