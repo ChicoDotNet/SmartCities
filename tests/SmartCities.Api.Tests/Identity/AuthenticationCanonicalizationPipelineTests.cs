@@ -33,6 +33,39 @@ public sealed class AuthenticationCanonicalizationPipelineTests
   }
 
   [Fact]
+  public async Task No_configured_provider_challenges_protected_routes_with_401_instead_of_failing_host_execution()
+  {
+    var builder = WebApplication.CreateBuilder();
+    builder.WebHost.UseTestServer();
+    builder.Services.AddSmartCitiesAuthenticationCanonicalization();
+    builder.Services.AddSmartCitiesAuthorization();
+
+    await using var app = builder.Build();
+
+    app.UseAuthentication();
+    app.UseSmartCitiesAuthenticationCanonicalization();
+    app.UseAuthorization();
+
+    app.MapGet(
+        "/protected-without-provider",
+        static () => Results.Ok())
+      .RequireAuthorization(
+        SmartCitiesPolicies.FinalizeDecisionReview);
+
+    await app.StartAsync(
+      TestContext.Current.CancellationToken);
+
+    using var client = app.GetTestClient();
+    using var response = await client.GetAsync(
+      "/protected-without-provider",
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      HttpStatusCode.Unauthorized,
+      response.StatusCode);
+  }
+
+  [Fact]
   public async Task Authenticated_external_identity_is_replaced_with_canonical_claims_before_authorization()
   {
     await using var app = await StartAsync(

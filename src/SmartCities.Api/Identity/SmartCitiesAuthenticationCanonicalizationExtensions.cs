@@ -19,7 +19,18 @@ public static class SmartCitiesAuthenticationCanonicalizationExtensions
   {
     ArgumentNullException.ThrowIfNull(services);
 
-    services.AddAuthentication();
+    services
+      .AddAuthentication(
+        options =>
+        {
+          options.DefaultChallengeScheme =
+            SmartCitiesNoProviderAuthenticationHandler.SchemeName;
+        })
+      .AddScheme<
+        AuthenticationSchemeOptions,
+        SmartCitiesNoProviderAuthenticationHandler>(
+          SmartCitiesNoProviderAuthenticationHandler.SchemeName,
+          _ => { });
 
     services.TryAddScoped<
       IAuthenticationProviderAdapterResolver,
