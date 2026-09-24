@@ -78,4 +78,43 @@
   <data name="citizen.mobilityReport.case.label" xml:space="preserve">
     <value>Caso</value>
   </data>
+  <data name="authentication.title" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="authentication.intro" xml:space="preserve">
+    <value>Usa cualquiera de los métodos de acceso habilitados para esta instalación de SmartCities.</value>
+  </data>
+  <data name="authentication.loading" xml:space="preserve">
+    <value>Cargando opciones de acceso…</value>
+  </data>
+  <data name="authentication.unavailable" xml:space="preserve">
+    <value>Las opciones de acceso no están disponibles temporalmente.</value>
+  </data>
+  <data name="authentication.noProviders" xml:space="preserve">
+    <value>No hay métodos de acceso habilitados para esta instalación.</value>
+  </data>
+  <data name="authentication.local.userName" xml:space="preserve">
+    <value>Usuario</value>
+  </data>
+  <data name="authentication.local.password" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="authentication.local.submit" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="authentication.local.submitting" xml:space="preserve">
+    <value>Iniciando sesión…</value>
+  </data>
+  <data name="authentication.local.invalidCredentials" xml:space="preserve">
+    <value>El usuario o la contraseña no son válidos.</value>
+  </data>
+  <data name="authentication.genericError" xml:space="preserve">
+    <value>No pudimos completar el acceso. Inténtalo de nuevo.</value>
+  </data>
+  <data name="authentication.success" xml:space="preserve">
+    <value>Tu sesión está iniciada.</value>
+  </data>
+  <data name="authentication.redirect.continueWith" xml:space="preserve">
+    <value>Continuar con</value>
+  </data>
 </root>

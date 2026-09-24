@@ -26,3 +26,15 @@ npm run dev
 ## PWA boundary
 
 The service worker may cache only same-origin GET application-shell resources. Requests under `/api/` and all non-GET requests remain network-only. Citizen report submissions are never queued or replayed by the PWA shell.
+
+## Authentication entry
+
+The product client discovers deployment-enabled sign-in methods from:
+
+```text
+GET /api/authentication/providers
+```
+
+The UI does not assume a fixed identity provider. Local credentials use the API session endpoint; redirect/OIDC providers navigate through the backend challenge endpoint with only a local return URL.
+
+Authentication copy remains in the API `.resx` resources alongside the rest of the product localization surface.
