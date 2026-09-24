@@ -32,6 +32,11 @@ export const resourceKeys = {
   authenticationGenericError: 'authentication.genericError',
   authenticationSuccess: 'authentication.success',
   authenticationContinueWith: 'authentication.redirect.continueWith',
+  authenticationSessionTitle: 'authentication.session.title',
+  authenticationSessionChecking: 'authentication.session.checking',
+  authenticationSessionUnavailable: 'authentication.session.unavailable',
+  authenticationSessionLogout: 'authentication.session.logout',
+  authenticationSessionLoggingOut: 'authentication.session.loggingOut',
 } as const;
 
 export type ResourceKey =

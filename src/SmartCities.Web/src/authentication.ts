@@ -17,6 +17,26 @@ export interface LocalSession {
   authorityRoles: string[];
 }
 
+export interface AnonymousAuthenticationSession {
+  authenticated: false;
+  subjectId: null;
+  identityProvider: null;
+  authorityRoles: [];
+  permissions: [];
+}
+
+export interface AuthenticatedAuthenticationSession {
+  authenticated: true;
+  subjectId: string;
+  identityProvider: string;
+  authorityRoles: string[];
+  permissions: string[];
+}
+
+export type AuthenticationSession =
+  | AnonymousAuthenticationSession
+  | AuthenticatedAuthenticationSession;
+
 export type FetchLike = (
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -61,6 +81,55 @@ export async function loadAuthenticationProviders(
   return payload.map(validateProvider);
 }
 
+export async function loadCurrentSession(
+  fetcher: FetchLike = fetch,
+): Promise<AuthenticationSession> {
+  const response = await fetcher(
+    '/api/authentication/session',
+    {
+      method: 'GET',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new AuthenticationClientError(
+      'authentication_current_session_failed',
+    );
+  }
+
+  const payload = await response.json() as unknown;
+
+  return validateAuthenticationSession(payload);
+}
+
+export async function signOutCurrentSession(
+  fetcher: FetchLike = fetch,
+): Promise<void> {
+  const response = await fetcher(
+    '/api/authentication/session/logout',
+    {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'X-SmartCities-Request': 'browser',
+      },
+    },
+  );
+
+  if (!response.ok) {
+    throw new AuthenticationClientError(
+      'authentication_logout_failed',
+    );
+  }
+}
+
 export async function createLocalSession(
   sessionPath: string,
   userName: string,
@@ -76,6 +145,7 @@ export async function createLocalSession(
   const response = await fetcher(sessionPath, {
     method: 'POST',
     credentials: 'same-origin',
+    cache: 'no-store',
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
@@ -134,6 +204,61 @@ export function buildAuthenticationChallengeUrl(
   });
 
   return `${provider.challengePath}?${query.toString()}`;
+}
+
+function validateAuthenticationSession(
+  value: unknown,
+): AuthenticationSession {
+  if (
+    !isRecord(value)
+    || typeof value.authenticated !== 'boolean'
+    || !isStringArray(value.authorityRoles)
+    || !isStringArray(value.permissions)
+  ) {
+    throw new AuthenticationClientError(
+      'authentication_current_session_contract_invalid',
+    );
+  }
+
+  if (!value.authenticated) {
+    if (
+      value.subjectId !== null
+      || value.identityProvider !== null
+      || value.authorityRoles.length !== 0
+      || value.permissions.length !== 0
+    ) {
+      throw new AuthenticationClientError(
+        'authentication_current_session_contract_invalid',
+      );
+    }
+
+    return {
+      authenticated: false,
+      subjectId: null,
+      identityProvider: null,
+      authorityRoles: [],
+      permissions: [],
+    };
+  }
+
+  const subjectId = stringValue(value.subjectId);
+  const identityProvider = stringValue(
+    value.identityProvider,
+  );
+
+  if (!subjectId || !identityProvider) {
+    throw new AuthenticationClientError(
+      'authentication_current_session_contract_invalid',
+    );
+  }
+
+  return {
+    authenticated: true,
+    subjectId,
+    identityProvider,
+    authorityRoles: [...value.authorityRoles],
+    permissions: [...value.permissions],
+  };
 }
 
 function validateProvider(
@@ -215,11 +340,17 @@ function isLocalSession(
   return isRecord(value)
     && Boolean(stringValue(value.subjectId))
     && Boolean(stringValue(value.identityProvider))
-    && Array.isArray(value.authorityRoles)
-    && value.authorityRoles.every(
-      (role) =>
-        typeof role === 'string'
-        && role.trim().length > 0,
+    && isStringArray(value.authorityRoles);
+}
+
+function isStringArray(
+  value: unknown,
+): value is string[] {
+  return Array.isArray(value)
+    && value.every(
+      (item) =>
+        typeof item === 'string'
+        && item.trim().length > 0,
     );
 }
 

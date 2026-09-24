@@ -117,4 +117,19 @@
   <data name="authentication.redirect.continueWith" xml:space="preserve">
     <value>Continuar con</value>
   </data>
+  <data name="authentication.session.title" xml:space="preserve">
+    <value>Sesión activa</value>
+  </data>
+  <data name="authentication.session.checking" xml:space="preserve">
+    <value>Comprobando sesión…</value>
+  </data>
+  <data name="authentication.session.unavailable" xml:space="preserve">
+    <value>Estado de sesión no disponible</value>
+  </data>
+  <data name="authentication.session.logout" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="authentication.session.loggingOut" xml:space="preserve">
+    <value>Cerrando sesión…</value>
+  </data>
 </root>

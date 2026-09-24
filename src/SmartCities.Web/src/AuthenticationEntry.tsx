@@ -17,8 +17,10 @@ import {
   buildAuthenticationChallengeUrl,
   createLocalSession,
   loadAuthenticationProviders,
+  loadCurrentSession,
+  signOutCurrentSession,
+  type AuthenticatedAuthenticationSession,
   type AuthenticationProviderDiscovery,
-  type LocalSession,
 } from './authentication';
 import {
   text,
@@ -31,10 +33,25 @@ interface AuthenticationEntryProps {
   online: boolean;
 }
 
+type SessionState =
+  | { status: 'checking' }
+  | { status: 'anonymous' }
+  | {
+      status: 'authenticated';
+      session: AuthenticatedAuthenticationSession;
+    }
+  | { status: 'unavailable' };
+
 export function AuthenticationEntry({
   bundle,
   online,
 }: AuthenticationEntryProps) {
+  const [sessionState, setSessionState] =
+    useState<SessionState>(
+      online
+        ? { status: 'checking' }
+        : { status: 'unavailable' },
+    );
   const [providers, setProviders] = useState<
     AuthenticationProviderDiscovery[] | null
   >(null);
@@ -43,13 +60,71 @@ export function AuthenticationEntry({
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [signingIn, setSigningIn] = useState(false);
-  const [session, setSession] =
-    useState<LocalSession | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
   const [localError, setLocalError] =
     useState<string | null>(null);
 
   useEffect(() => {
+    if (!online) {
+      setSessionState({ status: 'unavailable' });
+      setProviders(null);
+      setDiscoveryFailed(false);
+      return;
+    }
+
     const controller = new AbortController();
+
+    setSessionState({ status: 'checking' });
+    setProviders(null);
+    setDiscoveryFailed(false);
+    setLocalError(null);
+
+    void loadCurrentSession(
+      (input, init) =>
+        fetch(input, {
+          ...init,
+          signal: controller.signal,
+        }),
+    )
+      .then((session) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setSessionState(
+          session.authenticated
+            ? {
+                status: 'authenticated',
+                session,
+              }
+            : { status: 'anonymous' },
+        );
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setSessionState({
+            status: 'unavailable',
+          });
+        }
+      });
+
+    return () => controller.abort();
+  }, [online]);
+
+  useEffect(() => {
+    if (
+      !online
+      || sessionState.status !== 'anonymous'
+    ) {
+      setProviders(null);
+      setDiscoveryFailed(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setProviders(null);
+    setDiscoveryFailed(false);
 
     void loadAuthenticationProviders(
       (input, init) =>
@@ -72,7 +147,7 @@ export function AuthenticationEntry({
       });
 
     return () => controller.abort();
-  }, []);
+  }, [online, sessionState.status]);
 
   const labels = useMemo(
     () => ({
@@ -92,16 +167,44 @@ export function AuthenticationEntry({
       genericError: text(bundle, resourceKeys.authenticationGenericError),
       success: text(bundle, resourceKeys.authenticationSuccess),
       continueWith: text(bundle, resourceKeys.authenticationContinueWith),
+      sessionTitle: text(
+        bundle,
+        resourceKeys.authenticationSessionTitle,
+      ),
+      sessionChecking: text(
+        bundle,
+        resourceKeys.authenticationSessionChecking,
+      ),
+      sessionUnavailable: text(
+        bundle,
+        resourceKeys.authenticationSessionUnavailable,
+      ),
+      logout: text(
+        bundle,
+        resourceKeys.authenticationSessionLogout,
+      ),
+      loggingOut: text(
+        bundle,
+        resourceKeys.authenticationSessionLoggingOut,
+      ),
     }),
     [bundle],
   );
 
-  const localProvider = providers?.find(
-    (provider) => provider.loginMode === 'credentials',
-  );
-  const redirectProviders = providers?.filter(
-    (provider) => provider.loginMode === 'redirect',
-  ) ?? [];
+  const localProvider =
+    sessionState.status === 'anonymous'
+      ? providers?.find(
+          (provider) =>
+            provider.loginMode === 'credentials',
+        )
+      : undefined;
+  const redirectProviders =
+    sessionState.status === 'anonymous'
+      ? providers?.filter(
+          (provider) =>
+            provider.loginMode === 'redirect',
+        ) ?? []
+      : [];
 
   async function handleLocalSubmit(
     event: FormEvent<HTMLFormElement>,
@@ -110,6 +213,7 @@ export function AuthenticationEntry({
 
     if (
       !online
+      || sessionState.status !== 'anonymous'
       || !localProvider?.sessionPath
       || !userName.trim()
       || !password
@@ -121,13 +225,26 @@ export function AuthenticationEntry({
     setLocalError(null);
 
     try {
-      const authenticated = await createLocalSession(
+      await createLocalSession(
         localProvider.sessionPath,
         userName.trim(),
         password,
       );
 
-      setSession(authenticated);
+      const authoritative =
+        await loadCurrentSession();
+
+      if (!authoritative.authenticated) {
+        throw new AuthenticationClientError(
+          'authentication_session_not_established',
+        );
+      }
+
+      setSessionState({
+        status: 'authenticated',
+        session: authoritative,
+      });
+      setUserName('');
     } catch (error) {
       if (
         error instanceof AuthenticationClientError
@@ -143,10 +260,44 @@ export function AuthenticationEntry({
     }
   }
 
+  async function handleLogout() {
+    if (
+      !online
+      || sessionState.status !== 'authenticated'
+    ) {
+      return;
+    }
+
+    setSigningOut(true);
+    setLocalError(null);
+
+    try {
+      await signOutCurrentSession();
+
+      const authoritative =
+        await loadCurrentSession();
+
+      if (authoritative.authenticated) {
+        throw new AuthenticationClientError(
+          'authentication_logout_not_effective',
+        );
+      }
+
+      setSessionState({ status: 'anonymous' });
+    } catch {
+      setLocalError(labels.genericError);
+    } finally {
+      setSigningOut(false);
+    }
+  }
+
   function handleRedirect(
     provider: AuthenticationProviderDiscovery,
   ) {
-    if (!online) {
+    if (
+      !online
+      || sessionState.status !== 'anonymous'
+    ) {
       return;
     }
 
@@ -165,26 +316,36 @@ export function AuthenticationEntry({
     }
   }
 
+  const title =
+    sessionState.status === 'authenticated'
+      ? labels.sessionTitle
+      : sessionState.status === 'checking'
+        ? labels.sessionChecking
+        : sessionState.status === 'unavailable'
+          ? labels.sessionUnavailable
+          : labels.title;
+
   return (
     <div className="authentication-card">
       <div className="d-flex flex-column gap-2">
-        <Title2>{labels.title}</Title2>
-        <Text size={300}>
-          {labels.intro}
-        </Text>
+        <Title2>{title}</Title2>
+        {sessionState.status === 'anonymous' && (
+          <Text size={300}>
+            {labels.intro}
+          </Text>
+        )}
       </div>
 
-      {providers === null && (
+      {sessionState.status === 'checking' && (
         <div
           className="authentication-loading"
           role="status"
         >
           <Spinner size="tiny" />
-          <Text size={300}>{labels.loading}</Text>
         </div>
       )}
 
-      {discoveryFailed && (
+      {sessionState.status === 'unavailable' && (
         <div
           role="alert"
           className="status-message mt-3"
@@ -193,7 +354,29 @@ export function AuthenticationEntry({
         </div>
       )}
 
-      {providers !== null
+      {sessionState.status === 'anonymous'
+        && providers === null && (
+          <div
+            className="authentication-loading"
+            role="status"
+          >
+            <Spinner size="tiny" />
+            <Text size={300}>{labels.loading}</Text>
+          </div>
+        )}
+
+      {sessionState.status === 'anonymous'
+        && discoveryFailed && (
+          <div
+            role="alert"
+            className="status-message mt-3"
+          >
+            {labels.unavailable}
+          </div>
+        )}
+
+      {sessionState.status === 'anonymous'
+        && providers !== null
         && !discoveryFailed
         && providers.length === 0 && (
           <div
@@ -204,7 +387,7 @@ export function AuthenticationEntry({
           </div>
         )}
 
-      {session && (
+      {sessionState.status === 'authenticated' && (
         <div
           role="status"
           className="status-message mt-3"
@@ -213,78 +396,97 @@ export function AuthenticationEntry({
             {labels.success}
           </Text>
           <Text block size={300}>
-            {session.subjectId}
+            {sessionState.session.subjectId}
           </Text>
-        </div>
-      )}
-
-      {!session && localProvider && (
-        <form
-          className="authentication-local-form mt-4"
-          onSubmit={handleLocalSubmit}
-        >
-          <Field label={labels.userName} required>
-            <Input
-              autoComplete="username"
-              value={userName}
-              onChange={(_, data) =>
-                setUserName(data.value)}
-            />
-          </Field>
-
-          <Field label={labels.password} required>
-            <Input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(_, data) =>
-                setPassword(data.value)}
-            />
-          </Field>
-
           {localError && (
-            <div
-              role="alert"
-              className="status-message"
-            >
+            <Text block role="alert" size={300}>
               {localError}
-            </div>
+            </Text>
           )}
-
           <Button
-            appearance="primary"
-            type="submit"
-            disabled={
-              signingIn
-              || !online
-              || !userName.trim()
-              || !password
-            }
+            className="mt-3"
+            appearance="secondary"
+            disabled={signingOut || !online}
+            onClick={() => void handleLogout()}
           >
-            {signingIn
-              ? labels.localSubmitting
-              : labels.localSubmit}
+            {signingOut
+              ? labels.loggingOut
+              : labels.logout}
           </Button>
-        </form>
-      )}
-
-      {redirectProviders.length > 0 && (
-        <div
-          className="authentication-provider-list mt-4"
-          aria-label={labels.title}
-        >
-          {redirectProviders.map((provider) => (
-            <Button
-              key={provider.providerId}
-              appearance="secondary"
-              disabled={!online}
-              onClick={() => handleRedirect(provider)}
-            >
-              {labels.continueWith} {provider.displayName}
-            </Button>
-          ))}
         </div>
       )}
+
+      {sessionState.status === 'anonymous'
+        && localProvider && (
+          <form
+            className="authentication-local-form mt-4"
+            onSubmit={handleLocalSubmit}
+          >
+            <Field label={labels.userName} required>
+              <Input
+                autoComplete="username"
+                value={userName}
+                onChange={(_, data) =>
+                  setUserName(data.value)}
+              />
+            </Field>
+
+            <Field label={labels.password} required>
+              <Input
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(_, data) =>
+                  setPassword(data.value)}
+              />
+            </Field>
+
+            {localError && (
+              <div
+                role="alert"
+                className="status-message"
+              >
+                {localError}
+              </div>
+            )}
+
+            <Button
+              appearance="primary"
+              type="submit"
+              disabled={
+                signingIn
+                || !online
+                || !userName.trim()
+                || !password
+              }
+            >
+              {signingIn
+                ? labels.localSubmitting
+                : labels.localSubmit}
+            </Button>
+          </form>
+        )}
+
+      {sessionState.status === 'anonymous'
+        && redirectProviders.length > 0 && (
+          <div
+            className="authentication-provider-list mt-4"
+            aria-label={labels.title}
+          >
+            {redirectProviders.map((provider) => (
+              <Button
+                key={provider.providerId}
+                appearance="secondary"
+                disabled={!online}
+                onClick={() =>
+                  handleRedirect(provider)}
+              >
+                {labels.continueWith}{' '}
+                {provider.displayName}
+              </Button>
+            ))}
+          </div>
+        )}
     </div>
   );
 }
