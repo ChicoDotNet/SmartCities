@@ -46,4 +46,10 @@ public static class SmartCitiesPolicies
   /// </summary>
   public const string ManageAdministrationWhitelist =
     "smartcities.administration-whitelist.manage";
+
+  /// <summary>
+  /// Requires Administration admission plus explicit permission to manage persisted authorization grants.
+  /// </summary>
+  public const string ManageAdministrationGrants =
+    "smartcities.administration-grants.manage";
 }
