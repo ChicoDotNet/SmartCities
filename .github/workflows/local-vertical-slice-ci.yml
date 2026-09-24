@@ -71,6 +71,9 @@ jobs:
           SmartCities__Authentication__Local__AllowedAuthorityRoles__1: town-hall-admin
           SmartCities__Authentication__Local__AllowedPermissions__0: decision-review.finalize
           SmartCities__Authentication__Local__AllowedPermissions__1: feature-flags.manage
+          SmartCities__Authentication__Local__AllowedPermissions__2: citizen-mobility.manage
+          SmartCities__Authentication__Local__AllowedPermissions__3: feature-flags.config
+          SmartCities__Authentication__Local__AllowedPermissions__4: citizen-mobility.config
           SmartCities__Build__CommitSha: ${{ github.sha }}
           SmartCities__Build__BuildId: ${{ github.run_id }}
           SMARTCITIES_API_BASE_URL: http://127.0.0.1:5000
