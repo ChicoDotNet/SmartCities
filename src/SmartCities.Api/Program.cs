@@ -10,6 +10,7 @@ builder.Services.AddSmartCitiesFeatureManagementFromConfiguration(
   builder.Configuration);
 builder.Services.AddSmartCitiesAdministrationBootstrap(
   builder.Configuration);
+builder.Services.AddSmartCitiesAdministrationRateLimiting();
 builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
 builder.Services.AddSmartCitiesApiObservability(
@@ -25,6 +26,7 @@ await app.ApplySmartCitiesDevelopmentDatabaseAsync();
 
 app.UseSmartCitiesRequestObservability();
 app.UseRequestLocalization();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseSmartCitiesAuthenticationCanonicalization();
 app.UseAuthorization();
