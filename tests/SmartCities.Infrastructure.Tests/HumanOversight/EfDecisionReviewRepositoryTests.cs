@@ -109,6 +109,90 @@ public sealed class EfDecisionReviewRepositoryTests
   }
 
   [Fact]
+  public async Task Get_or_add_pending_is_idempotent_and_preserves_a_finalized_review()
+  {
+    await using var connection = new SqliteConnection(
+      "Data Source=:memory:");
+    await connection.OpenAsync(
+      TestContext.Current.CancellationToken);
+
+    var options =
+      new DbContextOptionsBuilder<SmartCitiesDbContext>()
+        .UseSqlite(connection)
+        .Options;
+
+    await using (var setup =
+      new SmartCitiesDbContext(options))
+    {
+      await setup.Database.EnsureCreatedAsync(
+        TestContext.Current.CancellationToken);
+    }
+
+    var pending = DecisionReview.Pending(
+      CriterionDecisionTrace.Create(
+        requestId: "request-idempotent",
+        recommendationId: "recommendation-idempotent",
+        recommendation:
+          CriterionRecommendation.RequiresHumanReview,
+        requiresHumanReview: true,
+        evidenceReferenceIds: ["evidence-001"],
+        publicExplanation: "Public-safe explanation.",
+        evidenceCaseId: "case-idempotent"));
+
+    await using (var first =
+      new SmartCitiesDbContext(options))
+    {
+      var repository =
+        new EfDecisionReviewRepository(first);
+
+      var created = await repository.GetOrAddPendingAsync(
+        pending,
+        TestContext.Current.CancellationToken);
+
+      Assert.Equal(
+        DecisionReviewStatus.PendingHumanReview,
+        created.Status);
+    }
+
+    var authority = HumanAuthority.Create(
+      "reviewer-idempotent",
+      "mobility-reviewer");
+
+    await using (var finalize =
+      new SmartCitiesDbContext(options))
+    {
+      var repository =
+        new EfDecisionReviewRepository(finalize);
+
+      await repository.FinalizeAsync(
+        pending.RecommendationId,
+        authority,
+        DecisionDisposition.Accepted,
+        TestContext.Current.CancellationToken);
+    }
+
+    await using (var replay =
+      new SmartCitiesDbContext(options))
+    {
+      var repository =
+        new EfDecisionReviewRepository(replay);
+
+      var authoritative =
+        await repository.GetOrAddPendingAsync(
+          pending,
+          TestContext.Current.CancellationToken);
+
+      Assert.Equal(
+        DecisionReviewStatus.Finalized,
+        authoritative.Status);
+      Assert.Equal(authority, authoritative.Authority);
+      Assert.Equal(
+        DecisionDisposition.Accepted,
+        authoritative.Disposition);
+    }
+  }
+
+  [Fact]
   public async Task Second_finalization_preserves_the_first_human_authority()
   {
     await using var connection = new SqliteConnection(
