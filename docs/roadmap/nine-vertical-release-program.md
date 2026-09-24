@@ -628,6 +628,10 @@ Define:
 - feature flag;
 - manage/config permissions.
 
+The canonical product contract lives in [Urban Accessibility](../product/urban-accessibility.md) and the routing/GIS isolation decision in [ADR 0011](../architecture/0011-urban-accessibility-routing-gis-boundary.md).
+
+The feature is registered disabled by default until an executable citizen/official path exists.
+
 Documentation skeleton is created here, not at the end.
 
 ### V1.2 — Geospatial primitives
