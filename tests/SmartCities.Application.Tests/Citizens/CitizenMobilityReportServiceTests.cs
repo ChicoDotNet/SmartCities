@@ -1,5 +1,6 @@
 using SmartCities.Application.Citizens;
 using SmartCities.Citizens;
+using SmartCities.Decisions;
 using SmartCities.Evidence;
 using Xunit;
 
@@ -11,7 +12,10 @@ public sealed class CitizenMobilityReportServiceTests
   public async Task Accepting_a_valid_report_creates_exactly_one_case()
   {
     var repository = new RecordingCitizenMobilityReportRepository();
-    var service = new CitizenMobilityReportService(repository);
+    var pipeline = new RecordingCitizenMobilityDecisionPipeline();
+    var service = new CitizenMobilityReportService(
+      repository,
+      pipeline);
     var report = CreateReport("report-001");
 
     var result = await service.AcceptAsync(
@@ -29,7 +33,10 @@ public sealed class CitizenMobilityReportServiceTests
   public async Task Repeating_the_same_report_returns_the_original_case_without_creating_another()
   {
     var repository = new RecordingCitizenMobilityReportRepository();
-    var service = new CitizenMobilityReportService(repository);
+    var pipeline = new RecordingCitizenMobilityDecisionPipeline();
+    var service = new CitizenMobilityReportService(
+      repository,
+      pipeline);
     var report = CreateReport("report-002");
 
     var first = await service.AcceptAsync(
@@ -51,7 +58,10 @@ public sealed class CitizenMobilityReportServiceTests
   public async Task Getting_an_existing_report_returns_its_authoritative_case()
   {
     var repository = new RecordingCitizenMobilityReportRepository();
-    var service = new CitizenMobilityReportService(repository);
+    var pipeline = new RecordingCitizenMobilityDecisionPipeline();
+    var service = new CitizenMobilityReportService(
+      repository,
+      pipeline);
     var report = CreateReport("report-recover");
 
     await service.AcceptAsync(
@@ -72,7 +82,8 @@ public sealed class CitizenMobilityReportServiceTests
   public async Task Getting_an_unknown_report_returns_null()
   {
     var service = new CitizenMobilityReportService(
-      new RecordingCitizenMobilityReportRepository());
+      new RecordingCitizenMobilityReportRepository(),
+      new RecordingCitizenMobilityDecisionPipeline());
 
     var recovered = await service.GetAsync(
       "report-missing",
@@ -85,7 +96,10 @@ public sealed class CitizenMobilityReportServiceTests
   public async Task Service_passes_the_domain_case_to_the_repository_contract()
   {
     var repository = new RecordingCitizenMobilityReportRepository();
-    var service = new CitizenMobilityReportService(repository);
+    var pipeline = new RecordingCitizenMobilityDecisionPipeline();
+    var service = new CitizenMobilityReportService(
+      repository,
+      pipeline);
     var report = CreateReport("report-003");
 
     await service.AcceptAsync(
@@ -98,6 +112,52 @@ public sealed class CitizenMobilityReportServiceTests
     Assert.Equal("case-003", repository.LastCandidateCase.CaseId);
     Assert.Equal(report.Description, repository.LastCandidateCase.Subject);
     Assert.Equal(report.EvidenceReferenceIds, repository.LastCandidateCase.EvidenceReferenceIds);
+  }
+
+  [Fact]
+  public async Task Decision_pipeline_uses_the_authoritative_persisted_case_on_replay()
+  {
+    var repository = new RecordingCitizenMobilityReportRepository();
+    var pipeline = new RecordingCitizenMobilityDecisionPipeline();
+    var service = new CitizenMobilityReportService(
+      repository,
+      pipeline);
+
+    var original = CreateReport("report-decision");
+
+    await service.AcceptAsync(
+      original,
+      "case-authoritative",
+      TestContext.Current.CancellationToken);
+
+    var replay = CitizenMobilityReport.Create(
+      "report-decision",
+      "road-safety",
+      "Different replay location",
+      "Different replay description.",
+      []);
+
+    await service.AcceptAsync(
+      replay,
+      "case-ignored",
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(2, pipeline.Cases.Count);
+    Assert.All(
+      pipeline.Cases,
+      item => Assert.Equal(
+        "case-authoritative",
+        item.CaseId));
+    Assert.All(
+      pipeline.Cases,
+      item => Assert.Equal(
+        original.Description,
+        item.Subject));
+    Assert.All(
+      pipeline.Cases,
+      item => Assert.Equal(
+        original.EvidenceReferenceIds,
+        item.EvidenceReferenceIds));
   }
 
   private static CitizenMobilityReport CreateReport(string reportId) =>
@@ -115,6 +175,24 @@ public sealed class CitizenMobilityReportServiceTests
             $"submission:{reportId}",
             new DateTimeOffset(2026, 9, 23, 18, 0, 0, TimeSpan.Zero))),
       ]);
+
+  private sealed class RecordingCitizenMobilityDecisionPipeline
+    : ICitizenMobilityDecisionPipeline
+  {
+    public List<EvidenceCase> Cases { get; } = [];
+
+    public Task<DecisionReview> EnsureReviewAsync(
+      EvidenceCase evidenceCase,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      Cases.Add(evidenceCase);
+
+      return Task.FromResult(
+        DecisionReview.Pending(
+          $"test:{evidenceCase.CaseId}"));
+    }
+  }
 
   private sealed class RecordingCitizenMobilityReportRepository
     : ICitizenMobilityReportRepository
