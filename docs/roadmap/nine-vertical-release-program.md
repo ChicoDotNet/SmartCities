@@ -1507,7 +1507,7 @@ Perform the required content-neutral `main -> dev` synchronization.
 
 ## Step 4
 
-Start:
+Start V1 implementation from the synchronized `dev` state:
 
 ```text
 V1 — Access to the City
@@ -1516,11 +1516,9 @@ Product Contract + ADR + documentation skeleton
 + urban-accessibility feature registration
 ```
 
+Routing/GTFS contracts remain V1-specific; generic sensing/dataset infrastructure stays deferred until a vertical proves it is required.
+
 ## Step 5
-
-Start V1 implementation from the synchronized `dev` state. Routing/GTFS contracts remain V1-specific; generic sensing/dataset infrastructure stays deferred until a vertical proves it is required.
-
-## Step 6
 
 Before implementing any commercial adapter, re-check current official documentation, access mechanisms, version support, and licensing. Record the compatibility state without overclaiming.
 
