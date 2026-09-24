@@ -86,3 +86,16 @@ body {
 .administration-row:first-of-type {
   border-top: 0;
 }
+
+
+.administration-audit-entry {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 0;
+  border-top: 1px solid #e5e5e5;
+  overflow-wrap: anywhere;
+}
+
+.administration-audit-entry:first-of-type {
+  border-top: 0;
+}
