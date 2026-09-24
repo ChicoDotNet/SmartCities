@@ -50,6 +50,8 @@ Each vertical is promoted from `dev` to `main` when it reaches its documented De
 
 Documentation, reference integrations, contract tests, operational runbooks, and third-party reproducibility are part of the MVP definition rather than post-release work.
 
+Provider-agnostic mobility interoperability is a cross-cutting capability of this program, not a tenth vertical. Its architectural boundary is defined by [ADR 0010](../architecture/0010-provider-agnostic-mobility-integrations.md), with contributor-facing integration rules in [docs/integrations](../integrations/README.md). Runtime contracts are introduced only when a concrete vertical requires them.
+
 ## Rust performance lane
 
 Rust is not a milestone by itself. It enters only after measurements establish a material need involving performance, memory, concurrency, determinism, or safety. For .NET consumption, FerrumWeave is the preferred path. Alternative native FFI requires an explicit ADR and evidence.
