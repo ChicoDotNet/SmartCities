@@ -24,4 +24,13 @@ public interface IFeatureFlagService
     string featureId,
     bool enabled,
     CancellationToken cancellationToken = default);
+
+  /// <summary>
+  /// Persists one known feature override with immutable control-plane audit context.
+  /// </summary>
+  Task<FeatureFlagState?> SetAsync(
+    string featureId,
+    bool enabled,
+    Administration.AdministrationControlPlaneAuditContext auditContext,
+    CancellationToken cancellationToken = default);
 }
