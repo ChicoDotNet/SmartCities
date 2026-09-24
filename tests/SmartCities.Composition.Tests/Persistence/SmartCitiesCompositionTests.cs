@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Application.Administration;
 using SmartCities.Application.Citizens;
 using SmartCities.Application.Configuration;
 using SmartCities.Application.FeatureFlags;
@@ -8,6 +9,7 @@ using SmartCities.Application.HumanOversight;
 using SmartCities.Composition;
 using SmartCities.Criterion;
 using SmartCities.Infrastructure.Persistence;
+using SmartCities.Identity;
 using Xunit;
 
 namespace SmartCities.Composition.Tests.Persistence;
@@ -136,6 +138,31 @@ public sealed class SmartCitiesCompositionTests
       descriptor =>
         descriptor.ServiceType
         == typeof(SmartCitiesDbContext));
+  }
+
+  [Fact]
+  public void Administration_grant_catalog_exposes_urban_accessibility_permissions()
+  {
+    var services = new ServiceCollection();
+
+    services.AddSmartCitiesFeatureManagement(
+      SmartCitiesFeatureManagementOptions.Create(
+        "town-hall-a",
+        "Data Source=:memory:"));
+
+    using var provider = services.BuildServiceProvider();
+
+    var catalog = provider.GetRequiredService<
+      IAdministrationAuthorizationGrantCatalog>();
+
+    Assert.Contains(
+      SmartCitiesFeaturePermissions.Manage(
+        SmartCitiesFeatures.UrbanAccessibility),
+      catalog.Permissions);
+    Assert.Contains(
+      SmartCitiesFeaturePermissions.Configure(
+        SmartCitiesFeatures.UrbanAccessibility),
+      catalog.Permissions);
   }
 
   [Fact]
