@@ -9,7 +9,8 @@ builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
 builder.Services.AddSmartCitiesApiObservability(
   builder.Configuration);
-builder.Services.AddSmartCitiesAuthenticationCanonicalization();
+builder.Services.AddSmartCitiesAuthenticationProviders(
+  builder.Configuration);
 builder.Services.AddSmartCitiesAuthorization();
 
 var app = builder.Build();

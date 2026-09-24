@@ -42,6 +42,19 @@ public sealed class SmartCitiesAuthenticationCanonicalizationMiddleware
       return;
     }
 
+    var canonicalFeature = context.Features
+      .Get<IValidatedCanonicalAuthenticationFeature>();
+
+    if (canonicalFeature is not null)
+    {
+      context.User =
+        canonicalFeature.Identity.ToClaimsPrincipal(
+          canonicalFeature.AuthenticationScheme);
+
+      await next(context).ConfigureAwait(false);
+      return;
+    }
+
     var feature = context.Features
       .Get<IValidatedExternalAuthenticationFeature>();
 
