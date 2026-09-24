@@ -240,9 +240,51 @@ def main() -> None:
         "Finalized review did not preserve the human disposition.",
     )
 
+    post_finalize_replay_status, post_finalize_replay = request(
+        "POST",
+        "/api/citizen/mobility-reports",
+        replay_payload,
+    )
+    require(
+        post_finalize_replay_status == 200,
+        (
+            "Expected post-finalization replay 200, got "
+            f"{post_finalize_replay_status}: {post_finalize_replay}"
+        ),
+    )
+    require(
+        post_finalize_replay["caseId"] == original_case_id,
+        "Post-finalization replay replaced the authoritative case.",
+    )
+
+    conflict_status, conflict = request(
+        "POST",
+        f"/api/human-oversight/decision-reviews/{recommendation_id}/finalize",
+        {
+            "authorityRole": "mobility-reviewer",
+            "disposition": 2,
+        },
+        {
+            "Authorization": f"Bearer {create_reviewer_token()}",
+        },
+    )
+    require(
+        conflict_status == 409,
+        f"Expected second finalization 409, got {conflict_status}: {conflict}",
+    )
+    require(
+        conflict["authoritySubjectId"] == "local:default:e2e-reviewer-001",
+        "Replay changed the original canonical human authority.",
+    )
+    require(
+        conflict["disposition"] == 0,
+        "Replay changed the original human disposition.",
+    )
+
     print(
         "Local vertical slice verified: live -> ready -> build -> OpenAPI "
-        "-> create -> replay -> recover -> mock criterion -> human finalize."
+        "-> create -> replay -> recover -> mock criterion -> human finalize "
+        "-> post-finalization replay preserves authority."
     )
 
 
