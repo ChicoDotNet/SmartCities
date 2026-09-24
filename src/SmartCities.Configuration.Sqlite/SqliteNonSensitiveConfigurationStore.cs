@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Data.Sqlite;
+using SmartCities.Application.Administration;
 using SmartCities.Application.Configuration;
 
 namespace SmartCities.Configuration.Sqlite;
@@ -90,11 +91,42 @@ public sealed class SqliteNonSensitiveConfigurationStore
   }
 
   /// <inheritdoc />
-  public async Task SetAsync(
+  public Task SetAsync(
     string townHallId,
     string key,
     string value,
+    CancellationToken cancellationToken = default) =>
+    SetCoreAsync(
+      townHallId,
+      key,
+      value,
+      auditEvent: null,
+      cancellationToken);
+
+  /// <inheritdoc />
+  public Task SetAsync(
+    string townHallId,
+    string key,
+    string value,
+    AdministrationControlPlaneAuditEvent auditEvent,
     CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(auditEvent);
+
+    return SetCoreAsync(
+      townHallId,
+      key,
+      value,
+      auditEvent,
+      cancellationToken);
+  }
+
+  private async Task SetCoreAsync(
+    string townHallId,
+    string key,
+    string value,
+    AdministrationControlPlaneAuditEvent? auditEvent,
+    CancellationToken cancellationToken)
   {
     ValidateTownHallId(townHallId);
     ValidateKey(key);
@@ -107,6 +139,17 @@ public sealed class SqliteNonSensitiveConfigurationStore
         nameof(value));
     }
 
+    if (auditEvent is not null
+      && !string.Equals(
+        auditEvent.TownHallId,
+        townHallId,
+        StringComparison.Ordinal))
+    {
+      throw new ArgumentException(
+        "Audit event Town Hall must match the configuration partition.",
+        nameof(auditEvent));
+    }
+
     await EnsureSchemaAsync(cancellationToken)
       .ConfigureAwait(false);
 
@@ -116,8 +159,23 @@ public sealed class SqliteNonSensitiveConfigurationStore
       .OpenAsync(cancellationToken)
       .ConfigureAwait(false);
 
+    if (auditEvent is not null)
+    {
+      await SqliteControlPlaneAuditPersistence
+        .EnsureSchemaAsync(
+          connection,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+
+    await using var transaction =
+      (SqliteTransaction)await connection
+        .BeginTransactionAsync(cancellationToken)
+        .ConfigureAwait(false);
+
     await using var command =
       connection.CreateCommand();
+    command.Transaction = transaction;
     command.CommandText =
       """
       INSERT INTO non_sensitive_settings (
@@ -161,6 +219,21 @@ public sealed class SqliteNonSensitiveConfigurationStore
 
     await command
       .ExecuteNonQueryAsync(cancellationToken)
+      .ConfigureAwait(false);
+
+    if (auditEvent is not null)
+    {
+      await SqliteControlPlaneAuditPersistence
+        .AppendAsync(
+          connection,
+          transaction,
+          auditEvent,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+
+    await transaction
+      .CommitAsync(cancellationToken)
       .ConfigureAwait(false);
   }
 
