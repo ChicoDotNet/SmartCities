@@ -29,6 +29,9 @@ public sealed class CitizenMobilityOutcomesControllerTests
     var payload = Assert.IsType<CitizenMobilityOutcomeResponse>(
       response.Value);
 
+    Assert.Equal(
+      "no-store",
+      controller.Response.Headers.CacheControl.ToString());
     Assert.Equal("report-001", payload.ReportId);
     Assert.Equal("case-001", payload.CaseId);
     Assert.Equal("pending-human-review", payload.Status);
