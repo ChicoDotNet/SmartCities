@@ -94,6 +94,20 @@ public sealed class DecisionReviewServiceTests
       return Task.CompletedTask;
     }
 
+    public Task<DecisionReview> GetOrAddPendingAsync(
+      DecisionReview review,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      if (Review is null)
+      {
+        Review = review;
+      }
+
+      return Task.FromResult(Review);
+    }
+
     public Task<DecisionReview?> GetAsync(
       string recommendationId,
       CancellationToken cancellationToken = default)
