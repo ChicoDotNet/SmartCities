@@ -38,6 +38,7 @@ Example configuration:
         "SubjectClaimType": "sub",
         "RoleClaimType": "role",
         "PermissionClaimType": "permission",
+        "EmailClaimType": "email",
         "AllowedAuthorityRoles": [
           "citizen",
           "mobility-reviewer"
@@ -89,6 +90,9 @@ Example:
           "TenantClaimType": "tid",
           "RoleClaimType": "groups",
           "PermissionClaimType": "scope",
+          "EmailClaimType": "email",
+          "EmailVerifiedClaimType": "email_verified",
+          "RequireVerifiedEmail": true,
           "DefaultAuthorityRoles": [
             "citizen"
           ],
@@ -106,6 +110,10 @@ Example:
 ```
 
 The generic adapter uses explicit allowlist-style mappings: an external role/group/scope value becomes a SmartCities authority role or permission only when the configuration maps it. Unmapped external values are ignored.
+
+Email is a separate canonical identity attribute, not an authorization grant. By default the generic OIDC adapter promotes an email only when the configured verification claim is exactly `true`. Deployments whose identity provider exposes a different authoritative login/email claim (for example an Entra-style `preferred_username`) may configure `EmailClaimType` and set `RequireVerifiedEmail=false` only when that provider/tenant contract makes the claim authoritative.
+
+Administration domain/email whitelist rules consume only this canonical email. Provider-native `email`, `upn`, `preferred_username`, or similar claims never cross directly into authorization. When a provider cannot supply a stable trusted email (for example some privacy-preserving/provider-specific flows), use a `canonical-subject` Administration rule instead.
 
 This pattern is suitable for standards-compliant OIDC providers such as many Entra ID, Google Identity, Amazon Cognito, Auth0, Apple, and other deployments, subject to each provider's exact protocol/claim capabilities. Provider-specific wrappers can add specialized behavior without changing the canonical authorization model.
 

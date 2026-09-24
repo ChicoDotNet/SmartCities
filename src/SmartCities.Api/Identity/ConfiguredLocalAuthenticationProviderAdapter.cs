@@ -75,6 +75,11 @@ internal sealed class ConfiguredLocalAuthenticationProviderAdapter
         ProviderId,
         $"local:default:{identity.Subject}",
         roles.Order(StringComparer.Ordinal),
-        permissions.Order(StringComparer.Ordinal)));
+        permissions.Order(StringComparer.Ordinal),
+        CanonicalEmailClaimResolver.Resolve(
+          identity,
+          configuration.EmailClaimType,
+          verificationClaimType: null,
+          requireVerified: false)));
   }
 }

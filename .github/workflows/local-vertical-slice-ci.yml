@@ -62,6 +62,7 @@ jobs:
           SmartCities__Persistence__ApplyMigrationsOnStartup: 'true'
           SmartCities__TownHall__Id: e2e-town-hall
           SmartCities__Configuration__ConnectionString: Data Source=/tmp/smartcities-e2e-configuration.db
+          SmartCities__Administration__Bootstrap__Password: smartcities-e2e-bootstrap-only
           SmartCities__Authentication__Local__Enabled: 'true'
           SmartCities__Authentication__Local__Issuer: https://ci.smartcities.test
           SmartCities__Authentication__Local__Audience: smartcities-api

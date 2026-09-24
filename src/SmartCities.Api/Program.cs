@@ -1,3 +1,4 @@
+using SmartCities.Api.Administration;
 using SmartCities.Api.Hosting;
 using SmartCities.Api.Identity;
 
@@ -7,6 +8,9 @@ builder.Services.AddSmartCitiesFromConfiguration(
   builder.Configuration);
 builder.Services.AddSmartCitiesFeatureManagementFromConfiguration(
   builder.Configuration);
+builder.Services.AddSmartCitiesAdministrationBootstrap(
+  builder.Configuration);
+builder.Services.AddSmartCitiesAdministrationRateLimiting();
 builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
 builder.Services.AddSmartCitiesApiObservability(
@@ -14,6 +18,7 @@ builder.Services.AddSmartCitiesApiObservability(
 builder.Services.AddSmartCitiesAuthenticationProviders(
   builder.Configuration);
 builder.Services.AddSmartCitiesAuthorization();
+builder.Services.AddSmartCitiesAdministrationAuthorization();
 
 var app = builder.Build();
 
@@ -21,6 +26,7 @@ await app.ApplySmartCitiesDevelopmentDatabaseAsync();
 
 app.UseSmartCitiesRequestObservability();
 app.UseRequestLocalization();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseSmartCitiesAuthenticationCanonicalization();
 app.UseAuthorization();

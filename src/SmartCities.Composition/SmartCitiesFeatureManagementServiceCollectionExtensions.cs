@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Application.Administration;
 using SmartCities.Application.Configuration;
 using SmartCities.Application.FeatureFlags;
 using SmartCities.Configuration.Sqlite;
@@ -29,6 +30,14 @@ public static class SmartCitiesFeatureManagementServiceCollectionExtensions
     services.AddSingleton<
       IFeatureFlagService,
       FeatureFlagService>();
+    services.AddSingleton<
+      IAdministrationAccessRuleStore>(
+        _ =>
+          new SqliteAdministrationAccessRuleStore(
+            options.SqliteConnectionString));
+    services.AddSingleton<
+      IAdministrationAccessService,
+      AdministrationAccessService>();
 
     services
       .AddHealthChecks()

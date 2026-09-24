@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SmartCities.Application.Administration;
 using SmartCities.Application.FeatureFlags;
 
 namespace SmartCities.Composition;
@@ -7,12 +8,16 @@ internal sealed class FeatureManagementHealthCheck
   : IHealthCheck
 {
   private readonly IFeatureFlagService features;
+  private readonly IAdministrationAccessService administration;
 
   public FeatureManagementHealthCheck(
-    IFeatureFlagService features)
+    IFeatureFlagService features,
+    IAdministrationAccessService administration)
   {
     ArgumentNullException.ThrowIfNull(features);
+    ArgumentNullException.ThrowIfNull(administration);
     this.features = features;
+    this.administration = administration;
   }
 
   public async Task<HealthCheckResult> CheckHealthAsync(
@@ -25,6 +30,9 @@ internal sealed class FeatureManagementHealthCheck
     {
       _ = await features
         .GetAllAsync(cancellationToken)
+        .ConfigureAwait(false);
+      _ = await administration
+        .GetRulesAsync(cancellationToken)
         .ConfigureAwait(false);
 
       return HealthCheckResult.Healthy();

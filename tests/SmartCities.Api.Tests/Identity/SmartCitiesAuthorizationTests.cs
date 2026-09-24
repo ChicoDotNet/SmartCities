@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Api.Administration;
 using SmartCities.Api.Identity;
+using SmartCities.Application.Administration;
 using SmartCities.Decisions;
 using SmartCities.Identity;
 using Xunit;
@@ -98,6 +100,9 @@ public sealed class SmartCitiesAuthorizationTests
             SmartCitiesClaimTypes.AuthorityRole,
             "town-hall-admin"),
           new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
             SmartCitiesClaimTypes.Permission,
             SmartCitiesPermissions.ManageFeatureFlags),
         ],
@@ -115,6 +120,39 @@ public sealed class SmartCitiesAuthorizationTests
 
     Assert.True(allowed.Succeeded);
     Assert.False(denied.Succeeded);
+  }
+
+  [Fact]
+  public async Task Feature_management_permission_does_not_bypass_the_administration_whitelist()
+  {
+    using var provider = BuildServices(
+      administrationAuthorized: false);
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+    var principal = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "admin-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "town-hall-admin"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+        ],
+        authenticationType: "provider-a"));
+
+    var result = await authorization.AuthorizeAsync(
+      principal,
+      resource: null,
+      SmartCitiesPolicies.ManageFeatureFlags);
+
+    Assert.False(result.Succeeded);
   }
 
   [Fact]
@@ -156,13 +194,62 @@ public sealed class SmartCitiesAuthorizationTests
       principal.ToHumanAuthority);
   }
 
-  private static ServiceProvider BuildServices()
+  private static ServiceProvider BuildServices(
+    bool administrationAuthorized = true)
   {
     var services = new ServiceCollection();
     services.AddLogging();
+    services.AddSingleton<IAdministrationAccessService>(
+      new RecordingAdministrationAccessService(
+        administrationAuthorized));
     services.AddSmartCitiesAuthorization();
+    services.AddSmartCitiesAdministrationAuthorization();
 
     return services.BuildServiceProvider();
+  }
+
+  private sealed class RecordingAdministrationAccessService
+    : IAdministrationAccessService
+  {
+    private readonly bool authorized;
+
+    public RecordingAdministrationAccessService(
+      bool authorized)
+    {
+      this.authorized = authorized;
+    }
+
+    public string TownHallId => "test-town-hall";
+
+    public Task<bool> IsAuthorizedAsync(
+      AdministrationIdentity identity,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      return Task.FromResult(authorized);
+    }
+
+    public Task<bool> IsBootstrapAvailableAsync(
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      return Task.FromResult(false);
+    }
+
+    public Task<IReadOnlyList<AdministrationAccessRule>> GetRulesAsync(
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<AdministrationAccessRule> AddRuleAsync(
+      AdministrationAccessRuleKind kind,
+      string value,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<bool> DeleteRuleAsync(
+      string ruleId,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
   }
 
   private static ClaimsPrincipal CreateCanonicalReviewer(

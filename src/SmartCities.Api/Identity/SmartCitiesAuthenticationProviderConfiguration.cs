@@ -10,6 +10,7 @@ internal sealed record LocalAuthenticationProviderConfiguration(
   string SubjectClaimType,
   string RoleClaimType,
   string PermissionClaimType,
+  string EmailClaimType,
   int JwtLifetimeMinutes,
   IReadOnlyList<string> DefaultAuthorityRoles,
   IReadOnlyList<string> DefaultPermissions,
@@ -27,6 +28,9 @@ internal sealed record OidcAuthenticationProviderConfiguration(
   string? TenantClaimType,
   string? RoleClaimType,
   string? PermissionClaimType,
+  string EmailClaimType,
+  string EmailVerifiedClaimType,
+  bool RequireVerifiedEmail,
   IReadOnlyList<string> DefaultAuthorityRoles,
   IReadOnlyList<string> DefaultPermissions,
   IReadOnlyDictionary<string, string> RoleMappings,
@@ -104,6 +108,7 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       Optional(section, "SubjectClaimType", "sub"),
       Optional(section, "RoleClaimType", "role"),
       Optional(section, "PermissionClaimType", "permission"),
+      Optional(section, "EmailClaimType", "email"),
       ReadInt(
         section,
         "JwtLifetimeMinutes",
@@ -169,6 +174,13 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       OptionalNullable(section, "TenantClaimType"),
       OptionalNullable(section, "RoleClaimType"),
       OptionalNullable(section, "PermissionClaimType"),
+      Optional(section, "EmailClaimType", "email"),
+      Optional(section, "EmailVerifiedClaimType", "email_verified"),
+      ReadBool(
+        section,
+        "RequireVerifiedEmail",
+        defaultValue: true,
+        providerId: section.Key),
       ReadList(section.GetSection("DefaultAuthorityRoles")),
       ReadList(section.GetSection("DefaultPermissions")),
       ReadMap(section.GetSection("RoleMappings")),
@@ -223,6 +235,30 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       is { Length: > 0 } value
         ? value
         : fallback;
+
+  private static bool ReadBool(
+    IConfigurationSection section,
+    string key,
+    bool defaultValue,
+    string providerId)
+  {
+    var configured = section[key];
+
+    if (string.IsNullOrWhiteSpace(configured))
+    {
+      return defaultValue;
+    }
+
+    if (!bool.TryParse(
+        configured,
+        out var value))
+    {
+      throw new InvalidOperationException(
+        $"Authentication provider '{providerId}' requires '{key}' to be true or false.");
+    }
+
+    return value;
+  }
 
   private static int ReadInt(
     IConfigurationSection section,

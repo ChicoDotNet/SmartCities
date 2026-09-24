@@ -41,6 +41,38 @@ public sealed class ConfigurableAuthenticationProviderTests
   }
 
   [Fact]
+  public async Task Bootstrap_credential_alone_registers_the_shared_browser_session_without_a_real_provider()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+
+    services.AddSmartCitiesAuthenticationProviders(
+      BuildConfiguration(
+        new Dictionary<string, string?>
+        {
+          ["SmartCities:Administration:Bootstrap:Password"] =
+            "bootstrap-password-16-plus",
+        }));
+
+    using var provider = services.BuildServiceProvider();
+    var registry = provider.GetRequiredService<
+      SmartCitiesAuthenticationProviderRegistry>();
+    var schemes = provider.GetRequiredService<
+      IAuthenticationSchemeProvider>();
+
+    Assert.Empty(registry.Providers);
+
+    var registered = await schemes.GetAllSchemesAsync();
+
+    Assert.Contains(
+      registered,
+      item => item.Name == SmartCitiesAuthenticationSchemes.Session);
+    Assert.DoesNotContain(
+      registered,
+      item => item.Name == SmartCitiesAuthenticationSchemes.LocalJwt);
+  }
+
+  [Fact]
   public async Task Complete_local_configuration_registers_cookie_and_jwt_in_parallel()
   {
     var services = new ServiceCollection();
@@ -225,6 +257,104 @@ public sealed class ConfigurableAuthenticationProviderTests
       "google",
       exception.Message,
       StringComparison.Ordinal);
+  }
+
+  [Fact]
+  public async Task Generic_oidc_adapter_promotes_only_a_verified_configured_email_claim()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+
+    var values = OidcConfiguration();
+    values["SmartCities:Authentication:OpenIdConnect:workforce:EmailClaimType"] =
+      "mail";
+    values["SmartCities:Authentication:OpenIdConnect:workforce:EmailVerifiedClaimType"] =
+      "mail_verified";
+
+    services.AddSmartCitiesAuthenticationProviders(
+      BuildConfiguration(values));
+
+    using var provider = services.BuildServiceProvider();
+    var adapter = provider
+      .GetServices<IAuthenticationProviderAdapter>()
+      .Single(
+        item => item.ProviderId == "workforce");
+    var context = AuthenticationProviderContext.Create(
+      SmartCitiesAuthenticationSchemes.Oidc("workforce"),
+      "https://workforce.example.test",
+      "tenant-a");
+
+    var verified = await adapter.NormalizeAsync(
+      context,
+      ExternalAuthenticatedIdentity.Create(
+        "verified-user",
+        [
+          ExternalIdentityClaim.Create(
+            "mail",
+            "Official@TownHall.GOV"),
+          ExternalIdentityClaim.Create(
+            "mail_verified",
+            "true"),
+        ]),
+      TestContext.Current.CancellationToken);
+
+    var unverified = await adapter.NormalizeAsync(
+      context,
+      ExternalAuthenticatedIdentity.Create(
+        "unverified-user",
+        [
+          ExternalIdentityClaim.Create(
+            "mail",
+            "other@townhall.gov"),
+          ExternalIdentityClaim.Create(
+            "mail_verified",
+            "false"),
+        ]),
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      "official@townhall.gov",
+      verified.EmailAddress);
+    Assert.Null(unverified.EmailAddress);
+  }
+
+  [Fact]
+  public async Task Generic_oidc_adapter_can_use_an_authoritative_email_claim_without_verification_only_when_explicitly_configured()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+
+    var values = OidcConfiguration();
+    values["SmartCities:Authentication:OpenIdConnect:workforce:EmailClaimType"] =
+      "preferred_username";
+    values["SmartCities:Authentication:OpenIdConnect:workforce:RequireVerifiedEmail"] =
+      "false";
+
+    services.AddSmartCitiesAuthenticationProviders(
+      BuildConfiguration(values));
+
+    using var provider = services.BuildServiceProvider();
+    var adapter = provider
+      .GetServices<IAuthenticationProviderAdapter>()
+      .Single(
+        item => item.ProviderId == "workforce");
+    var canonical = await adapter.NormalizeAsync(
+      AuthenticationProviderContext.Create(
+        SmartCitiesAuthenticationSchemes.Oidc("workforce"),
+        "https://workforce.example.test",
+        "tenant-a"),
+      ExternalAuthenticatedIdentity.Create(
+        "entra-like-user",
+        [
+          ExternalIdentityClaim.Create(
+            "preferred_username",
+            "Official@TownHall.GOB.MX"),
+        ]),
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      "official@townhall.gob.mx",
+      canonical.EmailAddress);
   }
 
   [Fact]

@@ -56,6 +56,51 @@ def request(
         return exc.code, parsed
 
 
+def request_with_headers(
+    method: str,
+    path: str,
+    payload: dict | None = None,
+    extra_headers: dict[str, str] | None = None,
+) -> tuple[int, dict, dict[str, str]]:
+    data = None
+    headers = {
+        "Accept": "application/json",
+        "Accept-Language": "es-MX",
+    }
+
+    if extra_headers is not None:
+        headers.update(extra_headers)
+
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    req = urllib.request.Request(
+        f"{BASE_URL}{path}",
+        data=data,
+        headers=headers,
+        method=method,
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            body = response.read().decode("utf-8")
+            return (
+                response.status,
+                json.loads(body) if body else {},
+                dict(response.headers.items()),
+            )
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8")
+
+        try:
+            parsed = json.loads(body) if body else {}
+        except json.JSONDecodeError:
+            parsed = {"raw": body}
+
+        return exc.code, parsed, dict(exc.headers.items())
+
+
 def base64url(value: bytes) -> str:
     return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
 
@@ -80,6 +125,9 @@ def create_token(role: str, permission: str) -> str:
         "nbf": now - 5,
         "exp": now + 300,
     }
+    if permission == "feature-flags.manage":
+        payload["email"] = "official@townhallname.gob.mx"
+
     signing_input = (
         f"{base64url(json.dumps(header, separators=(',', ':')).encode('utf-8'))}."
         f"{base64url(json.dumps(payload, separators=(',', ':')).encode('utf-8'))}"
@@ -195,6 +243,150 @@ def main() -> None:
     require(
         "/api/system/features/{featureId}" in openapi["paths"],
         "OpenAPI does not expose Town Hall feature management.",
+    )
+    require(
+        "/api/administration/access" in openapi["paths"],
+        "OpenAPI does not expose Administration admission.",
+    )
+    require(
+        "/api/administration/whitelist" in openapi["paths"],
+        "OpenAPI does not expose Administration whitelist management.",
+    )
+    require(
+        "/api/administration/bootstrap/session" in openapi["paths"],
+        "OpenAPI does not expose Administration bootstrap session.",
+    )
+
+    anonymous_access_status, anonymous_access = request(
+        "GET",
+        "/api/administration/access",
+    )
+    require(
+        anonymous_access_status == 200,
+        (
+            "Expected anonymous Administration access probe 200, got "
+            f"{anonymous_access_status}: {anonymous_access}"
+        ),
+    )
+    require(
+        anonymous_access["authorized"] is False,
+        "Anonymous request must not be admitted to Administration.",
+    )
+    require(
+        anonymous_access["bootstrapAvailable"] is True,
+        "Empty whitelist must expose bootstrap availability.",
+    )
+
+    bootstrap_status, bootstrap, bootstrap_headers = request_with_headers(
+        "POST",
+        "/api/administration/bootstrap/session",
+        {
+            "userName": "townhalladmin@smartcities.local",
+            "password": "smartcities-e2e-bootstrap-only",
+        },
+    )
+    require(
+        bootstrap_status == 200,
+        f"Expected bootstrap session 200, got {bootstrap_status}: {bootstrap}",
+    )
+    bootstrap_cookie = bootstrap_headers.get("Set-Cookie", "").split(";", 1)[0]
+    require(
+        bool(bootstrap_cookie),
+        "Bootstrap session did not issue the canonical browser cookie.",
+    )
+
+    bootstrap_headers_for_api = {
+        "Cookie": bootstrap_cookie,
+        "Content-Type": "application/json",
+    }
+    first_rule_status, first_rule = request(
+        "POST",
+        "/api/administration/whitelist",
+        {
+            "kind": "email-domain",
+            "value": "@townhallname.gob.mx",
+        },
+        bootstrap_headers_for_api,
+    )
+    require(
+        first_rule_status == 200,
+        f"Expected first whitelist rule 200, got {first_rule_status}: {first_rule}",
+    )
+    require(
+        first_rule["kind"] == "email-domain"
+        and first_rule["value"] == "townhallname.gob.mx",
+        "First whitelist rule was not normalized as the expected municipal domain.",
+    )
+
+    bootstrap_access_status, bootstrap_access = request(
+        "GET",
+        "/api/administration/access",
+        extra_headers={"Cookie": bootstrap_cookie},
+    )
+    require(
+        bootstrap_access_status == 200,
+        (
+            "Expected bootstrap post-whitelist access probe 200, got "
+            f"{bootstrap_access_status}: {bootstrap_access}"
+        ),
+    )
+    require(
+        bootstrap_access["authorized"] is False,
+        "Bootstrap cookie remained authorized after the first whitelist rule.",
+    )
+    require(
+        bootstrap_access["bootstrapAvailable"] is False,
+        "Bootstrap remained available after the first whitelist rule.",
+    )
+
+    bootstrap_reuse_status, bootstrap_reuse = request(
+        "POST",
+        "/api/administration/whitelist",
+        {
+            "kind": "email-domain",
+            "value": "should-not-be-added.gov",
+        },
+        bootstrap_headers_for_api,
+    )
+    require(
+        bootstrap_reuse_status == 403,
+        (
+            "Expected bootstrap whitelist reuse 403 after initialization, got "
+            f"{bootstrap_reuse_status}: {bootstrap_reuse}"
+        ),
+    )
+
+    second_bootstrap_status, second_bootstrap = request(
+        "POST",
+        "/api/administration/bootstrap/session",
+        {
+            "userName": "townhalladmin@smartcities.local",
+            "password": "smartcities-e2e-bootstrap-only",
+        },
+    )
+    require(
+        second_bootstrap_status == 404,
+        (
+            "Expected bootstrap endpoint 404 after whitelist initialization, got "
+            f"{second_bootstrap_status}: {second_bootstrap}"
+        ),
+    )
+
+    feature_admin_headers = {
+        "Authorization": f"Bearer {create_feature_manager_token()}",
+    }
+    admitted_status, admitted = request(
+        "GET",
+        "/api/administration/access",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        admitted_status == 200,
+        f"Expected whitelisted Administration probe 200, got {admitted_status}: {admitted}",
+    )
+    require(
+        admitted["authorized"] is True,
+        "Whitelisted canonical subject was not admitted to Administration.",
     )
 
     feature_status, feature_snapshot = request(
@@ -522,7 +714,9 @@ def main() -> None:
 
     print(
         "Local vertical slice verified: live -> ready -> build -> OpenAPI "
-        "-> Town Hall feature disable/gate/re-enable -> create -> replay "
+        "-> bootstrap whitelist initialization -> bootstrap revocation "
+        "-> whitelisted feature admin -> feature disable/gate/re-enable "
+        "-> create -> replay "
         "-> recover -> pending citizen outcome "
         "-> mock criterion -> human finalize -> localized reviewed outcome "
         "-> post-finalization replay preserves authority."

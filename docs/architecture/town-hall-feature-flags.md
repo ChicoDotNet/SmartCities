@@ -1,4 +1,4 @@
-# Per-Town-Hall feature flags and non-sensitive configuration
+# Per-Town-Hall control plane and feature flags
 
 ## Decision
 
@@ -13,6 +13,7 @@ deployment control plane
   -> SQLite
   -> non-sensitive per-Town-Hall settings
   -> feature flags
+  -> typed Administration access-control metadata
 ```
 
 SQLite in this design is not a new domain database provider. The existing rule that production domain persistence uses SQL Server or PostgreSQL remains unchanged.
@@ -25,7 +26,7 @@ Each deployment provides:
 SmartCities:TownHall:Id
 ```
 
-The identifier is stable machine data and is used as the partition key for local non-sensitive configuration.
+The identifier is stable machine data and is used as the partition key for local control-plane state.
 
 The dedicated SQLite connection is provided through:
 
@@ -70,6 +71,8 @@ Therefore this store MUST NOT contain:
 
 Secret configuration continues to come from deployment secret mechanisms and must not be copied into this database.
 
+The same SQLite file may also contain typed Administration whitelist records in a separate table. Exact staff email addresses can be personal data, so those records do **not** pass through `INonSensitiveConfigurationStore` and must not be described as non-sensitive settings. They remain local access-control metadata.
+
 ## Feature registry
 
 Feature IDs are code-owned machine contracts. An administrator cannot create arbitrary new feature IDs through the API.
@@ -107,13 +110,16 @@ PUT /api/system/features/{featureId}
 { "enabled": true | false }
 ```
 
-Mutation requires the canonical permission:
+Mutation requires both:
+
+- admission to Town Hall Administration through the current whitelist/bootstrap rules;
+- the canonical permission:
 
 ```text
 feature-flags.manage
 ```
 
-and policy:
+under policy:
 
 ```text
 smartcities.feature-flags.manage
