@@ -89,7 +89,7 @@ def create_reviewer_token() -> str:
 
 
 def recommendation_id_for_case(case_id: str) -> str:
-    digest = hashlib.sha256(case_id.encode("utf-8")).hexdigest()
+    digest = hashlib.sha256(case_id.encode("utf-8")).hexdigest().upper()
     return f"mock:mobility:{digest}"
 
 
