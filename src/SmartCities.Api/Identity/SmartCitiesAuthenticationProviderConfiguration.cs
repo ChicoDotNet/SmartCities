@@ -139,9 +139,8 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       "CallbackPath",
       section.Key);
 
-    if (!callbackPath.StartsWith(
-        "/",
-        StringComparison.Ordinal)
+    if (callbackPath.Length == 0
+      || callbackPath[0] != '/'
       || callbackPath.Contains('?'))
     {
       throw new InvalidOperationException(
