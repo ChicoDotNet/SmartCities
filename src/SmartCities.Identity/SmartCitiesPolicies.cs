@@ -12,10 +12,22 @@ public static class SmartCitiesPolicies
     "smartcities.decision-review.finalize";
 
   /// <summary>
-  /// Requires an authenticated canonical Town Hall authority with permission to manage feature flags.
+  /// Requires an authenticated canonical authority with the global operational feature-management grant.
   /// </summary>
+  /// <remarks>
+  /// A feature-specific manage permission is still required at the operation boundary.
+  /// </remarks>
   public const string ManageFeatureFlags =
     "smartcities.feature-flags.manage";
+
+  /// <summary>
+  /// Requires Administration admission plus the global permission to configure feature flags.
+  /// </summary>
+  /// <remarks>
+  /// A feature-specific config permission is still required for the target feature.
+  /// </remarks>
+  public const string ConfigureFeatureFlags =
+    "smartcities.feature-flags.config";
 
   /// <summary>
   /// Requires canonical authentication and admission to Town Hall Administration.
