@@ -49,6 +49,14 @@ public static class SmartCitiesFeatureManagementServiceCollectionExtensions
     services.AddSingleton<
       IAdministrationAuthorizationGrantService,
       AdministrationAuthorizationGrantService>();
+    services.AddSingleton<
+      IAdministrationControlPlaneAuditStore>(
+        _ =>
+          new SqliteAdministrationControlPlaneAuditStore(
+            options.SqliteConnectionString));
+    services.AddSingleton<
+      IAdministrationControlPlaneAuditService,
+      AdministrationControlPlaneAuditService>();
 
     services
       .AddHealthChecks()
