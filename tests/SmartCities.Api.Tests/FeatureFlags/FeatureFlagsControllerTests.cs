@@ -58,7 +58,7 @@ public sealed class FeatureFlagsControllerTests
   }
 
   [Fact]
-  public void Mutation_requires_the_canonical_feature_management_policy()
+  public void Mutation_requires_the_canonical_feature_configuration_policy()
   {
     var method = typeof(FeatureFlagsController)
       .GetMethod(nameof(FeatureFlagsController.SetAsync));
@@ -70,8 +70,89 @@ public sealed class FeatureFlagsControllerTests
       .Cast<AuthorizeAttribute>());
 
     Assert.Equal(
-      SmartCitiesPolicies.ManageFeatureFlags,
+      SmartCitiesPolicies.ConfigureFeatureFlags,
       authorize.Policy);
+  }
+
+  [Fact]
+  public async Task Global_configuration_permission_without_the_specific_feature_permission_is_forbidden()
+  {
+    var controller = CreateController(
+      new RecordingFeatureFlagService(
+        "town-hall-a",
+        [
+          new FeatureFlagState(
+            SmartCitiesFeatures.CitizenMobility,
+            Enabled: true),
+        ]),
+      [
+        SmartCitiesPermissions.ConfigureFeatureFlags,
+      ]);
+
+    var result = await controller.SetAsync(
+      SmartCitiesFeatures.CitizenMobility,
+      new SetFeatureFlagRequest(Enabled: false),
+      TestContext.Current.CancellationToken);
+
+    Assert.IsType<ForbidResult>(result.Result);
+  }
+
+  [Fact]
+  public async Task Operational_manage_permissions_do_not_grant_configuration()
+  {
+    var controller = CreateController(
+      new RecordingFeatureFlagService(
+        "town-hall-a",
+        [
+          new FeatureFlagState(
+            SmartCitiesFeatures.CitizenMobility,
+            Enabled: true),
+        ]),
+      [
+        SmartCitiesPermissions.ManageFeatureFlags,
+        SmartCitiesFeaturePermissions.Manage(
+          SmartCitiesFeatures.CitizenMobility),
+      ]);
+
+    var result = await controller.SetAsync(
+      SmartCitiesFeatures.CitizenMobility,
+      new SetFeatureFlagRequest(Enabled: false),
+      TestContext.Current.CancellationToken);
+
+    Assert.IsType<ForbidResult>(result.Result);
+  }
+
+  [Fact]
+  public async Task Configuration_requires_global_and_specific_feature_permissions()
+  {
+    var service = new RecordingFeatureFlagService(
+      "town-hall-a",
+      [
+        new FeatureFlagState(
+          SmartCitiesFeatures.CitizenMobility,
+          Enabled: true),
+      ]);
+    var controller = CreateController(
+      service,
+      [
+        SmartCitiesPermissions.ConfigureFeatureFlags,
+        SmartCitiesFeaturePermissions.Configure(
+          SmartCitiesFeatures.CitizenMobility),
+      ]);
+
+    var result = await controller.SetAsync(
+      SmartCitiesFeatures.CitizenMobility,
+      new SetFeatureFlagRequest(Enabled: false),
+      TestContext.Current.CancellationToken);
+
+    var payload = Assert.IsType<FeatureFlagResponse>(
+      Assert.IsType<OkObjectResult>(
+        result.Result).Value);
+
+    Assert.Equal(
+      SmartCitiesFeatures.CitizenMobility,
+      payload.FeatureId);
+    Assert.False(payload.Enabled);
   }
 
   [Fact]
@@ -91,16 +172,32 @@ public sealed class FeatureFlagsControllerTests
   }
 
   private static FeatureFlagsController CreateController(
-    IFeatureFlagService service) =>
-    new(service)
+    IFeatureFlagService service,
+    IReadOnlyList<string>? permissions = null)
+  {
+    var context = new DefaultHttpContext();
+
+    if (permissions is not null)
+    {
+      context.User = new System.Security.Claims.ClaimsPrincipal(
+        new System.Security.Claims.ClaimsIdentity(
+          permissions.Select(
+            permission =>
+              new System.Security.Claims.Claim(
+                SmartCitiesClaimTypes.Permission,
+                permission)),
+          authenticationType: "test"));
+    }
+
+    return new FeatureFlagsController(service)
     {
       ControllerContext =
         new ControllerContext
         {
-          HttpContext =
-            new DefaultHttpContext(),
+          HttpContext = context,
         },
     };
+  }
 
   private sealed class RecordingFeatureFlagService
     : IFeatureFlagService
