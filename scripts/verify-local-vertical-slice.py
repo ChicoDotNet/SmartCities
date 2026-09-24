@@ -161,8 +161,8 @@ def create_feature_manager_token() -> str:
             "feature-flags.manage",
             "citizen-mobility.manage",
         ],
-        "e2e-feature-admin-001",
-        "official@townhallname.gob.mx",
+        "e2e-feature-operator-001",
+        "operator@operations.example",
     )
 
 
@@ -473,6 +473,23 @@ def main() -> None:
         "feature-flags.config" in persisted_admin_session["permissions"]
         and "citizen-mobility.config" in persisted_admin_session["permissions"],
         "Persisted configuration permissions were not added at request time.",
+    )
+
+    operator_rule_status, operator_rule = request(
+        "POST",
+        "/api/administration/whitelist",
+        {
+            "kind": "email",
+            "value": "operator@operations.example",
+        },
+        feature_admin_headers,
+    )
+    require(
+        operator_rule_status == 200,
+        (
+            "Expected persisted-grant admin to add operator whitelist rule 200, got "
+            f"{operator_rule_status}: {operator_rule}"
+        ),
     )
 
     feature_status, feature_snapshot = request(
