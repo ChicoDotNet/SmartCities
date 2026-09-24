@@ -118,5 +118,20 @@ public sealed class FeatureFlagServiceTests
       values[$"{townHallId}\u001f{key}"] = value;
       return Task.CompletedTask;
     }
+
+    public Task SetAsync(
+      string townHallId,
+      string key,
+      string value,
+      SmartCities.Application.Administration.AdministrationControlPlaneAuditEvent auditEvent,
+      CancellationToken cancellationToken = default)
+    {
+      ArgumentNullException.ThrowIfNull(auditEvent);
+      return SetAsync(
+        townHallId,
+        key,
+        value,
+        cancellationToken);
+    }
   }
 }
