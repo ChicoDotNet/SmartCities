@@ -250,6 +250,165 @@ public sealed class AuthenticationFrontendFlowTests
       token.StatusCode);
   }
 
+
+  [Fact]
+  public async Task Current_session_returns_anonymous_200_without_identity_material()
+  {
+    await using var app = await StartAsync();
+
+    using var client = app.GetTestClient();
+    using var response = await client.GetAsync(
+      "/api/authentication/session",
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    Assert.Equal(
+      "no-store",
+      response.Headers.CacheControl?.ToString());
+
+    var session = await response.Content
+      .ReadFromJsonAsync<CurrentSessionSnapshot>(
+        cancellationToken:
+          TestContext.Current.CancellationToken);
+
+    Assert.NotNull(session);
+    Assert.False(session.Authenticated);
+    Assert.Null(session.SubjectId);
+    Assert.Null(session.IdentityProvider);
+    Assert.Empty(session.AuthorityRoles);
+    Assert.Empty(session.Permissions);
+  }
+
+  [Fact]
+  public async Task Current_session_recovers_the_canonical_cookie_and_exposes_only_canonical_identity()
+  {
+    await using var app = await StartAsync();
+
+    using var client = app.GetTestClient();
+    using var login = await client.PostAsJsonAsync(
+      "/api/authentication/local/session",
+      new LocalCredentialRequest(
+        "alice",
+        "correct-password"),
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+
+    var setCookie = Assert.Single(
+      login.Headers.GetValues("Set-Cookie"));
+    var cookie = setCookie.Split(';', 2)[0];
+
+    using var request = new HttpRequestMessage(
+      HttpMethod.Get,
+      "/api/authentication/session");
+    request.Headers.Add("Cookie", cookie);
+
+    using var response = await client.SendAsync(
+      request,
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    Assert.Equal(
+      "no-store",
+      response.Headers.CacheControl?.ToString());
+
+    var session = await response.Content
+      .ReadFromJsonAsync<CurrentSessionSnapshot>(
+        cancellationToken:
+          TestContext.Current.CancellationToken);
+
+    Assert.NotNull(session);
+    Assert.True(session.Authenticated);
+    Assert.Equal(
+      "local:default:alice-001",
+      session.SubjectId);
+    Assert.Equal("local", session.IdentityProvider);
+    Assert.Equal(
+      ["mobility-reviewer"],
+      session.AuthorityRoles);
+    Assert.Equal(
+      [SmartCitiesPermissions.FinalizeDecisionReview],
+      session.Permissions);
+
+    var json = await response.Content.ReadAsStringAsync(
+      TestContext.Current.CancellationToken);
+    Assert.DoesNotContain(
+      "\"sub\"",
+      json,
+      StringComparison.Ordinal);
+    Assert.DoesNotContain(
+      "\"scope\"",
+      json,
+      StringComparison.Ordinal);
+    Assert.DoesNotContain(
+      "\"groups\"",
+      json,
+      StringComparison.Ordinal);
+  }
+
+  [Fact]
+  public async Task Logout_requires_browser_request_marker_and_expires_the_shared_session_cookie()
+  {
+    await using var app = await StartAsync();
+
+    using var client = app.GetTestClient();
+    using var login = await client.PostAsJsonAsync(
+      "/api/authentication/local/session",
+      new LocalCredentialRequest(
+        "alice",
+        "correct-password"),
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+
+    var setCookie = Assert.Single(
+      login.Headers.GetValues("Set-Cookie"));
+    var cookie = setCookie.Split(';', 2)[0];
+
+    using var unmarked = new HttpRequestMessage(
+      HttpMethod.Post,
+      "/api/authentication/session/logout");
+    unmarked.Headers.Add("Cookie", cookie);
+
+    using var rejected = await client.SendAsync(
+      unmarked,
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      HttpStatusCode.Forbidden,
+      rejected.StatusCode);
+
+    using var logout = new HttpRequestMessage(
+      HttpMethod.Post,
+      "/api/authentication/session/logout");
+    logout.Headers.Add("Cookie", cookie);
+    logout.Headers.Add(
+      "X-SmartCities-Request",
+      "browser");
+
+    using var response = await client.SendAsync(
+      logout,
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      HttpStatusCode.NoContent,
+      response.StatusCode);
+    Assert.Equal(
+      "no-store",
+      response.Headers.CacheControl?.ToString());
+
+    var expiredCookie = Assert.Single(
+      response.Headers.GetValues("Set-Cookie"));
+    Assert.Contains(
+      "smartcities.test=",
+      expiredCookie,
+      StringComparison.Ordinal);
+    Assert.Contains(
+      "expires=",
+      expiredCookie,
+      StringComparison.OrdinalIgnoreCase);
+  }
+
   private static async Task<WebApplication> StartAsync(
     bool includeOidc = false)
   {
@@ -390,6 +549,14 @@ public sealed class AuthenticationFrontendFlowTests
             ]));
     }
   }
+
+
+  private sealed record CurrentSessionSnapshot(
+    bool Authenticated,
+    string? SubjectId,
+    string? IdentityProvider,
+    IReadOnlyList<string> AuthorityRoles,
+    IReadOnlyList<string> Permissions);
 
   public sealed record ProtectedIdentityResponse(
     string? Subject,
