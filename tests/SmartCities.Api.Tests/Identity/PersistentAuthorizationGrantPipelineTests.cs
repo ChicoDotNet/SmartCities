@@ -182,8 +182,8 @@ public sealed class PersistentAuthorizationGrantPipelineTests
         CanonicalIdentity.Create(
           "provider-a",
           "provider-a:tenant-a:official-1",
-          [],
-          [],
+          ["mobility-reviewer"],
+          [SmartCitiesPermissions.ManageFeatureFlags],
           "official@townhall.gov"));
     }
   }
