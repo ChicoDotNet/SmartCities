@@ -16,4 +16,16 @@ public static class SmartCitiesPolicies
   /// </summary>
   public const string ManageFeatureFlags =
     "smartcities.feature-flags.manage";
+
+  /// <summary>
+  /// Requires canonical authentication and admission to Town Hall Administration.
+  /// </summary>
+  public const string TownHallAdministrationAccess =
+    "smartcities.administration.access";
+
+  /// <summary>
+  /// Requires Administration admission plus explicit permission to manage whitelist rules.
+  /// </summary>
+  public const string ManageAdministrationWhitelist =
+    "smartcities.administration-whitelist.manage";
 }
