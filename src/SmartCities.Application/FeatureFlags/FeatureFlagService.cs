@@ -1,3 +1,4 @@
+using SmartCities.Application.Administration;
 using SmartCities.Application.Configuration;
 
 namespace SmartCities.Application.FeatureFlags;
@@ -111,10 +112,37 @@ public sealed class FeatureFlagService
   }
 
   /// <inheritdoc />
-  public async Task<FeatureFlagState?> SetAsync(
+  public Task<FeatureFlagState?> SetAsync(
     string featureId,
     bool enabled,
+    CancellationToken cancellationToken = default) =>
+    SetCoreAsync(
+      featureId,
+      enabled,
+      auditContext: null,
+      cancellationToken);
+
+  /// <inheritdoc />
+  public Task<FeatureFlagState?> SetAsync(
+    string featureId,
+    bool enabled,
+    AdministrationControlPlaneAuditContext auditContext,
     CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(auditContext);
+
+    return SetCoreAsync(
+      featureId,
+      enabled,
+      auditContext,
+      cancellationToken);
+  }
+
+  private async Task<FeatureFlagState?> SetCoreAsync(
+    string featureId,
+    bool enabled,
+    AdministrationControlPlaneAuditContext? auditContext,
+    CancellationToken cancellationToken)
   {
     ArgumentException.ThrowIfNullOrWhiteSpace(
       featureId);
@@ -124,18 +152,56 @@ public sealed class FeatureFlagService
       return null;
     }
 
-    await store
-      .SetAsync(
-        TownHallId,
-        SettingKey(featureId),
-        enabled ? "true" : "false",
-        cancellationToken)
-      .ConfigureAwait(false);
+    var value = enabled ? "true" : "false";
+
+    if (auditContext is null)
+    {
+      await store
+        .SetAsync(
+          TownHallId,
+          SettingKey(featureId),
+          value,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+    else
+    {
+      var previous = await GetAsync(
+          featureId,
+          cancellationToken)
+        .ConfigureAwait(false);
+
+      if (previous is null)
+      {
+        return null;
+      }
+
+      var auditEvent =
+        AdministrationControlPlaneAuditEvent.CreateMutation(
+          TownHallId,
+          auditContext,
+          AdministrationAuditActions.FeatureFlagSet,
+          AdministrationAuditResourceTypes.FeatureFlag,
+          featureId,
+          featureId,
+          previous.Enabled ? "true" : "false",
+          value);
+
+      await store
+        .SetAsync(
+          TownHallId,
+          SettingKey(featureId),
+          value,
+          auditEvent,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
 
     return new FeatureFlagState(
       featureId,
       enabled);
   }
+
 
   private static string SettingKey(
     string featureId) =>
