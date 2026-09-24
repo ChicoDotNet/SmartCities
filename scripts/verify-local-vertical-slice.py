@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+import base64
+import hashlib
+import hmac
 import json
 import os
 import time
@@ -12,12 +15,20 @@ BASE_URL = os.environ.get(
 ).rstrip("/")
 
 
-def request(method: str, path: str, payload: dict | None = None) -> tuple[int, dict]:
+def request(
+    method: str,
+    path: str,
+    payload: dict | None = None,
+    extra_headers: dict[str, str] | None = None,
+) -> tuple[int, dict]:
     data = None
     headers = {
         "Accept": "application/json",
         "Accept-Language": "es-MX",
     }
+
+    if extra_headers is not None:
+        headers.update(extra_headers)
 
     if payload is not None:
         data = json.dumps(payload).encode("utf-8")
@@ -43,6 +54,43 @@ def request(method: str, path: str, payload: dict | None = None) -> tuple[int, d
             parsed = {"raw": body}
 
         return exc.code, parsed
+
+
+def base64url(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
+
+
+def create_reviewer_token() -> str:
+    now = int(time.time())
+    header = {
+        "alg": "HS256",
+        "typ": "JWT",
+    }
+    payload = {
+        "iss": os.environ["SMARTCITIES_E2E_JWT_ISSUER"],
+        "aud": os.environ["SMARTCITIES_E2E_JWT_AUDIENCE"],
+        "sub": "e2e-reviewer-001",
+        "role": "mobility-reviewer",
+        "permission": "decision-review.finalize",
+        "iat": now,
+        "nbf": now - 5,
+        "exp": now + 300,
+    }
+    signing_input = (
+        f"{base64url(json.dumps(header, separators=(',', ':')).encode('utf-8'))}."
+        f"{base64url(json.dumps(payload, separators=(',', ':')).encode('utf-8'))}"
+    )
+    signature = hmac.new(
+        os.environ["SMARTCITIES_E2E_JWT_SIGNING_KEY"].encode("utf-8"),
+        signing_input.encode("ascii"),
+        hashlib.sha256,
+    ).digest()
+    return f"{signing_input}.{base64url(signature)}"
+
+
+def recommendation_id_for_case(case_id: str) -> str:
+    digest = hashlib.sha256(case_id.encode("utf-8")).hexdigest()
+    return f"mock:mobility:{digest}"
 
 
 def wait_until_ready() -> None:
@@ -155,7 +203,47 @@ def main() -> None:
     require(recovered["reportId"] == report_id, "Recovered report ID changed.")
     require(recovered["caseId"] == original_case_id, "Recovered case is not authoritative.")
 
-    print("Local vertical slice verified: live -> ready -> build -> OpenAPI -> create -> replay -> recover.")
+    recommendation_id = recommendation_id_for_case(original_case_id)
+    finalize_status, finalized = request(
+        "POST",
+        f"/api/human-oversight/decision-reviews/{recommendation_id}/finalize",
+        {
+            "authorityRole": "mobility-reviewer",
+            "disposition": 0,
+        },
+        {
+            "Authorization": f"Bearer {create_reviewer_token()}",
+        },
+    )
+    require(
+        finalize_status == 200,
+        f"Expected decision review finalize 200, got {finalize_status}: {finalized}",
+    )
+    require(
+        finalized["recommendationId"] == recommendation_id,
+        "Finalized recommendation ID changed.",
+    )
+    require(
+        finalized["evidenceCaseId"] == original_case_id,
+        "Finalized review lost the authoritative Evidence Case.",
+    )
+    require(
+        finalized["authoritySubjectId"] == "local:default:e2e-reviewer-001",
+        "Finalized review lost canonical human authority.",
+    )
+    require(
+        finalized["authorityRole"] == "mobility-reviewer",
+        "Finalized review lost canonical authority role.",
+    )
+    require(
+        finalized["disposition"] == 0,
+        "Finalized review did not preserve the human disposition.",
+    )
+
+    print(
+        "Local vertical slice verified: live -> ready -> build -> OpenAPI "
+        "-> create -> replay -> recover -> mock criterion -> human finalize."
+    )
 
 
 if __name__ == "__main__":

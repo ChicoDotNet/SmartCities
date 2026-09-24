@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SmartCities.Application.Citizens;
 using SmartCities.Application.HumanOversight;
 using SmartCities.Composition;
+using SmartCities.Criterion;
 using SmartCities.Infrastructure.Persistence;
 using Xunit;
 
@@ -82,6 +83,25 @@ public sealed class SmartCitiesCompositionTests
       descriptor =>
         descriptor.ServiceType == typeof(SmartCitiesDbContext)
         && descriptor.Lifetime == ServiceLifetime.Scoped);
+  }
+
+  [Fact]
+  public void Composition_registers_the_deterministic_mock_criterion_kernel()
+  {
+    var services = new ServiceCollection();
+
+    services.AddSmartCities(
+      SmartCitiesPersistenceOptions.Create(
+        DbProvider.PostgreSql,
+        ConnectionStringFor(DbProvider.PostgreSql)));
+
+    using var serviceProvider =
+      services.BuildServiceProvider();
+
+    var kernel = serviceProvider
+      .GetRequiredService<ICriterionKernel>();
+
+    Assert.IsType<MockCriterionKernel>(kernel);
   }
 
   [Fact]
