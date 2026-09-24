@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SmartCities.Api.Identity;
 using SmartCities.Application.Administration;
 using SmartCities.Identity;
@@ -14,6 +15,7 @@ namespace SmartCities.Api.Administration;
 /// </summary>
 [ApiController]
 [AllowAnonymous]
+[EnableRateLimiting("administration-bootstrap")]
 [Route("api/administration/bootstrap")]
 public sealed class AdministrationBootstrapController
   : ControllerBase
