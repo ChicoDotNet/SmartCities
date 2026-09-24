@@ -16,4 +16,10 @@ public static class SmartCitiesPermissions
   /// </summary>
   public const string ManageFeatureFlags =
     "feature-flags.manage";
+
+  /// <summary>
+  /// Allows an admitted Town Hall administrator to manage Administration whitelist rules.
+  /// </summary>
+  public const string ManageAdministrationWhitelist =
+    "administration-whitelist.manage";
 }
