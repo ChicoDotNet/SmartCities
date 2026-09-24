@@ -82,6 +82,42 @@ public sealed class SmartCitiesAuthorizationTests
   }
 
   [Fact]
+  public async Task Feature_management_policy_requires_its_canonical_permission()
+  {
+    using var provider = BuildServices();
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+
+    var permitted = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "admin-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "town-hall-admin"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+        ],
+        authenticationType: "provider-a"));
+
+    var allowed = await authorization.AuthorizeAsync(
+      permitted,
+      resource: null,
+      SmartCitiesPolicies.ManageFeatureFlags);
+
+    var denied = await authorization.AuthorizeAsync(
+      CreateCanonicalReviewer("provider-a"),
+      resource: null,
+      SmartCitiesPolicies.ManageFeatureFlags);
+
+    Assert.True(allowed.Succeeded);
+    Assert.False(denied.Succeeded);
+  }
+
+  [Fact]
   public void Canonical_principal_maps_to_the_existing_human_authority_contract()
   {
     var principal = CreateCanonicalReviewer(
