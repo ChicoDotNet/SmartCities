@@ -115,6 +115,22 @@ public static class SmartCitiesAuthorizationExtensions
             policy.AddRequirements(
               new AdministrationAccessRequirement());
           });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageAdministrationGrants,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageAdministrationGrants);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
       });
 
     return services;
