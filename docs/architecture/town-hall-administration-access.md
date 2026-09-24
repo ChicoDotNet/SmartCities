@@ -77,7 +77,9 @@ The password comes from deployment secret configuration:
 SmartCities:Administration:Bootstrap:Password
 ```
 
-It is never stored in SQLite and there is no universal production password.
+It is never stored in SQLite and there is no universal production password. When configured it must contain at least 16 characters.
+
+The bootstrap credential endpoint has a dedicated fixed-window rate limit of five attempts per minute. This is intentionally conservative because the endpoint exists only for initial/recovery administration, not normal user traffic.
 
 When configured, the bootstrap credential can establish the same encrypted `SmartCities.Session` cookie used by the rest of the product, even before another interactive provider is enabled.
 
