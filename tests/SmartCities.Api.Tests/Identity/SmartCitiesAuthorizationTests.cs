@@ -1,7 +1,9 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Api.Administration;
 using SmartCities.Api.Identity;
+using SmartCities.Application.Administration;
 using SmartCities.Decisions;
 using SmartCities.Identity;
 using Xunit;
@@ -160,9 +162,48 @@ public sealed class SmartCitiesAuthorizationTests
   {
     var services = new ServiceCollection();
     services.AddLogging();
+    services.AddSingleton<IAdministrationAccessService>(
+      new AllowingAdministrationAccessService());
     services.AddSmartCitiesAuthorization();
+    services.AddSmartCitiesAdministrationAuthorization();
 
     return services.BuildServiceProvider();
+  }
+
+  private sealed class AllowingAdministrationAccessService
+    : IAdministrationAccessService
+  {
+    public string TownHallId => "test-town-hall";
+
+    public Task<bool> IsAuthorizedAsync(
+      AdministrationIdentity identity,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      return Task.FromResult(true);
+    }
+
+    public Task<bool> IsBootstrapAvailableAsync(
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+      return Task.FromResult(false);
+    }
+
+    public Task<IReadOnlyList<AdministrationAccessRule>> GetRulesAsync(
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<AdministrationAccessRule> AddRuleAsync(
+      AdministrationAccessRuleKind kind,
+      string value,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<bool> DeleteRuleAsync(
+      string ruleId,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
   }
 
   private static ClaimsPrincipal CreateCanonicalReviewer(
