@@ -23,10 +23,6 @@ public static class SmartCitiesAuthorizationExtensions
   {
     ArgumentNullException.ThrowIfNull(services);
 
-    services.AddSingleton<
-      IAuthorizationHandler,
-      AdministrationAccessAuthorizationHandler>();
-
     services.AddAuthorization(
       options =>
       {
