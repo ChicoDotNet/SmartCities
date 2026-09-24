@@ -23,7 +23,7 @@ public sealed class AdministrationBootstrapController
   private readonly IAuthenticationSchemeProvider schemes;
 
   /// <summary>Initializes the bootstrap session boundary.</summary>
-  internal AdministrationBootstrapController(
+  public AdministrationBootstrapController(
     IAdministrationAccessService administration,
     AdministrationBootstrapConfiguration configuration,
     IAuthenticationSchemeProvider schemes)
