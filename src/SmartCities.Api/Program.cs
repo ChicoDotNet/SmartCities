@@ -1,3 +1,4 @@
+using SmartCities.Api.Administration;
 using SmartCities.Api.Hosting;
 using SmartCities.Api.Identity;
 
@@ -6,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSmartCitiesFromConfiguration(
   builder.Configuration);
 builder.Services.AddSmartCitiesFeatureManagementFromConfiguration(
+  builder.Configuration);
+builder.Services.AddSmartCitiesAdministrationBootstrap(
   builder.Configuration);
 builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
