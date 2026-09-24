@@ -228,6 +228,104 @@ public sealed class ConfigurableAuthenticationProviderTests
   }
 
   [Fact]
+  public async Task Generic_oidc_adapter_promotes_only_a_verified_configured_email_claim()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+
+    var values = OidcConfiguration();
+    values["SmartCities:Authentication:OpenIdConnect:workforce:EmailClaimType"] =
+      "mail";
+    values["SmartCities:Authentication:OpenIdConnect:workforce:EmailVerifiedClaimType"] =
+      "mail_verified";
+
+    services.AddSmartCitiesAuthenticationProviders(
+      BuildConfiguration(values));
+
+    using var provider = services.BuildServiceProvider();
+    var adapter = provider
+      .GetServices<IAuthenticationProviderAdapter>()
+      .Single(
+        item => item.ProviderId == "workforce");
+    var context = AuthenticationProviderContext.Create(
+      SmartCitiesAuthenticationSchemes.Oidc("workforce"),
+      "https://workforce.example.test",
+      "tenant-a");
+
+    var verified = await adapter.NormalizeAsync(
+      context,
+      ExternalAuthenticatedIdentity.Create(
+        "verified-user",
+        [
+          ExternalIdentityClaim.Create(
+            "mail",
+            "Official@TownHall.GOV"),
+          ExternalIdentityClaim.Create(
+            "mail_verified",
+            "true"),
+        ]),
+      TestContext.Current.CancellationToken);
+
+    var unverified = await adapter.NormalizeAsync(
+      context,
+      ExternalAuthenticatedIdentity.Create(
+        "unverified-user",
+        [
+          ExternalIdentityClaim.Create(
+            "mail",
+            "other@townhall.gov"),
+          ExternalIdentityClaim.Create(
+            "mail_verified",
+            "false"),
+        ]),
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      "official@townhall.gov",
+      verified.EmailAddress);
+    Assert.Null(unverified.EmailAddress);
+  }
+
+  [Fact]
+  public async Task Generic_oidc_adapter_can_use_an_authoritative_email_claim_without_verification_only_when_explicitly_configured()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+
+    var values = OidcConfiguration();
+    values["SmartCities:Authentication:OpenIdConnect:workforce:EmailClaimType"] =
+      "preferred_username";
+    values["SmartCities:Authentication:OpenIdConnect:workforce:RequireVerifiedEmail"] =
+      "false";
+
+    services.AddSmartCitiesAuthenticationProviders(
+      BuildConfiguration(values));
+
+    using var provider = services.BuildServiceProvider();
+    var adapter = provider
+      .GetServices<IAuthenticationProviderAdapter>()
+      .Single(
+        item => item.ProviderId == "workforce");
+    var canonical = await adapter.NormalizeAsync(
+      AuthenticationProviderContext.Create(
+        SmartCitiesAuthenticationSchemes.Oidc("workforce"),
+        "https://workforce.example.test",
+        "tenant-a"),
+      ExternalAuthenticatedIdentity.Create(
+        "entra-like-user",
+        [
+          ExternalIdentityClaim.Create(
+            "preferred_username",
+            "Official@TownHall.GOB.MX"),
+        ]),
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      "official@townhall.gob.mx",
+      canonical.EmailAddress);
+  }
+
+  [Fact]
   public async Task Generic_oidc_adapter_maps_only_explicitly_allowed_claim_values()
   {
     var services = new ServiceCollection();
