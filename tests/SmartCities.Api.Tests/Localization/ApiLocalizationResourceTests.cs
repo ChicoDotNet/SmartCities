@@ -132,6 +132,34 @@ public sealed class ApiLocalizationResourceTests
   }
 
   [Fact]
+  public void Citizen_outcome_copy_is_available_in_neutral_english_and_es_mx()
+  {
+    var catalog = new ResxApiLocalizationCatalog();
+
+    var english = catalog.GetResources("en");
+    var spanish = catalog.GetResources("es-MX");
+
+    Assert.Equal(
+      "Under human review",
+      english.Resources[
+        "citizen.mobilityOutcome.status.pendingHumanReview"]);
+    Assert.Equal(
+      "En revisión humana",
+      spanish.Resources[
+        "citizen.mobilityOutcome.status.pendingHumanReview"]);
+    Assert.Contains(
+      "authorized person",
+      english.Resources[
+        "citizen.mobilityOutcome.explanation.pendingHumanReview"],
+      StringComparison.OrdinalIgnoreCase);
+    Assert.Contains(
+      "persona autorizada",
+      spanish.Resources[
+        "citizen.mobilityOutcome.explanation.pendingHumanReview"],
+      StringComparison.OrdinalIgnoreCase);
+  }
+
+  [Fact]
   public void Supported_locales_expose_the_same_public_resource_keys()
   {
     var catalog = new ResxApiLocalizationCatalog();
