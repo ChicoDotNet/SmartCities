@@ -11,7 +11,8 @@ export type MobilityReportOutcomeStatus =
 export type MobilityReportDisposition =
   | 'accepted'
   | 'modified'
-  | 'rejected';
+  | 'rejected'
+  | 'deferred';
 
 export interface MobilityReportOutcome {
   reportId: string;
@@ -204,6 +205,7 @@ function validateMobilityReportOutcome(
       disposition === 'accepted'
       || disposition === 'modified'
       || disposition === 'rejected'
+      || disposition === 'deferred'
     )
   ) {
     return {
