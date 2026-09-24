@@ -18,6 +18,7 @@ namespace SmartCities.Api.Citizens;
 /// </remarks>
 [ApiController]
 [AllowAnonymous]
+[RequireFeature(SmartCitiesFeatures.CitizenMobility)]
 [Route("api/citizen/mobility-reports/{reportId}/outcome")]
 public sealed class CitizenMobilityOutcomesController
   : ControllerBase
