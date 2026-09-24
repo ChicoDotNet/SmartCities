@@ -433,12 +433,16 @@ function AdministrationWorkspace({
   bootstrapSession,
   onAuthorityChanged,
 }: AdministrationWorkspaceProps) {
+  const hasAuthorityRole =
+    session.authorityRoles.length > 0;
   const canManageFeatures =
-    session.permissions.includes(
+    hasAuthorityRole
+    && session.permissions.includes(
       manageFeatureFlags,
     );
   const canManageWhitelist =
-    session.permissions.includes(
+    hasAuthorityRole
+    && session.permissions.includes(
       manageWhitelist,
     );
 
