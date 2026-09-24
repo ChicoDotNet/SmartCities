@@ -262,9 +262,8 @@ public sealed class AuthenticationFrontendFlowTests
       TestContext.Current.CancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    Assert.Equal(
-      "no-store",
-      response.Headers.CacheControl?.ToString());
+    Assert.True(
+      response.Headers.CacheControl?.NoStore);
 
     var session = await response.Content
       .ReadFromJsonAsync<CurrentSessionSnapshot>(
@@ -308,9 +307,8 @@ public sealed class AuthenticationFrontendFlowTests
       TestContext.Current.CancellationToken);
 
     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    Assert.Equal(
-      "no-store",
-      response.Headers.CacheControl?.ToString());
+    Assert.True(
+      response.Headers.CacheControl?.NoStore);
 
     var session = await response.Content
       .ReadFromJsonAsync<CurrentSessionSnapshot>(
@@ -393,9 +391,8 @@ public sealed class AuthenticationFrontendFlowTests
     Assert.Equal(
       HttpStatusCode.NoContent,
       response.StatusCode);
-    Assert.Equal(
-      "no-store",
-      response.Headers.CacheControl?.ToString());
+    Assert.True(
+      response.Headers.CacheControl?.NoStore);
 
     var expiredCookie = Assert.Single(
       response.Headers.GetValues("Set-Cookie"));
@@ -409,8 +406,53 @@ public sealed class AuthenticationFrontendFlowTests
       StringComparison.OrdinalIgnoreCase);
   }
 
+
+  [Fact]
+  public async Task Session_lifecycle_remains_safe_and_idempotent_when_no_provider_is_enabled()
+  {
+    await using var app = await StartAsync(
+      includeLocal: false);
+
+    using var client = app.GetTestClient();
+
+    for (var attempt = 0; attempt < 2; attempt++)
+    {
+      using var logout = new HttpRequestMessage(
+        HttpMethod.Post,
+        "/api/authentication/session/logout");
+      logout.Headers.Add(
+        "X-SmartCities-Request",
+        "browser");
+
+      using var logoutResponse = await client.SendAsync(
+        logout,
+        TestContext.Current.CancellationToken);
+
+      Assert.Equal(
+        HttpStatusCode.NoContent,
+        logoutResponse.StatusCode);
+      Assert.True(
+        logoutResponse.Headers.CacheControl?.NoStore);
+    }
+
+    using var current = await client.GetAsync(
+      "/api/authentication/session",
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(HttpStatusCode.OK, current.StatusCode);
+
+    var session = await current.Content
+      .ReadFromJsonAsync<CurrentSessionSnapshot>(
+        cancellationToken:
+          TestContext.Current.CancellationToken);
+
+    Assert.NotNull(session);
+    Assert.False(session.Authenticated);
+  }
+
   private static async Task<WebApplication> StartAsync(
-    bool includeOidc = false)
+    bool includeOidc = false,
+    bool includeLocal = true)
   {
     var builder = WebApplication.CreateBuilder();
     builder.WebHost.UseTestServer();
@@ -423,7 +465,9 @@ public sealed class AuthenticationFrontendFlowTests
       ILocalCredentialAuthenticator,
       TestLocalCredentialAuthenticator>();
     builder.Services.AddSmartCitiesAuthenticationProviders(
-      BuildConfiguration(includeOidc));
+      BuildConfiguration(
+        includeOidc,
+        includeLocal));
     builder.Services.AddSmartCitiesAuthorization();
 
     var app = builder.Build();
@@ -455,35 +499,44 @@ public sealed class AuthenticationFrontendFlowTests
   }
 
   private static IConfiguration BuildConfiguration(
-    bool includeOidc) =>
+    bool includeOidc,
+    bool includeLocal = true) =>
     new ConfigurationBuilder()
       .AddInMemoryCollection(
-        BuildValues(includeOidc))
+        BuildValues(
+          includeOidc,
+          includeLocal))
       .Build();
 
   private static Dictionary<string, string?> BuildValues(
-    bool includeOidc)
+    bool includeOidc,
+    bool includeLocal = true)
   {
     var values =
       new Dictionary<string, string?>(
-        StringComparer.Ordinal)
-      {
-        ["SmartCities:Authentication:Local:Enabled"] = "true",
-        ["SmartCities:Authentication:Local:Issuer"] =
-          "https://local.smartcities.test",
-        ["SmartCities:Authentication:Local:Audience"] =
-          "smartcities-api",
-        ["SmartCities:Authentication:Local:SigningKey"] =
-          "0123456789abcdef0123456789abcdef",
-        ["SmartCities:Authentication:Local:CookieName"] =
-          "smartcities.test",
-        ["SmartCities:Authentication:Local:JwtLifetimeMinutes"] =
-          "30",
-        ["SmartCities:Authentication:Local:AllowedAuthorityRoles:0"] =
-          "mobility-reviewer",
-        ["SmartCities:Authentication:Local:AllowedPermissions:0"] =
-          SmartCitiesPermissions.FinalizeDecisionReview,
-      };
+        StringComparer.Ordinal);
+
+    if (includeLocal)
+    {
+      values["SmartCities:Authentication:Local:Enabled"] =
+        "true";
+      values["SmartCities:Authentication:Local:Issuer"] =
+        "https://local.smartcities.test";
+      values["SmartCities:Authentication:Local:Audience"] =
+        "smartcities-api";
+      values["SmartCities:Authentication:Local:SigningKey"] =
+        "0123456789abcdef0123456789abcdef";
+      values["SmartCities:Authentication:Local:CookieName"] =
+        "smartcities.test";
+      values["SmartCities:Authentication:Local:JwtLifetimeMinutes"] =
+        "30";
+      values[
+        "SmartCities:Authentication:Local:AllowedAuthorityRoles:0"] =
+        "mobility-reviewer";
+      values[
+        "SmartCities:Authentication:Local:AllowedPermissions:0"] =
+        SmartCitiesPermissions.FinalizeDecisionReview;
+    }
 
     if (includeOidc)
     {

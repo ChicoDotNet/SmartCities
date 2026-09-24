@@ -263,3 +263,28 @@ test('logout posts to the canonical session endpoint with the browser CSRF marke
     },
   );
 });
+
+
+test('current session contract fails closed when anonymous payload carries stale identity data', async () => {
+  await assert.rejects(
+    loadCurrentSession(
+      async () =>
+        new Response(
+          JSON.stringify({
+            authenticated: false,
+            subjectId: 'stale-user',
+            identityProvider: 'stale-provider',
+            authorityRoles: [],
+            permissions: [],
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+    ),
+    /authentication_current_session_contract_invalid/,
+  );
+});
