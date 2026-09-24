@@ -14,7 +14,7 @@ namespace SmartCities.Api.Tests.HumanOversight;
 public sealed class DecisionReviewsControllerTests
 {
   [Fact]
-  public void Finalize_endpoint_requires_the_canonical_finalize_policy()
+  public void Finalize_endpoint_requires_feature_operation_and_the_fine_grained_finalize_policy()
   {
     var method = typeof(DecisionReviewsController)
       .GetMethod(
@@ -23,13 +23,19 @@ public sealed class DecisionReviewsControllerTests
 
     Assert.NotNull(method);
 
-    var authorize = Assert.Single(
-      method.GetCustomAttributes<
-        AuthorizeAttribute>());
+    var policies = method
+      .GetCustomAttributes<AuthorizeAttribute>()
+      .Select(
+        static attribute => attribute.Policy)
+      .ToArray();
 
-    Assert.Equal(
+    Assert.Equal(2, policies.Length);
+    Assert.Contains(
+      SmartCitiesPolicies.ManageCitizenMobility,
+      policies);
+    Assert.Contains(
       SmartCitiesPolicies.FinalizeDecisionReview,
-      authorize.Policy);
+      policies);
   }
 
   [Fact]

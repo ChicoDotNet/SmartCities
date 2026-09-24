@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartCities.Api.Administration;
+using SmartCities.Application.FeatureFlags;
 using SmartCities.Identity;
 
 namespace SmartCities.Api.Identity;
@@ -37,6 +39,113 @@ public static class SmartCitiesAuthorizationExtensions
             policy.RequireClaim(
               SmartCitiesClaimTypes.Permission,
               SmartCitiesPermissions.FinalizeDecisionReview);
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.TownHallAdministrationAccess,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageFeatureFlags,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageFeatureFlags);
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageCitizenMobility,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageFeatureFlags);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesFeaturePermissions.Manage(
+                SmartCitiesFeatures.CitizenMobility));
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ConfigureFeatureFlags,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ConfigureFeatureFlags);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageAdministrationWhitelist,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageAdministrationWhitelist);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageAdministrationGrants,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageAdministrationGrants);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ReadAdministrationAudit,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ReadAdministrationAudit);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
           });
       });
 

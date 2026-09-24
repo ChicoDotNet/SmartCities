@@ -39,12 +39,17 @@ public static class CanonicalIdentityClaimsExtensions
     var permissions = GetDistinctClaims(
       principal,
       SmartCitiesClaimTypes.Permission);
+    var email = GetSingleOptionalClaim(
+      principal,
+      SmartCitiesClaimTypes.EmailAddress,
+      "canonical email");
 
     return CanonicalIdentity.Create(
       provider,
       subject,
       roles,
-      permissions);
+      permissions,
+      email);
   }
 
   /// <summary>
@@ -70,6 +75,14 @@ public static class CanonicalIdentityClaimsExtensions
         SmartCitiesClaimTypes.IdentityProvider,
         identity.IdentityProvider),
     };
+
+    if (identity.EmailAddress is not null)
+    {
+      claims.Add(
+        new Claim(
+          SmartCitiesClaimTypes.EmailAddress,
+          identity.EmailAddress));
+    }
 
     claims.AddRange(
       identity.AuthorityRoles.Select(
@@ -115,6 +128,28 @@ public static class CanonicalIdentityClaimsExtensions
     }
 
     return values[0];
+  }
+
+  private static string? GetSingleOptionalClaim(
+    ClaimsPrincipal principal,
+    string claimType,
+    string description)
+  {
+    var values = principal.FindAll(claimType)
+      .Select(static claim => claim.Value)
+      .Where(
+        static value =>
+          !string.IsNullOrWhiteSpace(value))
+      .Distinct(StringComparer.OrdinalIgnoreCase)
+      .ToArray();
+
+    if (values.Length > 1)
+    {
+      throw new InvalidOperationException(
+        $"The principal may contain at most one {description} claim.");
+    }
+
+    return values.SingleOrDefault();
   }
 
   private static string[] GetDistinctClaims(

@@ -56,11 +56,61 @@ def request(
         return exc.code, parsed
 
 
+def request_with_headers(
+    method: str,
+    path: str,
+    payload: dict | None = None,
+    extra_headers: dict[str, str] | None = None,
+) -> tuple[int, dict, dict[str, str]]:
+    data = None
+    headers = {
+        "Accept": "application/json",
+        "Accept-Language": "es-MX",
+    }
+
+    if extra_headers is not None:
+        headers.update(extra_headers)
+
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        headers["Content-Type"] = "application/json"
+
+    req = urllib.request.Request(
+        f"{BASE_URL}{path}",
+        data=data,
+        headers=headers,
+        method=method,
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            body = response.read().decode("utf-8")
+            return (
+                response.status,
+                json.loads(body) if body else {},
+                dict(response.headers.items()),
+            )
+    except urllib.error.HTTPError as exc:
+        body = exc.read().decode("utf-8")
+
+        try:
+            parsed = json.loads(body) if body else {}
+        except json.JSONDecodeError:
+            parsed = {"raw": body}
+
+        return exc.code, parsed, dict(exc.headers.items())
+
+
 def base64url(value: bytes) -> str:
     return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
 
 
-def create_reviewer_token() -> str:
+def create_token(
+    role: str | None,
+    permissions: list[str],
+    subject: str,
+    email: str | None = None,
+) -> str:
     now = int(time.time())
     header = {
         "alg": "HS256",
@@ -69,13 +119,17 @@ def create_reviewer_token() -> str:
     payload = {
         "iss": os.environ["SMARTCITIES_E2E_JWT_ISSUER"],
         "aud": os.environ["SMARTCITIES_E2E_JWT_AUDIENCE"],
-        "sub": "e2e-reviewer-001",
-        "role": "mobility-reviewer",
-        "permission": "decision-review.finalize",
+        "sub": subject,
+        "permission": permissions,
         "iat": now,
         "nbf": now - 5,
         "exp": now + 300,
     }
+    if role is not None:
+        payload["role"] = role
+    if email is not None:
+        payload["email"] = email
+
     signing_input = (
         f"{base64url(json.dumps(header, separators=(',', ':')).encode('utf-8'))}."
         f"{base64url(json.dumps(payload, separators=(',', ':')).encode('utf-8'))}"
@@ -86,6 +140,39 @@ def create_reviewer_token() -> str:
         hashlib.sha256,
     ).digest()
     return f"{signing_input}.{base64url(signature)}"
+
+
+def create_reviewer_token() -> str:
+    return create_token(
+        "mobility-reviewer",
+        [
+            "feature-flags.manage",
+            "citizen-mobility.manage",
+            "decision-review.finalize",
+        ],
+        "e2e-reviewer-001",
+    )
+
+
+def create_feature_manager_token() -> str:
+    return create_token(
+        "town-hall-admin",
+        [
+            "feature-flags.manage",
+            "citizen-mobility.manage",
+        ],
+        "e2e-feature-operator-001",
+        "operator@operations.example",
+    )
+
+
+def create_persisted_feature_configurator_token() -> str:
+    return create_token(
+        None,
+        [],
+        "e2e-persisted-admin-001",
+        "official@townhallname.gob.mx",
+    )
 
 
 def recommendation_id_for_case(case_id: str) -> str:
@@ -135,6 +222,10 @@ def main() -> None:
     require(ready_status == 200, f"Expected ready 200, got {ready_status}: {ready}")
     require(ready["status"] == "Healthy", "Readiness is not healthy.")
     require(ready["checks"]["database"] == "Healthy", "Database readiness check is not healthy.")
+    require(
+        ready["checks"]["configuration"] == "Healthy",
+        "Town Hall configuration readiness check is not healthy.",
+    )
 
     build_status, build = request(
         "GET",
@@ -165,6 +256,462 @@ def main() -> None:
         "/api/citizen/mobility-reports/{reportId}/outcome"
         in openapi["paths"],
         "OpenAPI does not expose the citizen outcome route.",
+    )
+    require(
+        "/api/system/features" in openapi["paths"],
+        "OpenAPI does not expose Town Hall feature flags.",
+    )
+    require(
+        "/api/system/features/{featureId}" in openapi["paths"],
+        "OpenAPI does not expose Town Hall feature management.",
+    )
+    require(
+        "/api/administration/access" in openapi["paths"],
+        "OpenAPI does not expose Administration admission.",
+    )
+    require(
+        "/api/administration/whitelist" in openapi["paths"],
+        "OpenAPI does not expose Administration whitelist management.",
+    )
+    require(
+        "/api/administration/bootstrap/session" in openapi["paths"],
+        "OpenAPI does not expose Administration bootstrap session.",
+    )
+    require(
+        "/api/administration/grants" in openapi["paths"],
+        "OpenAPI does not expose persisted Administration grants.",
+    )
+    require(
+        "/api/administration/grants/catalog" in openapi["paths"],
+        "OpenAPI does not expose the Administration grant catalog.",
+    )
+    require(
+        "/api/administration/audit" in openapi["paths"],
+        "OpenAPI does not expose immutable Administration audit history.",
+    )
+
+    anonymous_access_status, anonymous_access = request(
+        "GET",
+        "/api/administration/access",
+    )
+    require(
+        anonymous_access_status == 200,
+        (
+            "Expected anonymous Administration access probe 200, got "
+            f"{anonymous_access_status}: {anonymous_access}"
+        ),
+    )
+    require(
+        anonymous_access["authorized"] is False,
+        "Anonymous request must not be admitted to Administration.",
+    )
+    require(
+        anonymous_access["bootstrapAvailable"] is True,
+        "Empty whitelist must expose bootstrap availability.",
+    )
+
+    bootstrap_status, bootstrap, bootstrap_headers = request_with_headers(
+        "POST",
+        "/api/administration/bootstrap/session",
+        {
+            "userName": "townhalladmin@smartcities.local",
+            "password": "smartcities-e2e-bootstrap-only",
+        },
+    )
+    require(
+        bootstrap_status == 200,
+        f"Expected bootstrap session 200, got {bootstrap_status}: {bootstrap}",
+    )
+    bootstrap_cookie = bootstrap_headers.get("Set-Cookie", "").split(";", 1)[0]
+    require(
+        bool(bootstrap_cookie),
+        "Bootstrap session did not issue the canonical browser cookie.",
+    )
+
+    bootstrap_headers_for_api = {
+        "Cookie": bootstrap_cookie,
+        "Content-Type": "application/json",
+    }
+
+    grant_ids: dict[str, str] = {}
+    bootstrap_grants = [
+        ("authority-role", "town-hall-admin"),
+        ("permission", "administration-grants.manage"),
+        ("permission", "administration-whitelist.manage"),
+        ("permission", "administration-audit.read"),
+        ("permission", "feature-flags.config"),
+        ("permission", "citizen-mobility.config"),
+    ]
+    for grant_kind, grant_value in bootstrap_grants:
+        grant_status, grant = request(
+            "POST",
+            "/api/administration/grants",
+            {
+                "targetKind": "email-domain",
+                "targetValue": "@townhallname.gob.mx",
+                "grantKind": grant_kind,
+                "value": grant_value,
+            },
+            bootstrap_headers_for_api,
+        )
+        require(
+            grant_status == 200,
+            (
+                "Expected bootstrap grant provisioning 200 for "
+                f"{grant_value}, got {grant_status}: {grant}"
+            ),
+        )
+        require(
+            grant["targetValue"] == "townhallname.gob.mx"
+            and grant["value"] == grant_value,
+            f"Persisted grant did not normalize correctly: {grant}",
+        )
+        grant_ids[grant_value] = grant["grantId"]
+
+    first_rule_status, first_rule = request(
+        "POST",
+        "/api/administration/whitelist",
+        {
+            "kind": "email-domain",
+            "value": "@townhallname.gob.mx",
+        },
+        bootstrap_headers_for_api,
+    )
+    require(
+        first_rule_status == 200,
+        f"Expected first whitelist rule 200, got {first_rule_status}: {first_rule}",
+    )
+    require(
+        first_rule["kind"] == "email-domain"
+        and first_rule["value"] == "townhallname.gob.mx",
+        "First whitelist rule was not normalized as the expected municipal domain.",
+    )
+
+    bootstrap_access_status, bootstrap_access = request(
+        "GET",
+        "/api/administration/access",
+        extra_headers={"Cookie": bootstrap_cookie},
+    )
+    require(
+        bootstrap_access_status == 200,
+        (
+            "Expected bootstrap post-whitelist access probe 200, got "
+            f"{bootstrap_access_status}: {bootstrap_access}"
+        ),
+    )
+    require(
+        bootstrap_access["authorized"] is False,
+        "Bootstrap cookie remained authorized after the first whitelist rule.",
+    )
+    require(
+        bootstrap_access["bootstrapAvailable"] is False,
+        "Bootstrap remained available after the first whitelist rule.",
+    )
+
+    bootstrap_reuse_status, bootstrap_reuse = request(
+        "POST",
+        "/api/administration/whitelist",
+        {
+            "kind": "email-domain",
+            "value": "should-not-be-added.gov",
+        },
+        bootstrap_headers_for_api,
+    )
+    require(
+        bootstrap_reuse_status == 403,
+        (
+            "Expected bootstrap whitelist reuse 403 after initialization, got "
+            f"{bootstrap_reuse_status}: {bootstrap_reuse}"
+        ),
+    )
+
+    second_bootstrap_status, second_bootstrap = request(
+        "POST",
+        "/api/administration/bootstrap/session",
+        {
+            "userName": "townhalladmin@smartcities.local",
+            "password": "smartcities-e2e-bootstrap-only",
+        },
+    )
+    require(
+        second_bootstrap_status == 404,
+        (
+            "Expected bootstrap endpoint 404 after whitelist initialization, got "
+            f"{second_bootstrap_status}: {second_bootstrap}"
+        ),
+    )
+
+    feature_admin_headers = {
+        "Authorization": f"Bearer {create_persisted_feature_configurator_token()}",
+    }
+    admitted_status, admitted = request(
+        "GET",
+        "/api/administration/access",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        admitted_status == 200,
+        f"Expected whitelisted Administration probe 200, got {admitted_status}: {admitted}",
+    )
+    require(
+        admitted["authorized"] is True,
+        "Whitelisted canonical subject was not admitted to Administration.",
+    )
+
+    persisted_admin_session_status, persisted_admin_session = request(
+        "GET",
+        "/api/authentication/session",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        persisted_admin_session_status == 200,
+        (
+            "Expected persisted-grant session 200, got "
+            f"{persisted_admin_session_status}: {persisted_admin_session}"
+        ),
+    )
+    require(
+        "town-hall-admin" in persisted_admin_session["authorityRoles"],
+        "Persisted authority role was not added to the canonical session view.",
+    )
+    require(
+        "feature-flags.config" in persisted_admin_session["permissions"]
+        and "citizen-mobility.config" in persisted_admin_session["permissions"],
+        "Persisted configuration permissions were not added at request time.",
+    )
+
+    operator_rule_status, operator_rule = request(
+        "POST",
+        "/api/administration/whitelist",
+        {
+            "kind": "email",
+            "value": "operator@operations.example",
+        },
+        feature_admin_headers,
+    )
+    require(
+        operator_rule_status == 200,
+        (
+            "Expected persisted-grant admin to add operator whitelist rule 200, got "
+            f"{operator_rule_status}: {operator_rule}"
+        ),
+    )
+
+    feature_status, feature_snapshot = request(
+        "GET",
+        "/api/system/features",
+    )
+    require(
+        feature_status == 200,
+        f"Expected feature snapshot 200, got {feature_status}: {feature_snapshot}",
+    )
+    require(
+        feature_snapshot["townHallId"] == "e2e-town-hall",
+        "Feature snapshot has the wrong Town Hall identity.",
+    )
+    mobility = next(
+        item
+        for item in feature_snapshot["features"]
+        if item["featureId"] == "citizen-mobility"
+    )
+    require(
+        mobility["enabled"] is True,
+        "Citizen mobility must preserve its enabled-by-default compatibility behavior.",
+    )
+
+    operational_headers = {
+        "Authorization": f"Bearer {create_feature_manager_token()}",
+        "Content-Type": "application/json",
+    }
+    operational_config_status, operational_config = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": False},
+        operational_headers,
+    )
+    require(
+        operational_config_status == 403,
+        (
+            "Operational feature manage grants must not configure flags; expected 403, got "
+            f"{operational_config_status}: {operational_config}"
+        ),
+    )
+
+    admin_headers = {
+        "Authorization": f"Bearer {create_persisted_feature_configurator_token()}",
+        "Content-Type": "application/json",
+    }
+    disabled_status, disabled = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": False},
+        admin_headers,
+    )
+    require(
+        disabled_status == 200,
+        f"Expected feature disable 200, got {disabled_status}: {disabled}",
+    )
+    require(
+        disabled["featureId"] == "citizen-mobility"
+        and disabled["enabled"] is False,
+        "Feature disable did not persist the requested state.",
+    )
+
+    disabled_snapshot_status, disabled_snapshot = request(
+        "GET",
+        "/api/system/features",
+    )
+    require(
+        disabled_snapshot_status == 200,
+        (
+            "Expected disabled feature snapshot 200, got "
+            f"{disabled_snapshot_status}: {disabled_snapshot}"
+        ),
+    )
+    disabled_mobility = next(
+        item
+        for item in disabled_snapshot["features"]
+        if item["featureId"] == "citizen-mobility"
+    )
+    require(
+        disabled_mobility["enabled"] is False,
+        "Feature snapshot did not recover the persisted SQLite override.",
+    )
+
+    gated_status, gated = request(
+        "POST",
+        "/api/citizen/mobility-reports",
+        {
+            "reportId": "gated-report",
+            "caseId": "gated-case",
+            "categoryKey": "road-safety",
+            "locationReference": "Feature gate",
+            "description": "This request must not enter the disabled vertical slice.",
+            "evidenceReferences": [],
+        },
+    )
+    require(
+        gated_status == 404,
+        f"Expected disabled vertical slice 404, got {gated_status}: {gated}",
+    )
+
+    enabled_status, enabled = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": True},
+        admin_headers,
+    )
+    require(
+        enabled_status == 200,
+        f"Expected feature enable 200, got {enabled_status}: {enabled}",
+    )
+    require(
+        enabled["enabled"] is True,
+        "Feature re-enable did not persist the requested state.",
+    )
+
+    revoked_status, revoked = request(
+        "DELETE",
+        (
+            "/api/administration/grants/"
+            f"{grant_ids['citizen-mobility.config']}"
+        ),
+        extra_headers=admin_headers,
+    )
+    require(
+        revoked_status == 204,
+        (
+            "Expected persisted config grant deletion 204, got "
+            f"{revoked_status}: {revoked}"
+        ),
+    )
+
+    revoked_session_status, revoked_session = request(
+        "GET",
+        "/api/authentication/session",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        revoked_session_status == 200,
+        (
+            "Expected post-revocation session 200, got "
+            f"{revoked_session_status}: {revoked_session}"
+        ),
+    )
+    require(
+        "citizen-mobility.config"
+        not in revoked_session["permissions"],
+        "Revoked persisted permission survived into the next request.",
+    )
+
+    revoked_config_status, revoked_config = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": False},
+        admin_headers,
+    )
+    require(
+        revoked_config_status == 403,
+        (
+            "Expected immediate post-revocation feature config 403, got "
+            f"{revoked_config_status}: {revoked_config}"
+        ),
+    )
+
+    audit_status, audit_entries = request(
+        "GET",
+        "/api/administration/audit?limit=100",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        audit_status == 200,
+        (
+            "Expected Administration audit history 200, got "
+            f"{audit_status}: {audit_entries}"
+        ),
+    )
+    require(
+        isinstance(audit_entries, list)
+        and len(audit_entries) >= 4,
+        f"Expected persisted control-plane audit entries, got {audit_entries}",
+    )
+
+    persisted_subject = persisted_admin_session["subjectId"]
+    persisted_actions = [
+        entry
+        for entry in audit_entries
+        if entry["actorSubjectId"] == persisted_subject
+    ]
+    require(
+        any(
+            entry["action"] == "feature-flag.set"
+            and entry["resourceId"] == "citizen-mobility"
+            for entry in persisted_actions
+        ),
+        "Audit history does not attribute feature configuration to the persisted administrator.",
+    )
+    require(
+        any(
+            entry["action"] == "administration-whitelist.ensure"
+            and "operator@operations.example" in entry["descriptor"]
+            for entry in persisted_actions
+        ),
+        "Audit history does not attribute whitelist mutation to the persisted administrator.",
+    )
+    require(
+        any(
+            entry["action"] == "administration-grant.delete"
+            and "citizen-mobility.config" in entry["descriptor"]
+            for entry in persisted_actions
+        ),
+        "Audit history does not attribute grant revocation to the persisted administrator.",
+    )
+    require(
+        all(
+            bool(entry["correlationId"])
+            for entry in audit_entries
+        ),
+        "Audit history contains an empty correlation identifier.",
     )
 
     report_id = "e2e-report-001"
@@ -397,7 +944,12 @@ def main() -> None:
 
     print(
         "Local vertical slice verified: live -> ready -> build -> OpenAPI "
-        "-> create -> replay -> recover -> pending citizen outcome "
+        "-> bootstrap whitelist initialization -> bootstrap revocation "
+        "-> bootstrap grant pre-provisioning -> whitelisted persisted-grant admin "
+        "-> manage/config separation "
+        "-> feature disable/gate/re-enable "
+        "-> create -> replay "
+        "-> recover -> pending citizen outcome "
         "-> mock criterion -> human finalize -> localized reviewed outcome "
         "-> post-finalization replay preserves authority."
     )

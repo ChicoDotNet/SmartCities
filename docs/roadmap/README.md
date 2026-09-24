@@ -22,13 +22,35 @@ Mexico ships first as `es-MX`; neutral resources remain canonical English.
 
 `Citizen mobility report → Evidence Case → Mock Criterion → Human Review → Explainable Outcome`
 
+## Platform capability — per-Town-Hall feature management
+
+After the F3 MVP, deployments can enable or disable registered vertical slices independently. Non-sensitive feature/configuration state uses a dedicated per-Town-Hall SQLite control plane and remains separate from SQL Server/PostgreSQL domain persistence.
+
 ## F4 — Criterio E-Kernel Core adapter
 
 Integrate the first released NuGet package without changing public SmartCities domain contracts. Use contract replay.
 
-## F5+ — Domain expansion
+## F5+ — Nine-vertical mobility and public-realm release program
 
-Expand mobility, urban intelligence, and other Smart City modules according to evidence and adopter needs.
+Domain expansion is governed by the canonical [nine-vertical release program](nine-vertical-release-program.md).
+
+The sequence deliberately works from the most ambitious vertical toward simpler verticals while reusing contracts and integration seams proven by earlier product needs:
+
+1. Access to the City / Urban Accessibility.
+2. Public Transport & Multimodal Journey.
+3. Scenario & Investment Lab.
+4. Road Safety & Traffic Impact.
+5. Mobility Data Observatory.
+6. Cycling & Micromobility.
+7. Public Space & Public Life.
+8. Urban Wayfinding.
+9. Field Survey & Asset Operations.
+
+Each vertical is promoted from `dev` to `main` when it reaches its documented Definition of MVP.
+
+Documentation, reference integrations, contract tests, operational runbooks, and third-party reproducibility are part of the MVP definition rather than post-release work.
+
+Provider-agnostic mobility interoperability is a cross-cutting capability of this program, not a tenth vertical. Its architectural boundary is defined by [ADR 0010](../architecture/0010-provider-agnostic-mobility-integrations.md), with contributor-facing integration rules in [docs/integrations](../integrations/README.md). Runtime contracts are introduced only when a concrete vertical requires them.
 
 ## Rust performance lane
 

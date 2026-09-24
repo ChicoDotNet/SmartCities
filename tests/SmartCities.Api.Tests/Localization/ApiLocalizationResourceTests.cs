@@ -160,6 +160,34 @@ public sealed class ApiLocalizationResourceTests
   }
 
   [Fact]
+  public void Administration_ui_copy_is_available_in_neutral_english_and_es_mx()
+  {
+    var catalog = new ResxApiLocalizationCatalog();
+
+    var english = catalog.GetResources("en");
+    var spanish = catalog.GetResources("es-MX");
+
+    Assert.Equal(
+      "Town Hall Administration",
+      english.Resources["administration.title"]);
+    Assert.Equal(
+      "Administración del Ayuntamiento",
+      spanish.Resources["administration.title"]);
+    Assert.Equal(
+      "Feature flags",
+      english.Resources["administration.features.title"]);
+    Assert.Equal(
+      "Funciones habilitadas",
+      spanish.Resources["administration.features.title"]);
+    Assert.Equal(
+      "Administration whitelist",
+      english.Resources["administration.whitelist.title"]);
+    Assert.Equal(
+      "Lista de acceso administrativo",
+      spanish.Resources["administration.whitelist.title"]);
+  }
+
+  [Fact]
   public void Supported_locales_expose_the_same_public_resource_keys()
   {
     var catalog = new ResxApiLocalizationCatalog();

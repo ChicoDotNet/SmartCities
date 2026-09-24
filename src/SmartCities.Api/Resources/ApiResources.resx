@@ -171,4 +171,68 @@
   <data name="citizen.mobilityOutcome.explanation.deferred" xml:space="preserve">
     <value>An authorized person completed the review and deferred a final course of action for later consideration.</value>
   </data>
+  <data name="featureFlags.unavailable" xml:space="preserve">
+    <value>Deployment features are temporarily unavailable.</value>
+  </data>
+  <data name="administration.title" xml:space="preserve"><value>Town Hall Administration</value></data>
+  <data name="administration.intro" xml:space="preserve"><value>Manage deployment capabilities and Administration access for this Town Hall.</value></data>
+  <data name="administration.checking" xml:space="preserve"><value>Checking Administration access…</value></data>
+  <data name="administration.unavailable" xml:space="preserve"><value>Administration is temporarily unavailable.</value></data>
+  <data name="administration.denied" xml:space="preserve"><value>Administration access denied</value></data>
+  <data name="administration.denied.detail" xml:space="preserve"><value>Your authenticated identity is not currently admitted to this Town Hall Administration area.</value></data>
+  <data name="administration.townHall" xml:space="preserve"><value>Town Hall</value></data>
+  <data name="administration.citizenPortal" xml:space="preserve"><value>Citizen portal</value></data>
+  <data name="administration.bootstrap.title" xml:space="preserve"><value>Initialize Administration</value></data>
+  <data name="administration.bootstrap.intro" xml:space="preserve"><value>The whitelist is empty. Use the deployment bootstrap account to add the first Administration access rule.</value></data>
+  <data name="administration.bootstrap.account" xml:space="preserve"><value>Bootstrap account</value></data>
+  <data name="administration.bootstrap.password" xml:space="preserve"><value>Bootstrap password</value></data>
+  <data name="administration.bootstrap.submit" xml:space="preserve"><value>Start Administration session</value></data>
+  <data name="administration.bootstrap.submitting" xml:space="preserve"><value>Starting Administration session…</value></data>
+  <data name="administration.bootstrap.invalid" xml:space="preserve"><value>The bootstrap account or password is not valid.</value></data>
+  <data name="administration.bootstrap.unavailable" xml:space="preserve"><value>Bootstrap Administration is no longer available. Sign in with a whitelisted identity.</value></data>
+  <data name="administration.features.title" xml:space="preserve"><value>Feature flags</value></data>
+  <data name="administration.features.intro" xml:space="preserve"><value>Choose which registered vertical slices this Town Hall exposes.</value></data>
+  <data name="administration.features.enabled" xml:space="preserve"><value>Enabled</value></data>
+  <data name="administration.features.disabled" xml:space="preserve"><value>Disabled</value></data>
+  <data name="administration.features.saving" xml:space="preserve"><value>Saving…</value></data>
+  <data name="administration.features.noPermission" xml:space="preserve"><value>You can view feature states, but your identity does not have permission to change them.</value></data>
+  <data name="administration.whitelist.title" xml:space="preserve"><value>Administration whitelist</value></data>
+  <data name="administration.whitelist.intro" xml:space="preserve"><value>Admit officials by exact email domain, exact email address, or canonical subject.</value></data>
+  <data name="administration.whitelist.kind" xml:space="preserve"><value>Rule type</value></data>
+  <data name="administration.whitelist.kind.emailDomain" xml:space="preserve"><value>Email domain</value></data>
+  <data name="administration.whitelist.kind.email" xml:space="preserve"><value>Email address</value></data>
+  <data name="administration.whitelist.kind.canonicalSubject" xml:space="preserve"><value>Canonical subject</value></data>
+  <data name="administration.whitelist.value" xml:space="preserve"><value>Rule value</value></data>
+  <data name="administration.whitelist.add" xml:space="preserve"><value>Add rule</value></data>
+  <data name="administration.whitelist.adding" xml:space="preserve"><value>Adding…</value></data>
+  <data name="administration.whitelist.remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="administration.whitelist.empty" xml:space="preserve"><value>No whitelist rules are configured.</value></data>
+  <data name="administration.whitelist.noPermission" xml:space="preserve"><value>Your identity does not have permission to view or change the Administration whitelist.</value></data>
+  <data name="administration.whitelist.bootstrapHint" xml:space="preserve"><value>Add the first rule for the identity or domain that will administer this Town Hall. The bootstrap session will lose Administration access immediately after this succeeds.</value></data>
+  <data name="administration.genericError" xml:space="preserve"><value>The Administration request could not be completed. Refresh the authoritative state and try again.</value></data>
+  <data name="administration.grants.title" xml:space="preserve"><value>Authorization grants</value></data>
+  <data name="administration.grants.intro" xml:space="preserve"><value>Assign persistent SmartCities roles and permissions to admitted municipal identities by domain, email, or canonical subject.</value></data>
+  <data name="administration.grants.targetKind" xml:space="preserve"><value>Target type</value></data>
+  <data name="administration.grants.targetValue" xml:space="preserve"><value>Target value</value></data>
+  <data name="administration.grants.grantKind" xml:space="preserve"><value>Grant type</value></data>
+  <data name="administration.grants.grantValue" xml:space="preserve"><value>Role or permission</value></data>
+  <data name="administration.grants.kind.authorityRole" xml:space="preserve"><value>Authority role</value></data>
+  <data name="administration.grants.kind.permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="administration.grants.add" xml:space="preserve"><value>Add grant</value></data>
+  <data name="administration.grants.adding" xml:space="preserve"><value>Adding…</value></data>
+  <data name="administration.grants.remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="administration.grants.empty" xml:space="preserve"><value>No persisted authorization grants are configured.</value></data>
+  <data name="administration.grants.noPermission" xml:space="preserve"><value>Your identity does not have permission to manage persisted authorization grants.</value></data>
+  <data name="administration.grants.bootstrapHint" xml:space="preserve"><value>Before adding the first whitelist rule, preassign administration grants to the domain, email, or canonical subject that will administer this Town Hall.</value></data>
+  <data name="administration.audit.title" xml:space="preserve"><value>Control-plane audit</value></data>
+  <data name="administration.audit.intro" xml:space="preserve"><value>Recent immutable Administration changes for this Town Hall.</value></data>
+  <data name="administration.audit.loading" xml:space="preserve"><value>Loading audit history…</value></data>
+  <data name="administration.audit.empty" xml:space="preserve"><value>No control-plane changes have been recorded yet.</value></data>
+  <data name="administration.audit.noPermission" xml:space="preserve"><value>Your identity does not have permission to read control-plane audit history.</value></data>
+  <data name="administration.audit.actor" xml:space="preserve"><value>Actor</value></data>
+  <data name="administration.audit.action" xml:space="preserve"><value>Action</value></data>
+  <data name="administration.audit.resource" xml:space="preserve"><value>Resource</value></data>
+  <data name="administration.audit.change" xml:space="preserve"><value>Change</value></data>
+  <data name="administration.audit.correlation" xml:space="preserve"><value>Correlation</value></data>
+  <data name="administration.audit.noChangeValue" xml:space="preserve"><value>—</value></data>
 </root>

@@ -26,6 +26,8 @@ public sealed class DecisionReviewsController : ControllerBase
   /// <summary>Finalizes a pending review under the authenticated canonical human authority.</summary>
   [HttpPost("{recommendationId}/finalize")]
   [Authorize(
+    Policy = SmartCitiesPolicies.ManageCitizenMobility)]
+  [Authorize(
     Policy = SmartCitiesPolicies.FinalizeDecisionReview)]
   [ProducesResponseType<DecisionReviewResponse>(
     StatusCodes.Status200OK)]
