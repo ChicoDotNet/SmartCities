@@ -77,12 +77,47 @@ public sealed class AdministrationAuthorizationGrantService
       cancellationToken);
 
   /// <inheritdoc />
-  public async Task<AdministrationAuthorizationGrant> AddAsync(
+  public Task<AdministrationAuthorizationGrant> AddAsync(
     AdministrationAccessRuleKind targetKind,
     string targetValue,
     AdministrationAuthorizationGrantKind kind,
     string value,
+    CancellationToken cancellationToken = default) =>
+    AddCoreAsync(
+      targetKind,
+      targetValue,
+      kind,
+      value,
+      auditContext: null,
+      cancellationToken);
+
+  /// <inheritdoc />
+  public Task<AdministrationAuthorizationGrant> AddAsync(
+    AdministrationAccessRuleKind targetKind,
+    string targetValue,
+    AdministrationAuthorizationGrantKind kind,
+    string value,
+    AdministrationControlPlaneAuditContext auditContext,
     CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(auditContext);
+
+    return AddCoreAsync(
+      targetKind,
+      targetValue,
+      kind,
+      value,
+      auditContext,
+      cancellationToken);
+  }
+
+  private async Task<AdministrationAuthorizationGrant> AddCoreAsync(
+    AdministrationAccessRuleKind targetKind,
+    string targetValue,
+    AdministrationAuthorizationGrantKind kind,
+    string value,
+    AdministrationControlPlaneAuditContext? auditContext,
+    CancellationToken cancellationToken)
   {
     ValidateCatalogValue(kind, value);
 
@@ -113,12 +148,36 @@ public sealed class AdministrationAuthorizationGrantService
       return existing;
     }
 
-    await store
-      .AddAsync(
-        TownHallId,
-        candidate,
-        cancellationToken)
-      .ConfigureAwait(false);
+    if (auditContext is null)
+    {
+      await store
+        .AddAsync(
+          TownHallId,
+          candidate,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+    else
+    {
+      var auditEvent =
+        AdministrationControlPlaneAuditEvent.CreateMutation(
+          TownHallId,
+          auditContext,
+          AdministrationAuditActions.AuthorizationGrantEnsure,
+          AdministrationAuditResourceTypes.AuthorizationGrant,
+          candidate.GrantId,
+          $"{TargetKindValue(candidate.TargetKind)}:{candidate.TargetValue}|{GrantKindValue(candidate.Kind)}:{candidate.Value}",
+          previousValue: null,
+          newValue: "present");
+
+      await store
+        .AddAsync(
+          TownHallId,
+          candidate,
+          auditEvent,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
 
     return candidate;
   }
@@ -135,6 +194,75 @@ public sealed class AdministrationAuthorizationGrantService
       grantId.Trim(),
       cancellationToken);
   }
+
+  /// <inheritdoc />
+  public async Task<bool> DeleteAsync(
+    string grantId,
+    AdministrationControlPlaneAuditContext auditContext,
+    CancellationToken cancellationToken = default)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(grantId);
+    ArgumentNullException.ThrowIfNull(auditContext);
+
+    var normalizedId = grantId.Trim();
+    var existing = (await GetAllAsync(cancellationToken)
+      .ConfigureAwait(false))
+      .SingleOrDefault(
+        grant => string.Equals(
+          grant.GrantId,
+          normalizedId,
+          StringComparison.Ordinal));
+
+    if (existing is null)
+    {
+      return false;
+    }
+
+    var auditEvent =
+      AdministrationControlPlaneAuditEvent.CreateMutation(
+        TownHallId,
+        auditContext,
+        AdministrationAuditActions.AuthorizationGrantDelete,
+        AdministrationAuditResourceTypes.AuthorizationGrant,
+        existing.GrantId,
+        $"{TargetKindValue(existing.TargetKind)}:{existing.TargetValue}|{GrantKindValue(existing.Kind)}:{existing.Value}",
+        previousValue: "present",
+        newValue: null);
+
+    return await store
+      .DeleteAsync(
+        TownHallId,
+        existing.GrantId,
+        auditEvent,
+        cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private static string TargetKindValue(
+    AdministrationAccessRuleKind kind) =>
+    kind switch
+    {
+      AdministrationAccessRuleKind.EmailDomain => "email-domain",
+      AdministrationAccessRuleKind.Email => "email",
+      AdministrationAccessRuleKind.CanonicalSubject => "canonical-subject",
+      _ => throw new ArgumentOutOfRangeException(
+        nameof(kind),
+        kind,
+        "Unsupported Administration grant target kind."),
+    };
+
+  private static string GrantKindValue(
+    AdministrationAuthorizationGrantKind kind) =>
+    kind switch
+    {
+      AdministrationAuthorizationGrantKind.AuthorityRole => "authority-role",
+      AdministrationAuthorizationGrantKind.Permission => "permission",
+      _ => throw new ArgumentOutOfRangeException(
+        nameof(kind),
+        kind,
+        "Unsupported Administration authorization grant kind."),
+    };
+
 
   private void ValidateCatalogValue(
     AdministrationAuthorizationGrantKind kind,
