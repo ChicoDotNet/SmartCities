@@ -64,6 +64,8 @@ public sealed class AdministrationWhitelistController
       .AddRuleAsync(
         kind,
         request.Value,
+        AdministrationAuditContextFactory.Create(
+          HttpContext),
         cancellationToken)
       .ConfigureAwait(false);
 
@@ -88,6 +90,8 @@ public sealed class AdministrationWhitelistController
     return await service
       .DeleteRuleAsync(
         ruleId,
+        AdministrationAuditContextFactory.Create(
+          HttpContext),
         cancellationToken)
       .ConfigureAwait(false)
         ? NoContent()
