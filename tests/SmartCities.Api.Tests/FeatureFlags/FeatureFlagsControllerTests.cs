@@ -20,7 +20,7 @@ public sealed class FeatureFlagsControllerTests
           SmartCitiesFeatures.CitizenMobility,
           Enabled: false),
       ]);
-    var controller = new FeatureFlagsController(service);
+    var controller = CreateController(service);
 
     var result = await controller.GetAsync(
       TestContext.Current.CancellationToken);
@@ -59,7 +59,7 @@ public sealed class FeatureFlagsControllerTests
   [Fact]
   public async Task Unknown_feature_returns_404_instead_of_creating_ad_hoc_flags()
   {
-    var controller = new FeatureFlagsController(
+    var controller = CreateController(
       new RecordingFeatureFlagService(
         "town-hall-a",
         []));
@@ -71,6 +71,18 @@ public sealed class FeatureFlagsControllerTests
 
     Assert.IsType<NotFoundResult>(result.Result);
   }
+
+  private static FeatureFlagsController CreateController(
+    IFeatureFlagService service) =>
+    new(service)
+    {
+      ControllerContext =
+        new ControllerContext
+        {
+          HttpContext =
+            new DefaultHttpContext(),
+        },
+    };
 
   private sealed class RecordingFeatureFlagService
     : IFeatureFlagService
