@@ -329,6 +329,7 @@ def main() -> None:
         "Content-Type": "application/json",
     }
 
+    grant_ids: dict[str, str] = {}
     bootstrap_grants = [
         ("authority-role", "town-hall-admin"),
         ("permission", "administration-grants.manage"),
@@ -360,6 +361,7 @@ def main() -> None:
             and grant["value"] == grant_value,
             f"Persisted grant did not normalize correctly: {grant}",
         )
+        grant_ids[grant_value] = grant["grantId"]
 
     first_rule_status, first_rule = request(
         "POST",
@@ -584,6 +586,54 @@ def main() -> None:
     require(
         enabled["enabled"] is True,
         "Feature re-enable did not persist the requested state.",
+    )
+
+    revoked_status, revoked = request(
+        "DELETE",
+        (
+            "/api/administration/grants/"
+            f"{grant_ids['citizen-mobility.config']}"
+        ),
+        extra_headers=admin_headers,
+    )
+    require(
+        revoked_status == 204,
+        (
+            "Expected persisted config grant deletion 204, got "
+            f"{revoked_status}: {revoked}"
+        ),
+    )
+
+    revoked_session_status, revoked_session = request(
+        "GET",
+        "/api/authentication/session",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        revoked_session_status == 200,
+        (
+            "Expected post-revocation session 200, got "
+            f"{revoked_session_status}: {revoked_session}"
+        ),
+    )
+    require(
+        "citizen-mobility.config"
+        not in revoked_session["permissions"],
+        "Revoked persisted permission survived into the next request.",
+    )
+
+    revoked_config_status, revoked_config = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": False},
+        admin_headers,
+    )
+    require(
+        revoked_config_status == 403,
+        (
+            "Expected immediate post-revocation feature config 403, got "
+            f"{revoked_config_status}: {revoked_config}"
+        ),
     )
 
     report_id = "e2e-report-001"
