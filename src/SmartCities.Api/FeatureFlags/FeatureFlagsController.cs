@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartCities.Api.Administration;
 using SmartCities.Application.FeatureFlags;
 using SmartCities.Identity;
 
@@ -97,6 +98,8 @@ public sealed class FeatureFlagsController
       .SetAsync(
         current.FeatureId,
         request.Enabled,
+        AdministrationAuditContextFactory.Create(
+          HttpContext),
         cancellationToken)
       .ConfigureAwait(false);
 
