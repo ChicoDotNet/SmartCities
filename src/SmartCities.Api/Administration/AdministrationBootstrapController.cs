@@ -67,7 +67,9 @@ public sealed class AdministrationBootstrapController
       return NotFound();
     }
 
-    if (!string.Equals(
+    if (string.IsNullOrWhiteSpace(request.UserName)
+      || string.IsNullOrEmpty(request.Password)
+      || !string.Equals(
         request.UserName.Trim(),
         configuration.UserName,
         StringComparison.OrdinalIgnoreCase)
