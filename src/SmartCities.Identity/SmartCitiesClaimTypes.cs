@@ -32,4 +32,10 @@ public static class SmartCitiesClaimTypes
   /// </summary>
   public const string IdentityProvider =
     "urn:smartcities:identity:provider";
+
+  /// <summary>
+  /// Canonical normalized email address asserted by a trusted authentication-provider adapter.
+  /// </summary>
+  public const string EmailAddress =
+    "urn:smartcities:identity:email";
 }
