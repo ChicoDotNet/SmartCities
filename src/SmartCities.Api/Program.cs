@@ -17,6 +17,7 @@ builder.Services.AddSmartCitiesApiObservability(
 builder.Services.AddSmartCitiesAuthenticationProviders(
   builder.Configuration);
 builder.Services.AddSmartCitiesAuthorization();
+builder.Services.AddSmartCitiesAdministrationAuthorization();
 
 var app = builder.Build();
 
