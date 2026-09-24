@@ -25,11 +25,11 @@ public sealed class SmartCitiesFeaturePermissionsTests
     Assert.Equal(
       "urban-accessibility.manage",
       SmartCitiesFeaturePermissions.Manage(
-        SmartCities.Application.FeatureFlags.SmartCitiesFeatures.UrbanAccessibility));
+        "urban-accessibility"));
     Assert.Equal(
       "urban-accessibility.config",
       SmartCitiesFeaturePermissions.Configure(
-        SmartCities.Application.FeatureFlags.SmartCitiesFeatures.UrbanAccessibility));
+        "urban-accessibility"));
   }
 
   [Theory]
