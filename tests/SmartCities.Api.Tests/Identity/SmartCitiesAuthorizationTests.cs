@@ -100,6 +100,9 @@ public sealed class SmartCitiesAuthorizationTests
             SmartCitiesClaimTypes.AuthorityRole,
             "town-hall-admin"),
           new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
             SmartCitiesClaimTypes.Permission,
             SmartCitiesPermissions.ManageFeatureFlags),
         ],
