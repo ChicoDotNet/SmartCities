@@ -142,9 +142,7 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
     if (!callbackPath.StartsWith(
         '/',
         StringComparison.Ordinal)
-      || callbackPath.Contains(
-        '?',
-        StringComparison.Ordinal))
+      || callbackPath.Contains('?'))
     {
       throw new InvalidOperationException(
         $"OIDC provider '{section.Key}' CallbackPath must be an absolute application path without a query string.");

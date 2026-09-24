@@ -236,7 +236,7 @@ public static class SmartCitiesAuthenticationProviderExtensions
   }
 
   private static async Task CanonicalizeLocalJwtAsync(
-    TokenValidatedContext context,
+    Microsoft.AspNetCore.Authentication.JwtBearer.TokenValidatedContext context,
     LocalAuthenticationProviderConfiguration configuration)
   {
     var principal = context.Principal
@@ -273,7 +273,7 @@ public static class SmartCitiesAuthenticationProviderExtensions
   }
 
   private static async Task CanonicalizeOidcAsync(
-    TokenValidatedContext context,
+    Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenValidatedContext context,
     OidcAuthenticationProviderConfiguration configuration)
   {
     var principal = context.Principal
