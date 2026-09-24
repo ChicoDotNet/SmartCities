@@ -38,6 +38,16 @@ public static class SmartCitiesAuthenticationProviderExtensions
     var descriptors =
       new List<SmartCitiesAuthenticationProviderDescriptor>();
 
+    services.Replace(
+      ServiceDescriptor.Singleton(configured));
+    services.TryAddSingleton<
+      ILocalCredentialAuthenticator,
+      RejectingLocalCredentialAuthenticator>();
+    services.TryAddSingleton(TimeProvider.System);
+    services.TryAddScoped<
+      ILocalAuthenticationService,
+      LocalAuthenticationService>();
+
     var authentication = services
       .AddAuthentication(
         options =>

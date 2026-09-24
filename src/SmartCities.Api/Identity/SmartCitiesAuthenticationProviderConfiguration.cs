@@ -10,6 +10,7 @@ internal sealed record LocalAuthenticationProviderConfiguration(
   string SubjectClaimType,
   string RoleClaimType,
   string PermissionClaimType,
+  int JwtLifetimeMinutes,
   IReadOnlyList<string> DefaultAuthorityRoles,
   IReadOnlyList<string> DefaultPermissions,
   IReadOnlySet<string> AllowedAuthorityRoles,
@@ -103,6 +104,13 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       Optional(section, "SubjectClaimType", "sub"),
       Optional(section, "RoleClaimType", "role"),
       Optional(section, "PermissionClaimType", "permission"),
+      ReadInt(
+        section,
+        "JwtLifetimeMinutes",
+        defaultValue: 60,
+        minimum: 1,
+        maximum: 1440,
+        providerId: "Local"),
       ReadList(section.GetSection("DefaultAuthorityRoles")),
       ReadList(section.GetSection("DefaultPermissions")),
       ReadSet(section.GetSection("AllowedAuthorityRoles")),
@@ -215,6 +223,36 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       is { Length: > 0 } value
         ? value
         : fallback;
+
+  private static int ReadInt(
+    IConfigurationSection section,
+    string key,
+    int defaultValue,
+    int minimum,
+    int maximum,
+    string providerId)
+  {
+    var configured = section[key];
+
+    if (string.IsNullOrWhiteSpace(configured))
+    {
+      return defaultValue;
+    }
+
+    if (!int.TryParse(
+        configured,
+        System.Globalization.NumberStyles.Integer,
+        System.Globalization.CultureInfo.InvariantCulture,
+        out var value)
+      || value < minimum
+      || value > maximum)
+    {
+      throw new InvalidOperationException(
+        $"Authentication provider '{providerId}' requires '{key}' between {minimum} and {maximum}.");
+    }
+
+    return value;
+  }
 
   private static string? OptionalNullable(
     IConfigurationSection section,
