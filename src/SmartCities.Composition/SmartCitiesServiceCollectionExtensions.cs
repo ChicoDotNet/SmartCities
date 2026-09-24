@@ -48,6 +48,10 @@ public static class SmartCitiesServiceCollectionExtensions
       ICitizenMobilityReportService,
       CitizenMobilityReportService>();
 
+    services.AddScoped<
+      ICitizenMobilityOutcomeService,
+      CitizenMobilityOutcomeService>();
+
     services.AddSingleton<
       ICriterionKernel,
       MockCriterionKernel>();
