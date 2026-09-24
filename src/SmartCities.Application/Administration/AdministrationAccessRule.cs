@@ -91,17 +91,17 @@ public sealed record AdministrationAccessRule
     normalized = normalized.ToLowerInvariant();
 
     if (normalized.Length is < 3 or > 253
-      || normalized.Contains('*', StringComparison.Ordinal)
-      || normalized.Contains('/', StringComparison.Ordinal)
-      || normalized.Contains('@', StringComparison.Ordinal)
-      || normalized.StartsWith('.', StringComparison.Ordinal)
-      || normalized.EndsWith('.', StringComparison.Ordinal)
-      || !normalized.Contains('.', StringComparison.Ordinal)
+      || normalized.Contains('*')
+      || normalized.Contains('/')
+      || normalized.Contains('@')
+      || normalized.StartsWith('.')
+      || normalized.EndsWith('.')
+      || !normalized.Contains('.')
       || normalized.Split('.').Any(
         static label =>
           label.Length is < 1 or > 63
-          || label.StartsWith('-', StringComparison.Ordinal)
-          || label.EndsWith('-', StringComparison.Ordinal)
+          || label.StartsWith('-')
+          || label.EndsWith('-')
           || label.Any(
             static character =>
               !char.IsAsciiLetterOrDigit(character)
