@@ -2,7 +2,7 @@
 
 The first citizen-mobility path can run locally against PostgreSQL without introducing a development-only domain persistence provider.
 
-A separate SQLite file stores only non-sensitive deployment configuration such as per-Town-Hall feature flags. It is not used for citizen or decision data.
+A separate SQLite control-plane file stores non-sensitive deployment settings such as Feature Flags plus typed Administration whitelist metadata. It is not used for citizen or decision data. Exact staff email rules are access-control/PII metadata and live in their own table rather than the generic non-sensitive settings table.
 
 ## 1. Start PostgreSQL
 
@@ -24,7 +24,8 @@ The Development profile:
 
 - listens on `http://localhost:5000`;
 - identifies the deployment as `local-town-hall`;
-- uses `smartcities.configuration.db` for non-sensitive feature/configuration state;
+- uses `smartcities.configuration.db` for local control-plane state;
+- exposes the development-only bootstrap login `townhalladmin@smartcities.local` with the committed Development-only password `smartcities-local-bootstrap-only`;
 - selects PostgreSQL for domain persistence;
 - connects to the Compose database;
 - applies the PostgreSQL EF Core migration chain on startup.
@@ -94,8 +95,26 @@ PUT /api/system/features/citizen-mobility
 
 When disabled, citizen mobility routes return 404 and React does not render that vertical slice.
 
+Feature mutation also requires current Town Hall Administration admission.
+
+## Administration bootstrap and whitelist
+
+With an empty local whitelist, the Development bootstrap account can create the first Administration rule:
+
+```text
+POST /api/administration/bootstrap/session
+userName = townhalladmin@smartcities.local
+password = smartcities-local-bootstrap-only
+```
+
+That password exists only in `appsettings.Development.json` for local development. Production must supply `SmartCities:Administration:Bootstrap:Password` through its secret configuration mechanism; there is no production default.
+
+After the first whitelist rule is persisted, the bootstrap identity immediately loses Administration admission even if its encrypted browser cookie has not expired.
+
+Portable rule kinds are `email-domain`, `email`, and `canonical-subject`.
+
 ## Automated verification
 
-`Local Vertical Slice CI` boots a real PostgreSQL service for domain state and a separate SQLite file for non-sensitive control-plane state. It proves the default feature snapshot, persists a disabled override, verifies the mobility route becomes 404, re-enables the feature, then executes the complete F3 flow.
+`Local Vertical Slice CI` boots a real PostgreSQL service for domain state and a separate SQLite file for control-plane state. It proves empty-whitelist bootstrap login, creation of the first whitelist rule, immediate revocation of the existing bootstrap session for Administration operations, admission of a whitelisted canonical subject, Feature Flag disable/re-enable, and then the complete F3 flow.
 
 The gate also proves that post-finalization report replay cannot overwrite human authority, changing locale cannot change report/case/status/disposition identity, and an unsupported locale falls back to neutral English.
