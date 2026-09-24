@@ -67,6 +67,13 @@ public sealed class SmartCitiesCompositionTests
     Assert.Contains(
       services,
       descriptor =>
+        descriptor.ServiceType == typeof(ICitizenMobilityOutcomeService)
+        && descriptor.ImplementationType == typeof(CitizenMobilityOutcomeService)
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
         descriptor.ServiceType == typeof(ICitizenMobilityReportRepository)
         && descriptor.ImplementationType?.Name == "EfCitizenMobilityReportRepository"
         && descriptor.Lifetime == ServiceLifetime.Scoped);
