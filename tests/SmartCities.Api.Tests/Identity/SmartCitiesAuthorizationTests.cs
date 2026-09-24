@@ -307,8 +307,21 @@ public sealed class SmartCitiesAuthorizationTests
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
 
+    public Task<AdministrationAccessRule> AddRuleAsync(
+      AdministrationAccessRuleKind kind,
+      string value,
+      AdministrationControlPlaneAuditContext auditContext,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
     public Task<bool> DeleteRuleAsync(
       string ruleId,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<bool> DeleteRuleAsync(
+      string ruleId,
+      AdministrationControlPlaneAuditContext auditContext,
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
   }
