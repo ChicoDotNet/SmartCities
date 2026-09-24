@@ -65,6 +65,7 @@ public sealed class CitizenMobilityOutcomesControllerTests
   [InlineData(DecisionDisposition.Accepted, "accepted", "Aceptada")]
   [InlineData(DecisionDisposition.Modified, "modified", "Modificada")]
   [InlineData(DecisionDisposition.Rejected, "rejected", "Rechazada")]
+  [InlineData(DecisionDisposition.Deferred, "deferred", "Diferida")]
   public async Task Finalized_outcome_exposes_only_the_human_disposition_and_localized_explanation(
     DecisionDisposition disposition,
     string expectedDisposition,
