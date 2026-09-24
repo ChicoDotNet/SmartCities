@@ -210,4 +210,18 @@
   <data name="administration.whitelist.noPermission" xml:space="preserve"><value>Your identity does not have permission to view or change the Administration whitelist.</value></data>
   <data name="administration.whitelist.bootstrapHint" xml:space="preserve"><value>Add the first rule for the identity or domain that will administer this Town Hall. The bootstrap session will lose Administration access immediately after this succeeds.</value></data>
   <data name="administration.genericError" xml:space="preserve"><value>The Administration request could not be completed. Refresh the authoritative state and try again.</value></data>
+  <data name="administration.grants.title" xml:space="preserve"><value>Authorization grants</value></data>
+  <data name="administration.grants.intro" xml:space="preserve"><value>Assign persistent SmartCities roles and permissions to admitted municipal identities by domain, email, or canonical subject.</value></data>
+  <data name="administration.grants.targetKind" xml:space="preserve"><value>Target type</value></data>
+  <data name="administration.grants.targetValue" xml:space="preserve"><value>Target value</value></data>
+  <data name="administration.grants.grantKind" xml:space="preserve"><value>Grant type</value></data>
+  <data name="administration.grants.grantValue" xml:space="preserve"><value>Role or permission</value></data>
+  <data name="administration.grants.kind.authorityRole" xml:space="preserve"><value>Authority role</value></data>
+  <data name="administration.grants.kind.permission" xml:space="preserve"><value>Permission</value></data>
+  <data name="administration.grants.add" xml:space="preserve"><value>Add grant</value></data>
+  <data name="administration.grants.adding" xml:space="preserve"><value>Adding…</value></data>
+  <data name="administration.grants.remove" xml:space="preserve"><value>Remove</value></data>
+  <data name="administration.grants.empty" xml:space="preserve"><value>No persisted authorization grants are configured.</value></data>
+  <data name="administration.grants.noPermission" xml:space="preserve"><value>Your identity does not have permission to manage persisted authorization grants.</value></data>
+  <data name="administration.grants.bootstrapHint" xml:space="preserve"><value>Before adding the first whitelist rule, preassign administration grants to the domain, email, or canonical subject that will administer this Town Hall.</value></data>
 </root>
