@@ -1,3 +1,4 @@
+using System.Net.Mail;
 using SmartCities.Identity;
 
 namespace SmartCities.Api.Identity;
@@ -66,6 +67,18 @@ internal static class CanonicalEmailClaimResolver
       }
     }
 
-    return emails[0];
+    if (!MailAddress.TryCreate(
+        emails[0],
+        out var parsed)
+      || !string.Equals(
+        parsed.Address,
+        emails[0],
+        StringComparison.OrdinalIgnoreCase))
+    {
+      throw new AuthenticationCanonicalizationException(
+        "The validated external identity contains an invalid email claim.");
+    }
+
+    return parsed.Address.ToLowerInvariant();
   }
 }
