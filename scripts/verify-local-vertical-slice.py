@@ -153,6 +153,10 @@ def main() -> None:
     require(ready_status == 200, f"Expected ready 200, got {ready_status}: {ready}")
     require(ready["status"] == "Healthy", "Readiness is not healthy.")
     require(ready["checks"]["database"] == "Healthy", "Database readiness check is not healthy.")
+    require(
+        ready["checks"]["configuration"] == "Healthy",
+        "Town Hall configuration readiness check is not healthy.",
+    )
 
     build_status, build = request(
         "GET",
@@ -233,6 +237,27 @@ def main() -> None:
         disabled["featureId"] == "citizen-mobility"
         and disabled["enabled"] is False,
         "Feature disable did not persist the requested state.",
+    )
+
+    disabled_snapshot_status, disabled_snapshot = request(
+        "GET",
+        "/api/system/features",
+    )
+    require(
+        disabled_snapshot_status == 200,
+        (
+            "Expected disabled feature snapshot 200, got "
+            f"{disabled_snapshot_status}: {disabled_snapshot}"
+        ),
+    )
+    disabled_mobility = next(
+        item
+        for item in disabled_snapshot["features"]
+        if item["featureId"] == "citizen-mobility"
+    )
+    require(
+        disabled_mobility["enabled"] is False,
+        "Feature snapshot did not recover the persisted SQLite override.",
     )
 
     gated_status, gated = request(
