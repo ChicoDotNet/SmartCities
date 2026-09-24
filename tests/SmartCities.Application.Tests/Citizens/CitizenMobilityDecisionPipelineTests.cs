@@ -127,6 +127,9 @@ public sealed class CitizenMobilityDecisionPipelineTests
   private sealed class RecordingDecisionReviewRepository
     : IDecisionReviewRepository
   {
+    private static DecisionReview? ReviewByCase(
+      string evidenceCaseId) =>
+      throw new NotSupportedException();
     public Task AddPendingAsync(
       DecisionReview review,
       CancellationToken cancellationToken = default) =>
@@ -138,6 +141,16 @@ public sealed class CitizenMobilityDecisionPipelineTests
     {
       cancellationToken.ThrowIfCancellationRequested();
       return Task.FromResult(review);
+    }
+
+    public Task<DecisionReview?> GetByEvidenceCaseIdAsync(
+      string evidenceCaseId,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      return Task.FromResult(
+        ReviewByCase(evidenceCaseId));
     }
 
     public Task<DecisionReview?> GetAsync(
