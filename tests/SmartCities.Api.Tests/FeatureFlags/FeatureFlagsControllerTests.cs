@@ -252,5 +252,18 @@ public sealed class FeatureFlagsControllerTests
           ? null
           : existing with { Enabled = enabled });
     }
+
+    public Task<FeatureFlagState?> SetAsync(
+      string featureId,
+      bool enabled,
+      SmartCities.Application.Administration.AdministrationControlPlaneAuditContext auditContext,
+      CancellationToken cancellationToken = default)
+    {
+      ArgumentNullException.ThrowIfNull(auditContext);
+      return SetAsync(
+        featureId,
+        enabled,
+        cancellationToken);
+    }
   }
 }
