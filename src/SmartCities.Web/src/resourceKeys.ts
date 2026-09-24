@@ -19,6 +19,19 @@ export const resourceKeys = {
   successCreated: 'citizen.mobilityReport.success.created',
   successExisting: 'citizen.mobilityReport.success.existing',
   caseLabel: 'citizen.mobilityReport.case.label',
+  authenticationTitle: 'authentication.title',
+  authenticationIntro: 'authentication.intro',
+  authenticationLoading: 'authentication.loading',
+  authenticationUnavailable: 'authentication.unavailable',
+  authenticationNoProviders: 'authentication.noProviders',
+  authenticationUserName: 'authentication.local.userName',
+  authenticationPassword: 'authentication.local.password',
+  authenticationLocalSubmit: 'authentication.local.submit',
+  authenticationLocalSubmitting: 'authentication.local.submitting',
+  authenticationInvalidCredentials: 'authentication.local.invalidCredentials',
+  authenticationGenericError: 'authentication.genericError',
+  authenticationSuccess: 'authentication.success',
+  authenticationContinueWith: 'authentication.redirect.continueWith',
 } as const;
 
 export type ResourceKey =

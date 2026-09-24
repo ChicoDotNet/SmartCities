@@ -23,6 +23,7 @@ import {
   type SupportedCulture,
 } from './localization';
 import { resourceKeys } from './resourceKeys';
+import { AuthenticationEntry } from './AuthenticationEntry';
 
 const categories = [
   {
@@ -168,6 +169,15 @@ export function App() {
           </Button>
         </div>
       </header>
+
+      <section className="row justify-content-center mb-4">
+        <div className="col-12 col-lg-8 col-xl-7">
+          <AuthenticationEntry
+            bundle={bundle}
+            online={online}
+          />
+        </div>
+      </section>
 
       <section className="row justify-content-center">
         <div className="col-12 col-lg-8 col-xl-7">

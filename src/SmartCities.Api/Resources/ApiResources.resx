@@ -78,4 +78,43 @@
   <data name="citizen.mobilityReport.case.label" xml:space="preserve">
     <value>Case</value>
   </data>
+  <data name="authentication.title" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="authentication.intro" xml:space="preserve">
+    <value>Use any sign-in method enabled for this SmartCities deployment.</value>
+  </data>
+  <data name="authentication.loading" xml:space="preserve">
+    <value>Loading sign-in options…</value>
+  </data>
+  <data name="authentication.unavailable" xml:space="preserve">
+    <value>Sign-in options are temporarily unavailable.</value>
+  </data>
+  <data name="authentication.noProviders" xml:space="preserve">
+    <value>No sign-in methods are enabled for this deployment.</value>
+  </data>
+  <data name="authentication.local.userName" xml:space="preserve">
+    <value>User name</value>
+  </data>
+  <data name="authentication.local.password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="authentication.local.submit" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="authentication.local.submitting" xml:space="preserve">
+    <value>Signing in…</value>
+  </data>
+  <data name="authentication.local.invalidCredentials" xml:space="preserve">
+    <value>The user name or password is not valid.</value>
+  </data>
+  <data name="authentication.genericError" xml:space="preserve">
+    <value>We could not complete sign-in. Please try again.</value>
+  </data>
+  <data name="authentication.success" xml:space="preserve">
+    <value>You are signed in.</value>
+  </data>
+  <data name="authentication.redirect.continueWith" xml:space="preserve">
+    <value>Continue with</value>
+  </data>
 </root>
