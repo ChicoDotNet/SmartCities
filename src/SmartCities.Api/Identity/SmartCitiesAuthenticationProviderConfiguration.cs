@@ -140,7 +140,7 @@ internal static class SmartCitiesAuthenticationProviderConfiguration
       section.Key);
 
     if (!callbackPath.StartsWith(
-        '/',
+        "/",
         StringComparison.Ordinal)
       || callbackPath.Contains('?'))
     {
