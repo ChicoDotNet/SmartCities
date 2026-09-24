@@ -80,3 +80,35 @@ Token responses are marked `no-store`.
 - When the local provider is disabled, local session/token endpoints return HTTP 404.
 - Credential-store implementations should use a modern password hashing function and deployment-specific lockout/rate-limiting policy; those storage policies are intentionally outside this provider-neutral HTTP slice.
 - JWT signing keys remain deployment secrets and must never be committed.
+
+
+## Canonical session lifecycle
+
+The product web client does not keep an independent authentication truth.
+
+On initial load, refresh, direct navigation, reconnection, or return from an interactive OIDC callback it requests:
+
+```text
+GET /api/authentication/session
+```
+
+The endpoint deliberately returns HTTP 200 for both states. Anonymous state is represented as `authenticated=false` with no subject/provider/authorization material. Authenticated state is reconstructed from the already validated canonical request principal and exposes only the canonical SmartCities subject, provider ID, authority roles, and permissions. Raw provider claims and tokens are not returned. Responses are marked `no-store`.
+
+React models session state explicitly as `checking`, `anonymous`, `authenticated`, or `unavailable`. It does not render the sign-in surface until current-session has resolved anonymous, avoiding a false sign-in flash after refresh or OIDC return. When connectivity is unavailable, the UI does not continue presenting cached browser state as authoritative authentication.
+
+Local credential sign-in still establishes the encrypted shared `SmartCities.Session` cookie, but the UI re-reads current-session before displaying authenticated state. All configured interactive OIDC providers already use that same cookie as their sign-in scheme, so the same bootstrap path recognizes their successful callbacks without provider-specific frontend state.
+
+### Logout and CSRF boundary
+
+Browser logout uses:
+
+```text
+POST /api/authentication/session/logout
+X-SmartCities-Request: browser
+```
+
+The non-simple same-origin request header, together with the session cookie's SameSite policy and the absence of permissive cross-origin credential handling, prevents an ordinary cross-site HTML form from issuing the mutation. Missing markers fail with HTTP 403.
+
+A valid logout request is idempotent. It expires the shared SmartCities browser cookie when the session scheme is configured and still returns HTTP 204 when no interactive provider/session scheme is enabled. React then re-reads current-session before displaying anonymous state.
+
+This operation is intentionally local to SmartCities. It does not trigger global/federated sign-out at Google, Entra, Auth0, Cognito, Apple, or other identity providers. The encrypted ASP.NET Core cookie is a self-contained authentication ticket; this slice expires the browser's canonical cookie but does not claim centralized server-side revocation of a separately copied ticket before its normal expiry.

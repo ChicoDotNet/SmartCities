@@ -117,4 +117,19 @@
   <data name="authentication.redirect.continueWith" xml:space="preserve">
     <value>Continue with</value>
   </data>
+  <data name="authentication.session.title" xml:space="preserve">
+    <value>Active session</value>
+  </data>
+  <data name="authentication.session.checking" xml:space="preserve">
+    <value>Checking session…</value>
+  </data>
+  <data name="authentication.session.unavailable" xml:space="preserve">
+    <value>Session status unavailable</value>
+  </data>
+  <data name="authentication.session.logout" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="authentication.session.loggingOut" xml:space="preserve">
+    <value>Signing out…</value>
+  </data>
 </root>
