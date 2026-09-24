@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Api.Hosting;
 using SmartCities.Api.Identity;
 using SmartCities.Identity;
 using Xunit;
