@@ -117,6 +117,10 @@ public sealed class CitizenMobilityOutcomesController
               Finalized(
                 "rejected",
                 "citizen.mobilityOutcome.explanation.rejected"),
+            DecisionDisposition.Deferred =>
+              Finalized(
+                "deferred",
+                "citizen.mobilityOutcome.explanation.deferred"),
             _ => throw new InvalidOperationException(
               "Unsupported final citizen disposition."),
           },
