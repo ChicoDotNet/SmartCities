@@ -79,6 +79,14 @@ internal sealed class LocalAuthenticationService
         authenticated.External.Subject),
     };
 
+    if (authenticated.Canonical.EmailAddress is not null)
+    {
+      claims.Add(
+        new Claim(
+          local.EmailClaimType,
+          authenticated.Canonical.EmailAddress));
+    }
+
     claims.AddRange(
       authenticated.Canonical.AuthorityRoles.Select(
         role =>
