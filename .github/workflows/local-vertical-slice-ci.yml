@@ -59,11 +59,20 @@ jobs:
           SmartCities__Persistence__DbProvider: PostgreSql
           SmartCities__Persistence__ConnectionString: Host=127.0.0.1;Port=5432;Database=smartcities;Username=smartcities;Password=smartcities-ci-only
           SmartCities__Persistence__ApplyMigrationsOnStartup: 'true'
+          SmartCities__Authentication__Local__Enabled: 'true'
+          SmartCities__Authentication__Local__Issuer: https://ci.smartcities.test
+          SmartCities__Authentication__Local__Audience: smartcities-api
+          SmartCities__Authentication__Local__SigningKey: smartcities-ci-signing-key-32-bytes-only
+          SmartCities__Authentication__Local__AllowedAuthorityRoles__0: mobility-reviewer
+          SmartCities__Authentication__Local__AllowedPermissions__0: decision-review.finalize
           SmartCities__Build__CommitSha: ${{ github.sha }}
           SmartCities__Build__BuildId: ${{ github.run_id }}
           SMARTCITIES_API_BASE_URL: http://127.0.0.1:5000
           SMARTCITIES_EXPECTED_COMMIT: ${{ github.sha }}
           SMARTCITIES_EXPECTED_BUILD_ID: ${{ github.run_id }}
+          SMARTCITIES_E2E_JWT_ISSUER: https://ci.smartcities.test
+          SMARTCITIES_E2E_JWT_AUDIENCE: smartcities-api
+          SMARTCITIES_E2E_JWT_SIGNING_KEY: smartcities-ci-signing-key-32-bytes-only
         run: |
           set -euo pipefail
 

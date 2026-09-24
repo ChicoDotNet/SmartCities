@@ -46,6 +46,61 @@ public sealed class EfDecisionReviewRepository
   }
 
   /// <inheritdoc />
+  public async Task<DecisionReview> GetOrAddPendingAsync(
+    DecisionReview review,
+    CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(review);
+
+    if (review.Status != DecisionReviewStatus.PendingHumanReview)
+    {
+      throw new ArgumentException(
+        "Only pending decision reviews can enter the review repository through this operation.",
+        nameof(review));
+    }
+
+    var existing = await GetAsync(
+        review.RecommendationId,
+        cancellationToken)
+      .ConfigureAwait(false);
+
+    if (existing is not null)
+    {
+      EnsureSameTrace(existing, review);
+      return existing;
+    }
+
+    var record = ToRecord(review);
+    dbContext.DecisionReviews.Add(record);
+
+    try
+    {
+      await dbContext.SaveChangesAsync(cancellationToken)
+        .ConfigureAwait(false);
+
+      return review;
+    }
+    catch (DbUpdateException)
+    {
+      dbContext.Entry(record).State =
+        EntityState.Detached;
+
+      var authoritative = await GetAsync(
+          review.RecommendationId,
+          cancellationToken)
+        .ConfigureAwait(false);
+
+      if (authoritative is null)
+      {
+        throw;
+      }
+
+      EnsureSameTrace(authoritative, review);
+      return authoritative;
+    }
+  }
+
+  /// <inheritdoc />
   public async Task<DecisionReview?> GetAsync(
     string recommendationId,
     CancellationToken cancellationToken = default)
@@ -111,6 +166,31 @@ public sealed class EfDecisionReviewRepository
           authoritative)
       : DecisionReviewFinalizationResult.AlreadyFinalized(
           authoritative);
+  }
+
+  private static void EnsureSameTrace(
+    DecisionReview authoritative,
+    DecisionReview candidate)
+  {
+    if (!string.Equals(
+        authoritative.RecommendationId,
+        candidate.RecommendationId,
+        StringComparison.Ordinal)
+      || !string.Equals(
+        authoritative.CriterionRequestId,
+        candidate.CriterionRequestId,
+        StringComparison.Ordinal)
+      || !string.Equals(
+        authoritative.EvidenceCaseId,
+        candidate.EvidenceCaseId,
+        StringComparison.Ordinal)
+      || !authoritative.EvidenceReferenceIds.SequenceEqual(
+        candidate.EvidenceReferenceIds,
+        StringComparer.Ordinal))
+    {
+      throw new InvalidOperationException(
+        "An existing decision review conflicts with the candidate review trace.");
+    }
   }
 
   private static DecisionReviewRecord ToRecord(

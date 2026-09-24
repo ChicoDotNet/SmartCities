@@ -30,12 +30,12 @@ public sealed class EfCitizenMobilityReportRepositoryTests
 
     await using (var firstContext = new SmartCitiesDbContext(options))
     {
-      var service = new CitizenMobilityReportService(
-        new EfCitizenMobilityReportRepository(firstContext));
+      var repository =
+        new EfCitizenMobilityReportRepository(firstContext);
 
-      var first = await service.AcceptAsync(
-        report,
-        "case-original",
+      var first = await repository.GetOrCreateAsync(
+        report.ReportId,
+        report.CreateEvidenceCase("case-original"),
         TestContext.Current.CancellationToken);
 
       Assert.True(first.WasCreated);
@@ -44,12 +44,12 @@ public sealed class EfCitizenMobilityReportRepositoryTests
 
     await using (var replayContext = new SmartCitiesDbContext(options))
     {
-      var service = new CitizenMobilityReportService(
-        new EfCitizenMobilityReportRepository(replayContext));
+      var repository =
+        new EfCitizenMobilityReportRepository(replayContext);
 
-      var replay = await service.AcceptAsync(
-        report,
-        "case-ignored",
+      var replay = await repository.GetOrCreateAsync(
+        report.ReportId,
+        report.CreateEvidenceCase("case-ignored"),
         TestContext.Current.CancellationToken);
 
       Assert.False(replay.WasCreated);
@@ -134,12 +134,12 @@ public sealed class EfCitizenMobilityReportRepositoryTests
 
     await using (var firstContext = new SmartCitiesDbContext(options))
     {
-      var service = new CitizenMobilityReportService(
-        new EfCitizenMobilityReportRepository(firstContext));
+      var repository =
+        new EfCitizenMobilityReportRepository(firstContext);
 
-      await service.AcceptAsync(
-        report,
-        "case-002",
+      await repository.GetOrCreateAsync(
+        report.ReportId,
+        report.CreateEvidenceCase("case-002"),
         TestContext.Current.CancellationToken);
     }
 

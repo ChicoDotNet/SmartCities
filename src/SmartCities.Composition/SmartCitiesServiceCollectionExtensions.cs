@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SmartCities.Application.Citizens;
 using SmartCities.Application.HumanOversight;
+using SmartCities.Criterion;
 using SmartCities.Infrastructure.Persistence;
 using SmartCities.Infrastructure.Persistence.Citizens;
 using SmartCities.Infrastructure.Persistence.HumanOversight;
@@ -40,8 +41,16 @@ public static class SmartCitiesServiceCollectionExtensions
       EfCitizenMobilityReportRepository>();
 
     services.AddScoped<
+      ICitizenMobilityDecisionPipeline,
+      CitizenMobilityDecisionPipeline>();
+
+    services.AddScoped<
       ICitizenMobilityReportService,
       CitizenMobilityReportService>();
+
+    services.AddSingleton<
+      ICriterionKernel,
+      MockCriterionKernel>();
 
     services.AddScoped<
       IDecisionReviewRepository,

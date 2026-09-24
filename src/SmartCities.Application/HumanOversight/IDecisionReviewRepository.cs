@@ -12,6 +12,13 @@ public interface IDecisionReviewRepository
     DecisionReview review,
     CancellationToken cancellationToken = default);
 
+  /// <summary>
+  /// Gets the authoritative review for the recommendation or atomically creates the supplied pending review when absent.
+  /// </summary>
+  Task<DecisionReview> GetOrAddPendingAsync(
+    DecisionReview review,
+    CancellationToken cancellationToken = default);
+
   /// <summary>Gets the authoritative review by recommendation identifier.</summary>
   Task<DecisionReview?> GetAsync(
     string recommendationId,
