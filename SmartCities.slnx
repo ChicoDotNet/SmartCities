@@ -12,6 +12,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/SmartCities.Api.Tests/SmartCities.Api.Tests.csproj" />
     <Project Path="tests/SmartCities.Application.Tests/SmartCities.Application.Tests.csproj" />
+    <Project Path="tests/SmartCities.Configuration.Sqlite.Tests/SmartCities.Configuration.Sqlite.Tests.csproj" />
     <Project Path="tests/SmartCities.Composition.Tests/SmartCities.Composition.Tests.csproj" />
     <Project Path="tests/SmartCities.Core.Tests/SmartCities.Core.Tests.csproj" />
     <Project Path="tests/SmartCities.Infrastructure.Tests/SmartCities.Infrastructure.Tests.csproj" />
