@@ -19,6 +19,7 @@ public sealed class FeatureFlagService
         StringComparer.Ordinal)
       {
         [SmartCitiesFeatures.CitizenMobility] = true,
+        [SmartCitiesFeatures.UrbanAccessibility] = false,
       };
 
   private readonly TownHallContext townHall;
