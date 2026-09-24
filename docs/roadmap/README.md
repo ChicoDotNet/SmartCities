@@ -30,9 +30,25 @@ After the F3 MVP, deployments can enable or disable registered vertical slices i
 
 Integrate the first released NuGet package without changing public SmartCities domain contracts. Use contract replay.
 
-## F5+ — Domain expansion
+## F5+ — Nine-vertical mobility and public-realm release program
 
-Expand mobility, urban intelligence, and other Smart City modules according to evidence and adopter needs.
+Domain expansion is governed by the canonical [nine-vertical release program](nine-vertical-release-program.md).
+
+The sequence deliberately works from the most ambitious vertical toward simpler verticals while reusing contracts and integration seams proven by earlier product needs:
+
+1. Access to the City / Urban Accessibility.
+2. Public Transport & Multimodal Journey.
+3. Scenario & Investment Lab.
+4. Road Safety & Traffic Impact.
+5. Mobility Data Observatory.
+6. Cycling & Micromobility.
+7. Public Space & Public Life.
+8. Urban Wayfinding.
+9. Field Survey & Asset Operations.
+
+Each vertical is promoted from `dev` to `main` when it reaches its documented Definition of MVP.
+
+Documentation, reference integrations, contract tests, operational runbooks, and third-party reproducibility are part of the MVP definition rather than post-release work.
 
 ## Rust performance lane
 
