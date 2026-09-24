@@ -27,6 +27,9 @@ public sealed class RequireFeatureAttribute
     this.featureId = featureId;
   }
 
+  /// <summary>Gets the stable registered feature identifier enforced by this gate.</summary>
+  public string FeatureId => featureId;
+
   /// <inheritdoc />
   public async Task OnResourceExecutionAsync(
     ResourceExecutingContext context,
