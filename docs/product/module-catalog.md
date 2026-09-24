@@ -15,8 +15,9 @@ This catalog defines the intended product surface. It is an architectural capabi
 ## 2. Urban Intelligence plane
 
 - **City Context & GIS** — boundaries, zones, networks, corridors, land references, POI, and geospatial layers.
-- **Evidence Hub** — versioned evidence references, provenance, quality metadata, documents, observations, and datasets.
-- **Data Acquisition** — traffic/passenger counts, inventories, origin-destination surveys, stated-preference surveys, and field observations.
+- **Evidence Hub** — versioned evidence references, provenance, quality metadata, documents, normalized observations, datasets, model results, and externally referenced artifacts.
+- **Data Acquisition** — traffic/passenger counts, classifications, speeds, occupancy, origin-destination data, inventories, stated-preference surveys, field observations, and privacy-minimized observations derived from heterogeneous sensing sources.
+- **External Models & Artifacts** — provider-agnostic references to model runs, scenario outputs, geospatial engineering artifacts, CAD/BIM/rail/station models, and other externally produced technical evidence without importing proprietary formats into domain contracts.
 - **Photogrammetry & Field Survey** — georeferenced survey products and field-derived infrastructure evidence.
 - **Demand Modeling** — trip, passenger, corridor, station, and network demand.
 - **Traffic Modeling** — road-network assignment, capacity, and operational analysis.
@@ -24,7 +25,7 @@ This catalog defines the intended product surface. It is an architectural capabi
 - **Scenario & Alternatives** — comparable interventions with assumptions, constraints, and counterfactuals.
 - **Technical, Economic, Social & Environmental Appraisal** — feasibility and impact analysis.
 - **Audit & Traceability** — inputs, methods, assumptions, model versions, recommendations, and approvals.
-- **Open Data & Indicators** — privacy-safe publishable indicators, metadata, and datasets.
+- **Open Data & Indicators** — privacy-safe publishable indicators, approved normalized observations, metadata, and datasets. Public surfaces consume SmartCities contracts rather than querying source providers directly.
 
 ## 3. Mobility & Public Realm plane
 
@@ -63,7 +64,7 @@ Architectural extension points not required for the first mobility-focused relea
 - **SmartCities.Contracts** — stable public contracts.
 - **SmartCities.Criterion** — criterion abstraction, deterministic mock, future adapters.
 - **SmartCities.HumanOversight** — review, authority, disposition, dissent, accountability.
-- **SmartCities.Integrations** — standards and provider adapters that do not own domain logic.
+- **SmartCities.Integrations** — optional standards/protocol/provider adapters for observations, datasets, routing, realtime transit, models/simulations, and external engineering artifacts. Provider-specific types stop at this boundary and never own domain logic.
 - **SmartCities.Identity** — optional identity and authorization boundary.
 - **SmartCities.Localization** — .NET resource sets and JSON resource delivery.
 - **SmartCities.Observability** — telemetry, audit events, privacy-safe diagnostics.
