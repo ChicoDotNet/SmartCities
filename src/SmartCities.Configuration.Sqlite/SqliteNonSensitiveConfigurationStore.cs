@@ -12,13 +12,16 @@ namespace SmartCities.Configuration.Sqlite;
 /// authentication material, private keys, tokens, citizen evidence, or other sensitive data.
 /// </remarks>
 public sealed class SqliteNonSensitiveConfigurationStore
-  : INonSensitiveConfigurationStore
+  : INonSensitiveConfigurationStore,
+    IDisposable
 {
   private const int MaximumTownHallIdLength = 128;
   private const int MaximumKeyLength = 256;
   private const int MaximumValueLength = 32768;
 
   private readonly string connectionString;
+  private readonly SemaphoreSlim schemaGate =
+    new(1, 1);
   private bool schemaReady;
 
   /// <summary>Initializes the store with a dedicated SQLite connection string.</summary>
@@ -169,30 +172,52 @@ public sealed class SqliteNonSensitiveConfigurationStore
       return;
     }
 
-    await using var connection =
-      new SqliteConnection(connectionString);
-    await connection
-      .OpenAsync(cancellationToken)
+    await schemaGate
+      .WaitAsync(cancellationToken)
       .ConfigureAwait(false);
 
-    await using var command =
-      connection.CreateCommand();
-    command.CommandText =
-      """
-      CREATE TABLE IF NOT EXISTS non_sensitive_settings (
-        town_hall_id TEXT NOT NULL,
-        setting_key TEXT NOT NULL,
-        setting_value TEXT NOT NULL,
-        updated_at_utc TEXT NOT NULL,
-        PRIMARY KEY (town_hall_id, setting_key)
-      );
-      """;
+    try
+    {
+      if (schemaReady)
+      {
+        return;
+      }
 
-    await command
-      .ExecuteNonQueryAsync(cancellationToken)
-      .ConfigureAwait(false);
+      await using var connection =
+        new SqliteConnection(connectionString);
+      await connection
+        .OpenAsync(cancellationToken)
+        .ConfigureAwait(false);
 
-    schemaReady = true;
+      await using var command =
+        connection.CreateCommand();
+      command.CommandText =
+        """
+        CREATE TABLE IF NOT EXISTS non_sensitive_settings (
+          town_hall_id TEXT NOT NULL,
+          setting_key TEXT NOT NULL,
+          setting_value TEXT NOT NULL,
+          updated_at_utc TEXT NOT NULL,
+          PRIMARY KEY (town_hall_id, setting_key)
+        );
+        """;
+
+      await command
+        .ExecuteNonQueryAsync(cancellationToken)
+        .ConfigureAwait(false);
+
+      schemaReady = true;
+    }
+    finally
+    {
+      schemaGate.Release();
+    }
+  }
+
+  /// <inheritdoc />
+  public void Dispose()
+  {
+    schemaGate.Dispose();
   }
 
   private static void ValidateTownHallId(
