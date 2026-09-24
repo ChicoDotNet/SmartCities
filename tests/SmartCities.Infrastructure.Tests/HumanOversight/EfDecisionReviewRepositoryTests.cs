@@ -193,6 +193,63 @@ public sealed class EfDecisionReviewRepositoryTests
   }
 
   [Fact]
+  public async Task Get_or_add_pending_fails_closed_when_the_same_recommendation_has_a_conflicting_trace()
+  {
+    await using var connection = new SqliteConnection(
+      "Data Source=:memory:");
+    await connection.OpenAsync(
+      TestContext.Current.CancellationToken);
+
+    var options =
+      new DbContextOptionsBuilder<SmartCitiesDbContext>()
+        .UseSqlite(connection)
+        .Options;
+
+    await using var context =
+      new SmartCitiesDbContext(options);
+    await context.Database.EnsureCreatedAsync(
+      TestContext.Current.CancellationToken);
+
+    var repository =
+      new EfDecisionReviewRepository(context);
+    var authoritative = DecisionReview.Pending(
+      CriterionDecisionTrace.Create(
+        requestId: "request-authoritative",
+        recommendationId: "recommendation-shared",
+        recommendation:
+          CriterionRecommendation.RequiresHumanReview,
+        requiresHumanReview: true,
+        evidenceReferenceIds: ["evidence-001"],
+        publicExplanation: "Authoritative explanation.",
+        evidenceCaseId: "case-authoritative"));
+
+    await repository.GetOrAddPendingAsync(
+      authoritative,
+      TestContext.Current.CancellationToken);
+
+    var conflicting = DecisionReview.Pending(
+      CriterionDecisionTrace.Create(
+        requestId: "request-conflicting",
+        recommendationId: "recommendation-shared",
+        recommendation:
+          CriterionRecommendation.RequiresHumanReview,
+        requiresHumanReview: true,
+        evidenceReferenceIds: ["evidence-999"],
+        publicExplanation: "Conflicting explanation.",
+        evidenceCaseId: "case-conflicting"));
+
+    var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+      () => repository.GetOrAddPendingAsync(
+        conflicting,
+        TestContext.Current.CancellationToken));
+
+    Assert.Contains(
+      "conflicts",
+      exception.Message,
+      StringComparison.Ordinal);
+  }
+
+  [Fact]
   public async Task Second_finalization_preserves_the_first_human_authority()
   {
     await using var connection = new SqliteConnection(
