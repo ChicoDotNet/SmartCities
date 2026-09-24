@@ -38,6 +38,20 @@ public static class SmartCitiesAuthorizationExtensions
               SmartCitiesClaimTypes.Permission,
               SmartCitiesPermissions.FinalizeDecisionReview);
           });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageFeatureFlags,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageFeatureFlags);
+          });
       });
 
     return services;
