@@ -156,6 +156,67 @@ public sealed class SmartCitiesAuthorizationTests
   }
 
   [Fact]
+  public async Task Citizen_mobility_management_requires_global_and_feature_specific_manage_grants()
+  {
+    using var provider = BuildServices();
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+
+    var complete = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "operator-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesFeaturePermissions.Manage(
+              "citizen-mobility")),
+        ],
+        authenticationType: "provider-a"));
+
+    var globalOnly = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "operator-43"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+        ],
+        authenticationType: "provider-a"));
+
+    Assert.True(
+      (await authorization.AuthorizeAsync(
+        complete,
+        resource: null,
+        SmartCitiesPolicies.ManageCitizenMobility))
+      .Succeeded);
+    Assert.False(
+      (await authorization.AuthorizeAsync(
+        globalOnly,
+        resource: null,
+        SmartCitiesPolicies.ManageCitizenMobility))
+      .Succeeded);
+  }
+
+  [Fact]
   public void Canonical_principal_maps_to_the_existing_human_authority_contract()
   {
     var principal = CreateCanonicalReviewer(
