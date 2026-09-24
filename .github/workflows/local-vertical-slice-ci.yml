@@ -9,6 +9,7 @@ on:
       - 'src/SmartCities.Api/**'
       - 'src/SmartCities.Application/**'
       - 'src/SmartCities.Composition/**'
+      - 'src/SmartCities.Configuration.Sqlite/**'
       - 'src/SmartCities.Infrastructure/**'
       - 'src/SmartCities.Infrastructure.PostgreSql/**'
       - 'scripts/verify-local-vertical-slice.py'
