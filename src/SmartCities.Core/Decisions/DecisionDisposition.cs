@@ -11,4 +11,7 @@ public enum DecisionDisposition
 
   /// <summary>The recommendation was rejected by the accountable human authority.</summary>
   Rejected = 2,
+
+  /// <summary>The accountable human authority deferred a final course of action for later consideration.</summary>
+  Deferred = 3,
 }

@@ -101,6 +101,27 @@ public sealed class EfDecisionReviewRepository
   }
 
   /// <inheritdoc />
+  public async Task<DecisionReview?> GetByEvidenceCaseIdAsync(
+    string evidenceCaseId,
+    CancellationToken cancellationToken = default)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(
+      evidenceCaseId);
+
+    var record = await dbContext.DecisionReviews
+      .AsNoTracking()
+      .SingleOrDefaultAsync(
+        item =>
+          item.EvidenceCaseId == evidenceCaseId,
+        cancellationToken)
+      .ConfigureAwait(false);
+
+    return record is null
+      ? null
+      : ToDomain(record);
+  }
+
+  /// <inheritdoc />
   public async Task<DecisionReview?> GetAsync(
     string recommendationId,
     CancellationToken cancellationToken = default)

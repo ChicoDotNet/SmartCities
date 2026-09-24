@@ -108,6 +108,16 @@ public sealed class DecisionReviewServiceTests
       return Task.FromResult(Review);
     }
 
+    public Task<DecisionReview?> GetByEvidenceCaseIdAsync(
+      string evidenceCaseId,
+      CancellationToken cancellationToken = default)
+    {
+      cancellationToken.ThrowIfCancellationRequested();
+
+      return Task.FromResult(
+        ReviewByCase(evidenceCaseId));
+    }
+
     public Task<DecisionReview?> GetAsync(
       string recommendationId,
       CancellationToken cancellationToken = default)
@@ -123,6 +133,16 @@ public sealed class DecisionReviewServiceTests
           ? Review
           : null);
     }
+
+    private DecisionReview? ReviewByCase(
+      string evidenceCaseId) =>
+      Review is not null
+      && string.Equals(
+        Review.EvidenceCaseId,
+        evidenceCaseId,
+        StringComparison.Ordinal)
+        ? Review
+        : null;
 
     public Task<DecisionReviewFinalizationResult> FinalizeAsync(
       string recommendationId,

@@ -19,6 +19,11 @@ public interface IDecisionReviewRepository
     DecisionReview review,
     CancellationToken cancellationToken = default);
 
+  /// <summary>Gets the authoritative review linked to an Evidence Case identifier.</summary>
+  Task<DecisionReview?> GetByEvidenceCaseIdAsync(
+    string evidenceCaseId,
+    CancellationToken cancellationToken = default);
+
   /// <summary>Gets the authoritative review by recommendation identifier.</summary>
   Task<DecisionReview?> GetAsync(
     string recommendationId,

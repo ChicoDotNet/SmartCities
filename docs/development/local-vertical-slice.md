@@ -57,7 +57,7 @@ SmartCitiesDbContext
 PostgreSQL
 ```
 
-## Recovery check
+## Recovery checks
 
 After a report is accepted, the authoritative persisted case can be retrieved with:
 
@@ -65,10 +65,16 @@ After a report is accepted, the authoritative persisted case can be retrieved wi
 GET /api/citizen/mobility-reports/{reportId}
 ```
 
-The repository loads the case through a fresh EF Core query rather than reconstructing it from browser state.
+Its citizen-safe reviewed state is available through:
+
+```text
+GET /api/citizen/mobility-reports/{reportId}/outcome
+```
+
+The outcome endpoint reads persisted report and human-review state rather than reconstructing it from browser memory. React carries the opaque report reference in the URL so the same outcome can be recovered after refresh or direct navigation.
 
 ## Automated verification
 
-`Local Vertical Slice CI` boots a real PostgreSQL service, starts the API in Development mode, applies migrations, creates a report, replays the same report with a different candidate case ID, and then retrieves the persisted report.
+`Local Vertical Slice CI` boots a real PostgreSQL service, starts the API in Development mode, applies migrations, creates and replays a citizen report, recovers its authoritative case, reads the pending citizen outcome, finalizes the persisted review through canonical JWT authorization, and reads the localized final citizen outcome.
 
-The test proves that the original case remains authoritative across HTTP requests and database reads.
+The gate also proves that post-finalization report replay cannot overwrite human authority, changing locale cannot change report/case/status/disposition identity, and an unsupported locale falls back to neutral English.

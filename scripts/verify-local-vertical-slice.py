@@ -161,6 +161,11 @@ def main() -> None:
         "/api/citizen/mobility-reports" in openapi["paths"],
         "OpenAPI does not expose the citizen mobility POST route.",
     )
+    require(
+        "/api/citizen/mobility-reports/{reportId}/outcome"
+        in openapi["paths"],
+        "OpenAPI does not expose the citizen outcome route.",
+    )
 
     report_id = "e2e-report-001"
     original_case_id = "e2e-case-original"
@@ -203,6 +208,40 @@ def main() -> None:
     require(recovered["reportId"] == report_id, "Recovered report ID changed.")
     require(recovered["caseId"] == original_case_id, "Recovered case is not authoritative.")
 
+    pending_status, pending_outcome = request(
+        "GET",
+        f"/api/citizen/mobility-reports/{report_id}/outcome",
+    )
+    require(
+        pending_status == 200,
+        f"Expected pending outcome 200, got {pending_status}: {pending_outcome}",
+    )
+    require(
+        pending_outcome["reportId"] == report_id,
+        "Pending outcome report ID changed.",
+    )
+    require(
+        pending_outcome["caseId"] == original_case_id,
+        "Pending outcome case ID changed.",
+    )
+    require(
+        pending_outcome["status"] == "pending-human-review",
+        "Pending outcome status is not human-review pending.",
+    )
+    require(
+        pending_outcome["disposition"] is None,
+        "Pending outcome exposed a final disposition.",
+    )
+    require(
+        pending_outcome["statusLabel"] == "En revisión humana",
+        "Pending outcome is not localized to es-MX.",
+    )
+    require(
+        "persona autorizada"
+        in pending_outcome["explanation"].lower(),
+        "Pending explanation is not citizen-facing es-MX copy.",
+    )
+
     recommendation_id = recommendation_id_for_case(original_case_id)
     finalize_status, finalized = request(
         "POST",
@@ -238,6 +277,81 @@ def main() -> None:
     require(
         finalized["disposition"] == 0,
         "Finalized review did not preserve the human disposition.",
+    )
+
+    finalized_status, finalized_outcome = request(
+        "GET",
+        f"/api/citizen/mobility-reports/{report_id}/outcome",
+    )
+    require(
+        finalized_status == 200,
+        (
+            "Expected finalized citizen outcome 200, got "
+            f"{finalized_status}: {finalized_outcome}"
+        ),
+    )
+    require(
+        finalized_outcome["status"] == "finalized",
+        "Citizen outcome did not become finalized.",
+    )
+    require(
+        finalized_outcome["disposition"] == "accepted",
+        "Citizen outcome did not expose the authoritative human disposition.",
+    )
+    require(
+        finalized_outcome["statusLabel"] == "Revisión concluida",
+        "Finalized outcome is not localized to es-MX.",
+    )
+    require(
+        "aceptada" in finalized_outcome["explanation"].lower(),
+        "Finalized es-MX explanation does not describe the disposition.",
+    )
+
+    english_status, english_outcome = request(
+        "GET",
+        f"/api/citizen/mobility-reports/{report_id}/outcome",
+        extra_headers={"Accept-Language": "en"},
+    )
+    require(
+        english_status == 200,
+        f"Expected English outcome 200, got {english_status}: {english_outcome}",
+    )
+    require(
+        english_outcome["reportId"] == finalized_outcome["reportId"],
+        "Locale switch changed report identity.",
+    )
+    require(
+        english_outcome["caseId"] == finalized_outcome["caseId"],
+        "Locale switch changed case identity.",
+    )
+    require(
+        english_outcome["status"] == finalized_outcome["status"],
+        "Locale switch changed machine status.",
+    )
+    require(
+        english_outcome["disposition"] == finalized_outcome["disposition"],
+        "Locale switch changed human disposition.",
+    )
+    require(
+        english_outcome["statusLabel"] == "Review complete",
+        "English outcome status label is incorrect.",
+    )
+
+    fallback_status, fallback_outcome = request(
+        "GET",
+        f"/api/citizen/mobility-reports/{report_id}/outcome",
+        extra_headers={"Accept-Language": "fr-FR"},
+    )
+    require(
+        fallback_status == 200,
+        (
+            "Expected fallback outcome 200, got "
+            f"{fallback_status}: {fallback_outcome}"
+        ),
+    )
+    require(
+        fallback_outcome["statusLabel"] == "Review complete",
+        "Unsupported locale did not fall back to neutral English.",
     )
 
     post_finalize_replay_status, post_finalize_replay = request(
@@ -283,7 +397,8 @@ def main() -> None:
 
     print(
         "Local vertical slice verified: live -> ready -> build -> OpenAPI "
-        "-> create -> replay -> recover -> mock criterion -> human finalize "
+        "-> create -> replay -> recover -> pending citizen outcome "
+        "-> mock criterion -> human finalize -> localized reviewed outcome "
         "-> post-finalization replay preserves authority."
     )
 

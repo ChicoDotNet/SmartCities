@@ -132,4 +132,43 @@
   <data name="authentication.session.loggingOut" xml:space="preserve">
     <value>Cerrando sesión…</value>
   </data>
+  <data name="citizen.mobilityReport.report.label" xml:space="preserve">
+    <value>Reporte</value>
+  </data>
+  <data name="citizen.mobilityOutcome.title" xml:space="preserve">
+    <value>Estado del caso</value>
+  </data>
+  <data name="citizen.mobilityOutcome.loading" xml:space="preserve">
+    <value>Consultando el estado del caso…</value>
+  </data>
+  <data name="citizen.mobilityOutcome.unavailable" xml:space="preserve">
+    <value>El estado del caso no está disponible temporalmente.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.notFound" xml:space="preserve">
+    <value>No encontramos un reporte con esta referencia.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.refresh" xml:space="preserve">
+    <value>Actualizar estado</value>
+  </data>
+  <data name="citizen.mobilityOutcome.status.pendingHumanReview" xml:space="preserve">
+    <value>En revisión humana</value>
+  </data>
+  <data name="citizen.mobilityOutcome.status.finalized" xml:space="preserve">
+    <value>Revisión concluida</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.pendingHumanReview" xml:space="preserve">
+    <value>Tu reporte está esperando la revisión de una persona autorizada. Todavía no se ha registrado una disposición cívica final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.accepted" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión. La propuesta fue aceptada como disposición final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.modified" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión. La propuesta fue modificada antes de registrar la disposición final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.rejected" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión. La propuesta fue rechazada como disposición final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.deferred" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión y dejó diferida la decisión final para una consideración posterior.</value>
+  </data>
 </root>
