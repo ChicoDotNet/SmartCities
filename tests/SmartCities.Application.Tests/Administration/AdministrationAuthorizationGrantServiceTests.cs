@@ -170,8 +170,21 @@ public sealed class AdministrationAuthorizationGrantServiceTests
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
 
+    public Task<AdministrationAccessRule> AddRuleAsync(
+      AdministrationAccessRuleKind kind,
+      string value,
+      AdministrationControlPlaneAuditContext auditContext,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
     public Task<bool> DeleteRuleAsync(
       string ruleId,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<bool> DeleteRuleAsync(
+      string ruleId,
+      AdministrationControlPlaneAuditContext auditContext,
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
   }
@@ -203,6 +216,19 @@ public sealed class AdministrationAuthorizationGrantServiceTests
       return Task.CompletedTask;
     }
 
+    public Task AddAsync(
+      string townHallId,
+      AdministrationAuthorizationGrant grant,
+      AdministrationControlPlaneAuditEvent auditEvent,
+      CancellationToken cancellationToken = default)
+    {
+      ArgumentNullException.ThrowIfNull(auditEvent);
+      return AddAsync(
+        townHallId,
+        grant,
+        cancellationToken);
+    }
+
     public Task<bool> DeleteAsync(
       string townHallId,
       string grantId,
@@ -215,6 +241,19 @@ public sealed class AdministrationAuthorizationGrantServiceTests
             item.GrantId,
             grantId,
             StringComparison.Ordinal)) == 1);
+    }
+
+    public Task<bool> DeleteAsync(
+      string townHallId,
+      string grantId,
+      AdministrationControlPlaneAuditEvent auditEvent,
+      CancellationToken cancellationToken = default)
+    {
+      ArgumentNullException.ThrowIfNull(auditEvent);
+      return DeleteAsync(
+        townHallId,
+        grantId,
+        cancellationToken);
     }
   }
 
