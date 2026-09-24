@@ -52,4 +52,10 @@ public static class SmartCitiesPolicies
   /// </summary>
   public const string ManageAdministrationGrants =
     "smartcities.administration-grants.manage";
+
+  /// <summary>
+  /// Requires Administration admission plus explicit permission to read immutable audit history.
+  /// </summary>
+  public const string ReadAdministrationAudit =
+    "smartcities.administration-audit.read";
 }
