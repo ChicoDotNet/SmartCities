@@ -12,8 +12,11 @@ export interface ApiProblem {
 }
 
 export class ApiProblemError extends Error {
-  public constructor(public readonly problem: ApiProblem) {
+  public readonly problem: ApiProblem;
+
+  public constructor(problem: ApiProblem) {
     super(problem.code ?? 'api_problem');
+    this.problem = problem;
   }
 }
 
