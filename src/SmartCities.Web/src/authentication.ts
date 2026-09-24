@@ -23,8 +23,11 @@ export type FetchLike = (
 ) => Promise<Response>;
 
 export class AuthenticationClientError extends Error {
-  public constructor(public readonly code: string) {
+  public readonly code: string;
+
+  public constructor(code: string) {
     super(code);
+    this.code = code;
   }
 }
 
