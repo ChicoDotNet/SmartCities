@@ -123,6 +123,39 @@ public sealed class SmartCitiesAuthorizationTests
   }
 
   [Fact]
+  public async Task Feature_management_permission_does_not_bypass_the_administration_whitelist()
+  {
+    using var provider = BuildServices(
+      administrationAuthorized: false);
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+    var principal = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "admin-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "town-hall-admin"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+        ],
+        authenticationType: "provider-a"));
+
+    var result = await authorization.AuthorizeAsync(
+      principal,
+      resource: null,
+      SmartCitiesPolicies.ManageFeatureFlags);
+
+    Assert.False(result.Succeeded);
+  }
+
+  [Fact]
   public void Canonical_principal_maps_to_the_existing_human_authority_contract()
   {
     var principal = CreateCanonicalReviewer(
@@ -161,21 +194,31 @@ public sealed class SmartCitiesAuthorizationTests
       principal.ToHumanAuthority);
   }
 
-  private static ServiceProvider BuildServices()
+  private static ServiceProvider BuildServices(
+    bool administrationAuthorized = true)
   {
     var services = new ServiceCollection();
     services.AddLogging();
     services.AddSingleton<IAdministrationAccessService>(
-      new AllowingAdministrationAccessService());
+      new RecordingAdministrationAccessService(
+        administrationAuthorized));
     services.AddSmartCitiesAuthorization();
     services.AddSmartCitiesAdministrationAuthorization();
 
     return services.BuildServiceProvider();
   }
 
-  private sealed class AllowingAdministrationAccessService
+  private sealed class RecordingAdministrationAccessService
     : IAdministrationAccessService
   {
+    private readonly bool authorized;
+
+    public RecordingAdministrationAccessService(
+      bool authorized)
+    {
+      this.authorized = authorized;
+    }
+
     public string TownHallId => "test-town-hall";
 
     public Task<bool> IsAuthorizedAsync(
@@ -183,7 +226,7 @@ public sealed class SmartCitiesAuthorizationTests
       CancellationToken cancellationToken = default)
     {
       cancellationToken.ThrowIfCancellationRequested();
-      return Task.FromResult(true);
+      return Task.FromResult(authorized);
     }
 
     public Task<bool> IsBootstrapAvailableAsync(
