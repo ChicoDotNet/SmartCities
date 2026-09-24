@@ -55,6 +55,26 @@ public sealed class FeatureFlagServiceTests
   }
 
   [Fact]
+  public async Task Corrupted_persisted_value_fails_closed_instead_of_using_the_default()
+  {
+    var store = new RecordingConfigurationStore();
+    await store.SetAsync(
+      "town-hall-a",
+      "feature:citizen-mobility:enabled",
+      "not-a-boolean",
+      TestContext.Current.CancellationToken);
+
+    var service = new FeatureFlagService(
+      new TownHallContext("town-hall-a"),
+      store);
+
+    await Assert.ThrowsAsync<InvalidOperationException>(
+      () => service.GetAsync(
+        SmartCitiesFeatures.CitizenMobility,
+        TestContext.Current.CancellationToken));
+  }
+
+  [Fact]
   public async Task Unknown_feature_cannot_be_persisted()
   {
     var service = new FeatureFlagService(
