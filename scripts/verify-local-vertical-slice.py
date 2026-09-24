@@ -125,6 +125,9 @@ def create_token(role: str, permission: str) -> str:
         "nbf": now - 5,
         "exp": now + 300,
     }
+    if permission == "feature-flags.manage":
+        payload["email"] = "official@townhallname.gob.mx"
+
     signing_input = (
         f"{base64url(json.dumps(header, separators=(',', ':')).encode('utf-8'))}."
         f"{base64url(json.dumps(payload, separators=(',', ':')).encode('utf-8'))}"
@@ -300,8 +303,8 @@ def main() -> None:
         "POST",
         "/api/administration/whitelist",
         {
-            "kind": "canonical-subject",
-            "value": "local:default:e2e-feature-admin-001",
+            "kind": "email-domain",
+            "value": "@townhallname.gob.mx",
         },
         bootstrap_headers_for_api,
     )
@@ -310,8 +313,9 @@ def main() -> None:
         f"Expected first whitelist rule 200, got {first_rule_status}: {first_rule}",
     )
     require(
-        first_rule["kind"] == "canonical-subject",
-        "First whitelist rule has the wrong kind.",
+        first_rule["kind"] == "email-domain"
+        and first_rule["value"] == "townhallname.gob.mx",
+        "First whitelist rule was not normalized as the expected municipal domain.",
     )
 
     bootstrap_access_status, bootstrap_access = request(
