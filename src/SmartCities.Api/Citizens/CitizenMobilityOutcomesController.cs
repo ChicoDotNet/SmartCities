@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartCities.Api.FeatureFlags;
 using SmartCities.Api.Hosting;
 using SmartCities.Api.Localization;
 using SmartCities.Application.Citizens;
+using SmartCities.Application.FeatureFlags;
 using SmartCities.Decisions;
 
 namespace SmartCities.Api.Citizens;
