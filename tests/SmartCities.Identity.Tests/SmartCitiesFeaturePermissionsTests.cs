@@ -21,6 +21,15 @@ public sealed class SmartCitiesFeaturePermissionsTests
         "citizen-mobility"),
       SmartCitiesFeaturePermissions.Configure(
         "citizen-mobility"));
+
+    Assert.Equal(
+      "urban-accessibility.manage",
+      SmartCitiesFeaturePermissions.Manage(
+        "urban-accessibility"));
+    Assert.Equal(
+      "urban-accessibility.config",
+      SmartCitiesFeaturePermissions.Configure(
+        "urban-accessibility"));
   }
 
   [Theory]
