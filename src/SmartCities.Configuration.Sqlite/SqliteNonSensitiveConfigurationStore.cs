@@ -19,8 +19,6 @@ public sealed class SqliteNonSensitiveConfigurationStore
   private const int MaximumValueLength = 32768;
 
   private readonly string connectionString;
-  private readonly SemaphoreSlim schemaGate =
-    new(1, 1);
   private bool schemaReady;
 
   /// <summary>Initializes the store with a dedicated SQLite connection string.</summary>
@@ -171,46 +169,30 @@ public sealed class SqliteNonSensitiveConfigurationStore
       return;
     }
 
-    await schemaGate
-      .WaitAsync(cancellationToken)
+    await using var connection =
+      new SqliteConnection(connectionString);
+    await connection
+      .OpenAsync(cancellationToken)
       .ConfigureAwait(false);
 
-    try
-    {
-      if (schemaReady)
-      {
-        return;
-      }
+    await using var command =
+      connection.CreateCommand();
+    command.CommandText =
+      """
+      CREATE TABLE IF NOT EXISTS non_sensitive_settings (
+        town_hall_id TEXT NOT NULL,
+        setting_key TEXT NOT NULL,
+        setting_value TEXT NOT NULL,
+        updated_at_utc TEXT NOT NULL,
+        PRIMARY KEY (town_hall_id, setting_key)
+      );
+      """;
 
-      await using var connection =
-        new SqliteConnection(connectionString);
-      await connection
-        .OpenAsync(cancellationToken)
-        .ConfigureAwait(false);
+    await command
+      .ExecuteNonQueryAsync(cancellationToken)
+      .ConfigureAwait(false);
 
-      await using var command =
-        connection.CreateCommand();
-      command.CommandText =
-        """
-        CREATE TABLE IF NOT EXISTS non_sensitive_settings (
-          town_hall_id TEXT NOT NULL,
-          setting_key TEXT NOT NULL,
-          setting_value TEXT NOT NULL,
-          updated_at_utc TEXT NOT NULL,
-          PRIMARY KEY (town_hall_id, setting_key)
-        );
-        """;
-
-      await command
-        .ExecuteNonQueryAsync(cancellationToken)
-        .ConfigureAwait(false);
-
-      schemaReady = true;
-    }
-    finally
-    {
-      schemaGate.Release();
-    }
+    schemaReady = true;
   }
 
   private static void ValidateTownHallId(
