@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SmartCities.Composition</AssemblyName>
+    <RootNamespace>SmartCities.Composition</RootNamespace>
+    <Description>Host composition and dependency registration for SmartCities.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SmartCities.Application/SmartCities.Application.csproj" />
+    <ProjectReference Include="../SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
+    <ProjectReference Include="../SmartCities.Infrastructure.PostgreSql/SmartCities.Infrastructure.PostgreSql.csproj" />
+    <ProjectReference Include="../SmartCities.Infrastructure.SqlServer/SmartCities.Infrastructure.SqlServer.csproj" />
+  </ItemGroup>
+</Project>

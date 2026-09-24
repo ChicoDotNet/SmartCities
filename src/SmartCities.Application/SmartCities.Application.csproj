@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>SmartCities.Application</AssemblyName>
+    <RootNamespace>SmartCities.Application</RootNamespace>
+    <Description>Application use cases and contracts for the SmartCities suite.</Description>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../SmartCities.Core/SmartCities.Core.csproj" />
+  </ItemGroup>
+</Project>

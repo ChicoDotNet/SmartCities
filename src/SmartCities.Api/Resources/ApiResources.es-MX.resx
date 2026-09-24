@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="app.title" xml:space="preserve">
+    <value>Ventanilla Digital Ciudadana</value>
+  </data>
+  <data name="problem.invalidInput.title" xml:space="preserve">
+    <value>Datos ciudadanos no válidos.</value>
+  </data>
+  <data name="problem.invalidInput.detail" xml:space="preserve">
+    <value>Uno o más valores proporcionados no son válidos.</value>
+  </data>
+  <data name="citizen.mobilityReport.title" xml:space="preserve">
+    <value>Reportar un problema de movilidad</value>
+  </data>
+  <data name="citizen.mobilityReport.intro" xml:space="preserve">
+    <value>Cuéntanos qué está ocurriendo para que la ciudad pueda revisar la evidencia y responder.</value>
+  </data>
+  <data name="citizen.mobilityReport.category.label" xml:space="preserve">
+    <value>Categoría</value>
+  </data>
+  <data name="citizen.mobilityReport.category.placeholder" xml:space="preserve">
+    <value>Selecciona una categoría</value>
+  </data>
+  <data name="citizen.mobilityReport.category.pedestrianSafety" xml:space="preserve">
+    <value>Seguridad peatonal</value>
+  </data>
+  <data name="citizen.mobilityReport.category.publicTransport" xml:space="preserve">
+    <value>Transporte público</value>
+  </data>
+  <data name="citizen.mobilityReport.category.roadSafety" xml:space="preserve">
+    <value>Seguridad vial</value>
+  </data>
+  <data name="citizen.mobilityReport.location.label" xml:space="preserve">
+    <value>Ubicación</value>
+  </data>
+  <data name="citizen.mobilityReport.location.placeholder" xml:space="preserve">
+    <value>Calle, cruce, punto de referencia o ubicación</value>
+  </data>
+  <data name="citizen.mobilityReport.description.label" xml:space="preserve">
+    <value>¿Qué está ocurriendo?</value>
+  </data>
+  <data name="citizen.mobilityReport.description.placeholder" xml:space="preserve">
+    <value>Describe el problema de movilidad y a quién afecta.</value>
+  </data>
+  <data name="citizen.mobilityReport.evidence.note" xml:space="preserve">
+    <value>Podrás agregar evidencia en un paso posterior.</value>
+  </data>
+  <data name="citizen.mobilityReport.submit" xml:space="preserve">
+    <value>Enviar reporte</value>
+  </data>
+  <data name="citizen.mobilityReport.submitting" xml:space="preserve">
+    <value>Enviando…</value>
+  </data>
+  <data name="citizen.mobilityReport.offline" xml:space="preserve">
+    <value>Estás sin conexión. Vuelve a conectarte antes de enviar este reporte.</value>
+  </data>
+  <data name="citizen.mobilityReport.submitError" xml:space="preserve">
+    <value>No pudimos enviar el reporte. Inténtalo de nuevo.</value>
+  </data>
+  <data name="citizen.mobilityReport.success.created" xml:space="preserve">
+    <value>Recibimos tu reporte y se creó un caso.</value>
+  </data>
+  <data name="citizen.mobilityReport.success.existing" xml:space="preserve">
+    <value>Este reporte ya había sido recibido. Este es su caso.</value>
+  </data>
+  <data name="citizen.mobilityReport.case.label" xml:space="preserve">
+    <value>Caso</value>
+  </data>
+  <data name="authentication.title" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="authentication.intro" xml:space="preserve">
+    <value>Usa cualquiera de los métodos de acceso habilitados para esta instalación de SmartCities.</value>
+  </data>
+  <data name="authentication.loading" xml:space="preserve">
+    <value>Cargando opciones de acceso…</value>
+  </data>
+  <data name="authentication.unavailable" xml:space="preserve">
+    <value>Las opciones de acceso no están disponibles temporalmente.</value>
+  </data>
+  <data name="authentication.noProviders" xml:space="preserve">
+    <value>No hay métodos de acceso habilitados para esta instalación.</value>
+  </data>
+  <data name="authentication.local.userName" xml:space="preserve">
+    <value>Usuario</value>
+  </data>
+  <data name="authentication.local.password" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="authentication.local.submit" xml:space="preserve">
+    <value>Iniciar sesión</value>
+  </data>
+  <data name="authentication.local.submitting" xml:space="preserve">
+    <value>Iniciando sesión…</value>
+  </data>
+  <data name="authentication.local.invalidCredentials" xml:space="preserve">
+    <value>El usuario o la contraseña no son válidos.</value>
+  </data>
+  <data name="authentication.genericError" xml:space="preserve">
+    <value>No pudimos completar el acceso. Inténtalo de nuevo.</value>
+  </data>
+  <data name="authentication.success" xml:space="preserve">
+    <value>Tu sesión está iniciada.</value>
+  </data>
+  <data name="authentication.redirect.continueWith" xml:space="preserve">
+    <value>Continuar con</value>
+  </data>
+  <data name="authentication.session.title" xml:space="preserve">
+    <value>Sesión activa</value>
+  </data>
+  <data name="authentication.session.checking" xml:space="preserve">
+    <value>Comprobando sesión…</value>
+  </data>
+  <data name="authentication.session.unavailable" xml:space="preserve">
+    <value>Estado de sesión no disponible</value>
+  </data>
+  <data name="authentication.session.logout" xml:space="preserve">
+    <value>Cerrar sesión</value>
+  </data>
+  <data name="authentication.session.loggingOut" xml:space="preserve">
+    <value>Cerrando sesión…</value>
+  </data>
+  <data name="citizen.mobilityReport.report.label" xml:space="preserve">
+    <value>Reporte</value>
+  </data>
+  <data name="citizen.mobilityOutcome.title" xml:space="preserve">
+    <value>Estado del caso</value>
+  </data>
+  <data name="citizen.mobilityOutcome.loading" xml:space="preserve">
+    <value>Consultando el estado del caso…</value>
+  </data>
+  <data name="citizen.mobilityOutcome.unavailable" xml:space="preserve">
+    <value>El estado del caso no está disponible temporalmente.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.notFound" xml:space="preserve">
+    <value>No encontramos un reporte con esta referencia.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.refresh" xml:space="preserve">
+    <value>Actualizar estado</value>
+  </data>
+  <data name="citizen.mobilityOutcome.status.pendingHumanReview" xml:space="preserve">
+    <value>En revisión humana</value>
+  </data>
+  <data name="citizen.mobilityOutcome.status.finalized" xml:space="preserve">
+    <value>Revisión concluida</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.pendingHumanReview" xml:space="preserve">
+    <value>Tu reporte está esperando la revisión de una persona autorizada. Todavía no se ha registrado una disposición cívica final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.accepted" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión. La propuesta fue aceptada como disposición final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.modified" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión. La propuesta fue modificada antes de registrar la disposición final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.rejected" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión. La propuesta fue rechazada como disposición final.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.deferred" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión y dejó diferida la decisión final para una consideración posterior.</value>
+  </data>
+</root>

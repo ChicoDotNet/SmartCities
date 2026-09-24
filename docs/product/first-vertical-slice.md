@@ -38,6 +38,59 @@ Required initially:
 - SmartCities.Localization;
 - Transparency & Decisions.
 
+## Executable MVP orchestration
+
+The reference F3 runtime connects the persisted citizen report path to the human-review path using the public deterministic `MockCriterionKernel`:
+
+```text
+accepted report
+  -> authoritative persisted Evidence Case
+  -> deterministic criterion request
+  -> MockCriterionKernel
+  -> trace validation
+  -> persisted pending DecisionReview
+  -> protected human finalization
+```
+
+Criterion request identifiers are deterministically derived from the authoritative Evidence Case identifier. The mock therefore produces the same recommendation identifier for an idempotent report replay.
+
+The report record and the decision-review record are not claimed to be one distributed/relational atomic write. Report acceptance is persisted first; every acceptance/replay then ensures the review from the authoritative persisted Evidence Case. If review creation is interrupted after the report commit, a retry repairs the missing review instead of creating a new case. If the review has already been finalized, a report replay preserves the original human authority and disposition.
+
+A conflicting trace for an already-known recommendation fails closed rather than replacing the authoritative review.
+
+This is intentionally the open-source MVP seam. A future Criterio E-Kernel adapter must preserve the same traceability and replay contracts without changing citizen-domain contracts.
+
+## Citizen reviewed outcome
+
+The citizen-facing recovery path is:
+
+```text
+GET /api/citizen/mobility-reports/{reportId}/outcome
+```
+
+The endpoint resolves the authoritative report, follows its Evidence Case to the persisted human review, and returns only:
+
+- report and case identifiers;
+- stable machine review status;
+- stable final human disposition when present;
+- localized citizen-facing status and explanation.
+
+It deliberately does not expose recommendation identifiers, Criterion request identifiers, evidence identifiers, reviewer subject identifiers, authentication/provider claims, tokens, secrets, or private reasoning.
+
+Pending reports return `pending-human-review` with no disposition. Finalized reports return `finalized` plus `accepted`, `modified`, `rejected`, or `deferred`.
+
+Outcome responses are `no-store`. The React client keeps the opaque `reportId` in the current URL so refresh and direct navigation can recover the authoritative backend state. It does not store an independent outcome truth in localStorage. Going offline does not make stale browser state authoritative.
+
+Changing locale re-queries the backend and changes citizen-facing copy only. Report ID, case ID, machine status, and human disposition remain unchanged. Unsupported locales deterministically fall back to neutral English.
+
+## F3 MVP completion
+
+The reference implementation now has executable behavior for the complete documented path from Digital Town Hall submission through Evidence Case, deterministic mock criterion evaluation, protected human review, persisted final disposition, and citizen-visible localized outcome recovery.
+
+The real PostgreSQL vertical-slice gate proves both the pending and finalized citizen views, canonical human authorization, first-writer-wins review finalization, post-finalization report replay, locale invariance of machine identity, and neutral-English localization fallback.
+
+This closes the first vertical slice MVP. It does not claim completion of production identity, real municipal GIS, real citizen PII handling, live Criterio E-Kernel integration, or broader SmartCities modules.
+
 ## TDD acceptance contracts
 
 1. a valid citizen report creates exactly one case;
