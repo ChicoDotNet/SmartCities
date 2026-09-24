@@ -105,7 +105,12 @@ def base64url(value: bytes) -> str:
     return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
 
 
-def create_token(role: str, permission: str) -> str:
+def create_token(
+    role: str,
+    permissions: list[str],
+    subject: str,
+    email: str | None = None,
+) -> str:
     now = int(time.time())
     header = {
         "alg": "HS256",
@@ -114,19 +119,15 @@ def create_token(role: str, permission: str) -> str:
     payload = {
         "iss": os.environ["SMARTCITIES_E2E_JWT_ISSUER"],
         "aud": os.environ["SMARTCITIES_E2E_JWT_AUDIENCE"],
-        "sub": (
-            "e2e-feature-admin-001"
-            if permission == "feature-flags.manage"
-            else "e2e-reviewer-001"
-        ),
+        "sub": subject,
         "role": role,
-        "permission": permission,
+        "permission": permissions,
         "iat": now,
         "nbf": now - 5,
         "exp": now + 300,
     }
-    if permission == "feature-flags.manage":
-        payload["email"] = "official@townhallname.gob.mx"
+    if email is not None:
+        payload["email"] = email
 
     signing_input = (
         f"{base64url(json.dumps(header, separators=(',', ':')).encode('utf-8'))}."
@@ -143,14 +144,36 @@ def create_token(role: str, permission: str) -> str:
 def create_reviewer_token() -> str:
     return create_token(
         "mobility-reviewer",
-        "decision-review.finalize",
+        [
+            "feature-flags.manage",
+            "citizen-mobility.manage",
+            "decision-review.finalize",
+        ],
+        "e2e-reviewer-001",
     )
 
 
 def create_feature_manager_token() -> str:
     return create_token(
         "town-hall-admin",
-        "feature-flags.manage",
+        [
+            "feature-flags.manage",
+            "citizen-mobility.manage",
+        ],
+        "e2e-feature-admin-001",
+        "official@townhallname.gob.mx",
+    )
+
+
+def create_feature_configurator_token() -> str:
+    return create_token(
+        "town-hall-admin",
+        [
+            "feature-flags.config",
+            "citizen-mobility.config",
+        ],
+        "e2e-feature-admin-001",
+        "official@townhallname.gob.mx",
     )
 
 
@@ -373,7 +396,7 @@ def main() -> None:
     )
 
     feature_admin_headers = {
-        "Authorization": f"Bearer {create_feature_manager_token()}",
+        "Authorization": f"Bearer {create_feature_configurator_token()}",
     }
     admitted_status, admitted = request(
         "GET",
@@ -411,8 +434,26 @@ def main() -> None:
         "Citizen mobility must preserve its enabled-by-default compatibility behavior.",
     )
 
-    admin_headers = {
+    operational_headers = {
         "Authorization": f"Bearer {create_feature_manager_token()}",
+        "Content-Type": "application/json",
+    }
+    operational_config_status, operational_config = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": False},
+        operational_headers,
+    )
+    require(
+        operational_config_status == 403,
+        (
+            "Operational feature manage grants must not configure flags; expected 403, got "
+            f"{operational_config_status}: {operational_config}"
+        ),
+    )
+
+    admin_headers = {
+        "Authorization": f"Bearer {create_feature_configurator_token()}",
         "Content-Type": "application/json",
     }
     disabled_status, disabled = request(
@@ -715,7 +756,8 @@ def main() -> None:
     print(
         "Local vertical slice verified: live -> ready -> build -> OpenAPI "
         "-> bootstrap whitelist initialization -> bootstrap revocation "
-        "-> whitelisted feature admin -> feature disable/gate/re-enable "
+        "-> whitelisted feature config admin -> manage/config separation "
+        "-> feature disable/gate/re-enable "
         "-> create -> replay "
         "-> recover -> pending citizen outcome "
         "-> mock criterion -> human finalize -> localized reviewed outcome "

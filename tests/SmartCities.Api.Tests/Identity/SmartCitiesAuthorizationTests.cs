@@ -84,7 +84,7 @@ public sealed class SmartCitiesAuthorizationTests
   }
 
   [Fact]
-  public async Task Feature_management_policy_requires_its_canonical_permission()
+  public async Task Feature_configuration_policy_requires_its_canonical_permission()
   {
     using var provider = BuildServices();
     var authorization = provider.GetRequiredService<
@@ -104,26 +104,26 @@ public sealed class SmartCitiesAuthorizationTests
             "provider-a"),
           new Claim(
             SmartCitiesClaimTypes.Permission,
-            SmartCitiesPermissions.ManageFeatureFlags),
+            SmartCitiesPermissions.ConfigureFeatureFlags),
         ],
         authenticationType: "provider-a"));
 
     var allowed = await authorization.AuthorizeAsync(
       permitted,
       resource: null,
-      SmartCitiesPolicies.ManageFeatureFlags);
+      SmartCitiesPolicies.ConfigureFeatureFlags);
 
     var denied = await authorization.AuthorizeAsync(
       CreateCanonicalReviewer("provider-a"),
       resource: null,
-      SmartCitiesPolicies.ManageFeatureFlags);
+      SmartCitiesPolicies.ConfigureFeatureFlags);
 
     Assert.True(allowed.Succeeded);
     Assert.False(denied.Succeeded);
   }
 
   [Fact]
-  public async Task Feature_management_permission_does_not_bypass_the_administration_whitelist()
+  public async Task Feature_configuration_permission_does_not_bypass_the_administration_whitelist()
   {
     using var provider = BuildServices(
       administrationAuthorized: false);
@@ -143,16 +143,77 @@ public sealed class SmartCitiesAuthorizationTests
             "provider-a"),
           new Claim(
             SmartCitiesClaimTypes.Permission,
-            SmartCitiesPermissions.ManageFeatureFlags),
+            SmartCitiesPermissions.ConfigureFeatureFlags),
         ],
         authenticationType: "provider-a"));
 
     var result = await authorization.AuthorizeAsync(
       principal,
       resource: null,
-      SmartCitiesPolicies.ManageFeatureFlags);
+      SmartCitiesPolicies.ConfigureFeatureFlags);
 
     Assert.False(result.Succeeded);
+  }
+
+  [Fact]
+  public async Task Citizen_mobility_management_requires_global_and_feature_specific_manage_grants()
+  {
+    using var provider = BuildServices();
+    var authorization = provider.GetRequiredService<
+      IAuthorizationService>();
+
+    var complete = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "operator-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesFeaturePermissions.Manage(
+              "citizen-mobility")),
+        ],
+        authenticationType: "provider-a"));
+
+    var globalOnly = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "operator-43"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "mobility-reviewer"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ManageFeatureFlags),
+        ],
+        authenticationType: "provider-a"));
+
+    Assert.True(
+      (await authorization.AuthorizeAsync(
+        complete,
+        resource: null,
+        SmartCitiesPolicies.ManageCitizenMobility))
+      .Succeeded);
+    Assert.False(
+      (await authorization.AuthorizeAsync(
+        globalOnly,
+        resource: null,
+        SmartCitiesPolicies.ManageCitizenMobility))
+      .Succeeded);
   }
 
   [Fact]

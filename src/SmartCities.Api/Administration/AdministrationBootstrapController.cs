@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using SmartCities.Api.Identity;
 using SmartCities.Application.Administration;
+using SmartCities.Application.FeatureFlags;
 using SmartCities.Identity;
 
 namespace SmartCities.Api.Administration;
@@ -96,8 +97,10 @@ public sealed class AdministrationBootstrapController
       ],
       permissions:
       [
-        SmartCitiesPermissions.ManageFeatureFlags,
+        SmartCitiesPermissions.ConfigureFeatureFlags,
         SmartCitiesPermissions.ManageAdministrationWhitelist,
+        .. SmartCitiesFeatures.All.Select(
+          SmartCitiesFeaturePermissions.Configure),
       ],
       emailAddress:
         AdministrationAccessService.BootstrapEmailAddress);

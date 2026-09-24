@@ -40,6 +40,9 @@ import {
   type FeatureFlagSnapshot,
 } from './features';
 import {
+  canConfigureFeature,
+} from './featurePermissions';
+import {
   text,
   type LocalizationBundle,
   type SupportedCulture,
@@ -48,8 +51,6 @@ import { resourceKeys } from './resourceKeys';
 
 const bootstrapAccount =
   'townhalladmin@smartcities.local';
-const manageFeatureFlags =
-  'feature-flags.manage';
 const manageWhitelist =
   'administration-whitelist.manage';
 
@@ -435,11 +436,8 @@ function AdministrationWorkspace({
 }: AdministrationWorkspaceProps) {
   const hasAuthorityRole =
     session.authorityRoles.length > 0;
-  const canManageFeatures =
-    hasAuthorityRole
-    && session.permissions.includes(
-      manageFeatureFlags,
-    );
+  const featurePermissions =
+    session.permissions;
   const canManageWhitelist =
     hasAuthorityRole
     && session.permissions.includes(
@@ -456,7 +454,8 @@ function AdministrationWorkspace({
       <FeatureManagementPanel
         bundle={bundle}
         online={online}
-        canManage={canManageFeatures}
+        hasAuthorityRole={hasAuthorityRole}
+        permissions={featurePermissions}
         onAuthorityChanged={onAuthorityChanged}
       />
       <WhitelistManagementPanel
@@ -473,14 +472,16 @@ function AdministrationWorkspace({
 interface FeatureManagementPanelProps {
   bundle: LocalizationBundle;
   online: boolean;
-  canManage: boolean;
+  hasAuthorityRole: boolean;
+  permissions: readonly string[];
   onAuthorityChanged: () => void;
 }
 
 function FeatureManagementPanel({
   bundle,
   online,
-  canManage,
+  hasAuthorityRole,
+  permissions,
   onAuthorityChanged,
 }: FeatureManagementPanelProps) {
   const [snapshot, setSnapshot] =
@@ -570,7 +571,14 @@ function FeatureManagementPanel({
     featureId: string,
     enabled: boolean,
   ) {
-    if (!online || !canManage) {
+    if (
+      !online
+      || !hasAuthorityRole
+      || !canConfigureFeature(
+        permissions,
+        featureId,
+      )
+    ) {
       return;
     }
 
@@ -598,11 +606,19 @@ function FeatureManagementPanel({
         {labels.intro}
       </Text>
 
-      {!canManage && (
-        <div className="status-message mb-3">
-          {labels.noPermission}
-        </div>
-      )}
+      {snapshot !== null
+        && !snapshot.features.some(
+          (feature) =>
+            hasAuthorityRole
+            && canConfigureFeature(
+              permissions,
+              feature.featureId,
+            ),
+        ) && (
+          <div className="status-message mb-3">
+            {labels.noPermission}
+          </div>
+        )}
 
       {loading && <Spinner size="small" />}
 
@@ -630,7 +646,11 @@ function FeatureManagementPanel({
           <Switch
             checked={feature.enabled}
             disabled={
-              !canManage
+              !hasAuthorityRole
+              || !canConfigureFeature(
+                permissions,
+                feature.featureId,
+              )
               || !online
               || savingFeature === feature.featureId
             }

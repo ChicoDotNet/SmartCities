@@ -53,7 +53,7 @@ public sealed class FeatureFlagsController
   /// <summary>Persists an enablement override for one known feature.</summary>
   [HttpPut("{featureId}")]
   [Authorize(
-    Policy = SmartCitiesPolicies.ManageFeatureFlags)]
+    Policy = SmartCitiesPolicies.ConfigureFeatureFlags)]
   [ProducesResponseType<FeatureFlagResponse>(
     StatusCodes.Status200OK)]
   [ProducesResponseType(
@@ -71,16 +71,39 @@ public sealed class FeatureFlagsController
     Response.Headers.CacheControl =
       "no-store";
 
+    var current = await service
+      .GetAsync(
+        featureId,
+        cancellationToken)
+      .ConfigureAwait(false);
+
+    if (current is null)
+    {
+      return NotFound();
+    }
+
+    var requiredPermission =
+      SmartCitiesFeaturePermissions.Configure(
+        current.FeatureId);
+
+    if (!User.HasClaim(
+        SmartCitiesClaimTypes.Permission,
+        requiredPermission))
+    {
+      return Forbid();
+    }
+
     var state = await service
       .SetAsync(
-        featureId,
+        current.FeatureId,
         request.Enabled,
         cancellationToken)
       .ConfigureAwait(false);
 
     if (state is null)
     {
-      return NotFound();
+      throw new InvalidOperationException(
+        $"Registered feature '{current.FeatureId}' disappeared while applying configuration.");
     }
 
     return Ok(

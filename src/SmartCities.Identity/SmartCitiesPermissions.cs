@@ -12,10 +12,24 @@ public static class SmartCitiesPermissions
     "decision-review.finalize";
 
   /// <summary>
-  /// Allows an authenticated Town Hall administrator to manage known deployment feature flags.
+  /// Allows an authenticated authority to enter operational feature-management surfaces.
   /// </summary>
+  /// <remarks>
+  /// This global grant is insufficient by itself. Operational endpoints must also require
+  /// the specific feature permission produced by <see cref="SmartCitiesFeaturePermissions.Manage(string)"/>.
+  /// </remarks>
   public const string ManageFeatureFlags =
     "feature-flags.manage";
+
+  /// <summary>
+  /// Allows an admitted Town Hall administrator to configure registered feature flags.
+  /// </summary>
+  /// <remarks>
+  /// This global grant is insufficient by itself. Configuration also requires the specific
+  /// feature permission produced by <see cref="SmartCitiesFeaturePermissions.Configure(string)"/>.
+  /// </remarks>
+  public const string ConfigureFeatureFlags =
+    "feature-flags.config";
 
   /// <summary>
   /// Allows an admitted Town Hall administrator to manage Administration whitelist rules.

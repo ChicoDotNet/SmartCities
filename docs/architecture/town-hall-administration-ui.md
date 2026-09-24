@@ -48,16 +48,43 @@ The password is never stored by the product client.
 
 The bootstrap session can create the first whitelist rule. Immediately after that mutation the UI re-queries backend admission. Because the backend revokes bootstrap admission as soon as the whitelist becomes non-empty, the Administration shell disappears and normal whitelisted sign-in is required.
 
-## Feature flags
+## Feature permissions: operation vs configuration
 
-All admitted administrators can view the public feature snapshot.
+Feature operation and feature configuration are separate capabilities.
 
-Mutation is enabled in the UI only when the current canonical session has:
+Operational access to a vertical slice requires both:
 
-- at least one authority role;
-- `feature-flags.manage`.
+```text
+feature-flags.manage
+<feature-id>.manage
+```
 
-The backend policy remains authoritative and can still return 403.
+For the current mobility slice:
+
+```text
+feature-flags.manage
+citizen-mobility.manage
+```
+
+This is the capability used by staff who operate the slice and attend citizen work. Fine-grained action permissions remain additional; for example finalizing a mobility review also requires `decision-review.finalize`.
+
+Changing deployment feature state is different. Configuration requires both:
+
+```text
+feature-flags.config
+<feature-id>.config
+```
+
+For the current mobility slice:
+
+```text
+feature-flags.config
+citizen-mobility.config
+```
+
+All admitted administrators can view the public feature snapshot. A toggle is enabled only when the current canonical session has an authority role plus both configuration grants for that specific feature.
+
+The backend policy remains authoritative and can still return 403. An operational `manage` grant never authorizes feature configuration.
 
 ## Administration whitelist
 
