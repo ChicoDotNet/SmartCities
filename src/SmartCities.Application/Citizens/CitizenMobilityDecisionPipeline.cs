@@ -10,6 +10,10 @@ namespace SmartCities.Application.Citizens;
 /// <summary>
 /// Builds the deterministic F3 MVP criterion request from an authoritative Evidence Case and ensures its human review is persisted.
 /// </summary>
+/// <remarks>
+/// Replays always start from the authoritative persisted Evidence Case. A retry can therefore repair a missing review,
+/// reuse a matching pending review, or preserve a matching finalized review without changing human authority.
+/// </remarks>
 public sealed class CitizenMobilityDecisionPipeline
   : ICitizenMobilityDecisionPipeline
 {
