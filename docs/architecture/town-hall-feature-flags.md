@@ -103,27 +103,59 @@ The response is non-sensitive and `no-store`.
 
 React uses this endpoint as the authoritative deployment capability snapshot. Disabled slices are not rendered.
 
-## Protected management
+## Operation and configuration permissions
+
+SmartCities deliberately separates **operating a vertical slice** from **configuring whether that slice is deployed**.
+
+Operational access uses two grants:
+
+```text
+feature-flags.manage
+<feature-id>.manage
+```
+
+For citizen mobility:
+
+```text
+feature-flags.manage
+citizen-mobility.manage
+```
+
+This pair means the authority may enter the operational surface for that slice. It does not replace finer permissions. For example, finalizing a citizen mobility review additionally requires:
+
+```text
+decision-review.finalize
+```
+
+Configuration uses a different pair:
+
+```text
+feature-flags.config
+<feature-id>.config
+```
+
+For citizen mobility:
+
+```text
+feature-flags.config
+citizen-mobility.config
+```
+
+The endpoint:
 
 ```text
 PUT /api/system/features/{featureId}
 { "enabled": true | false }
 ```
 
-Mutation requires both:
+requires:
 
-- admission to Town Hall Administration through the current whitelist/bootstrap rules;
-- the canonical permission:
+- admission to Town Hall Administration through current whitelist/bootstrap rules;
+- a canonical authority role;
+- `feature-flags.config`;
+- the target feature's `<feature-id>.config` grant.
 
-```text
-feature-flags.manage
-```
-
-under policy:
-
-```text
-smartcities.feature-flags.manage
-```
+An identity holding only `feature-flags.manage + <feature-id>.manage` receives 403 when attempting configuration.
 
 Provider-native roles/scopes do not bypass the canonical identity boundary.
 
