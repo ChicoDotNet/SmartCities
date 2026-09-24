@@ -30,6 +30,12 @@ public static class SmartCitiesPolicies
     "smartcities.feature-flags.config";
 
   /// <summary>
+  /// Requires the global feature-management grant plus the citizen-mobility-specific manage grant.
+  /// </summary>
+  public const string ManageCitizenMobility =
+    "smartcities.citizen-mobility.manage";
+
+  /// <summary>
   /// Requires canonical authentication and admission to Town Hall Administration.
   /// </summary>
   public const string TownHallAdministrationAccess =
