@@ -9,15 +9,19 @@ internal sealed class FeatureManagementHealthCheck
 {
   private readonly IFeatureFlagService features;
   private readonly IAdministrationAccessService administration;
+  private readonly IAdministrationAuthorizationGrantService grants;
 
   public FeatureManagementHealthCheck(
     IFeatureFlagService features,
-    IAdministrationAccessService administration)
+    IAdministrationAccessService administration,
+    IAdministrationAuthorizationGrantService grants)
   {
     ArgumentNullException.ThrowIfNull(features);
     ArgumentNullException.ThrowIfNull(administration);
+    ArgumentNullException.ThrowIfNull(grants);
     this.features = features;
     this.administration = administration;
+    this.grants = grants;
   }
 
   public async Task<HealthCheckResult> CheckHealthAsync(
@@ -33,6 +37,9 @@ internal sealed class FeatureManagementHealthCheck
         .ConfigureAwait(false);
       _ = await administration
         .GetRulesAsync(cancellationToken)
+        .ConfigureAwait(false);
+      _ = await grants
+        .GetAllAsync(cancellationToken)
         .ConfigureAwait(false);
 
       return HealthCheckResult.Healthy();
