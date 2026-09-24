@@ -16,7 +16,7 @@ namespace SmartCities.Api.Tests.Identity;
 public sealed class AuthenticationCanonicalizationPipelineTests
 {
   [Fact]
-  public async Task Registration_adds_authentication_services_without_selecting_a_default_provider()
+  public async Task Registration_uses_only_the_provider_neutral_fallback_when_no_real_provider_is_configured()
   {
     var services = new ServiceCollection();
     services.AddLogging();
@@ -29,7 +29,10 @@ public sealed class AuthenticationCanonicalizationPipelineTests
     var defaultScheme =
       await schemes.GetDefaultAuthenticateSchemeAsync();
 
-    Assert.Null(defaultScheme);
+    Assert.NotNull(defaultScheme);
+    Assert.Equal(
+      SmartCitiesNoProviderAuthenticationHandler.SchemeName,
+      defaultScheme.Name);
   }
 
   [Fact]
