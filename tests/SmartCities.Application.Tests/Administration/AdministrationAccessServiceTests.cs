@@ -201,6 +201,19 @@ public sealed class AdministrationAccessServiceTests
       return Task.CompletedTask;
     }
 
+    public Task AddAsync(
+      string townHallId,
+      AdministrationAccessRule rule,
+      AdministrationControlPlaneAuditEvent auditEvent,
+      CancellationToken cancellationToken = default)
+    {
+      ArgumentNullException.ThrowIfNull(auditEvent);
+      return AddAsync(
+        townHallId,
+        rule,
+        cancellationToken);
+    }
+
     public Task<bool> DeleteAsync(
       string townHallId,
       string ruleId,
@@ -217,6 +230,19 @@ public sealed class AdministrationAccessServiceTests
             StringComparison.Ordinal)) == 1;
 
       return Task.FromResult(deleted);
+    }
+
+    public Task<bool> DeleteAsync(
+      string townHallId,
+      string ruleId,
+      AdministrationControlPlaneAuditEvent auditEvent,
+      CancellationToken cancellationToken = default)
+    {
+      ArgumentNullException.ThrowIfNull(auditEvent);
+      return DeleteAsync(
+        townHallId,
+        ruleId,
+        cancellationToken);
     }
   }
 }
