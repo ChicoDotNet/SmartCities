@@ -56,7 +56,13 @@ public sealed class FeatureFlagService
           cancellationToken)
         .ConfigureAwait(false);
 
-      result.Add(state!);
+      if (state is null)
+      {
+        throw new InvalidOperationException(
+          $"Registered feature '{featureId}' could not be resolved.");
+      }
+
+      result.Add(state);
     }
 
     return result;
