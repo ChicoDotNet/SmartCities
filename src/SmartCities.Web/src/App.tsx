@@ -12,8 +12,12 @@ import {
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import {
   ApiProblemError,
+  loadMobilityReportOutcome,
+  reportIdFromSearch,
   submitMobilityReport,
+  trackingSearchForReport,
   type MobilityReportAcceptance,
+  type MobilityReportOutcome,
 } from './api';
 import {
   loadLocalization,
@@ -40,6 +44,13 @@ const categories = [
   },
 ] as const;
 
+type OutcomeLoadState =
+  | 'idle'
+  | 'loading'
+  | 'ready'
+  | 'not-found'
+  | 'unavailable';
+
 export function App() {
   const [culture, setCulture] = useState<SupportedCulture>(
     preferredCulture(navigator.language),
@@ -50,6 +61,24 @@ export function App() {
   const [description, setDescription] = useState('');
   const [acceptance, setAcceptance] =
     useState<MobilityReportAcceptance | null>(null);
+  const [trackedReportId, setTrackedReportId] =
+    useState<string | null>(
+      () => reportIdFromSearch(
+        window.location.search,
+      ),
+    );
+  const [outcome, setOutcome] =
+    useState<MobilityReportOutcome | null>(null);
+  const [outcomeState, setOutcomeState] =
+    useState<OutcomeLoadState>(
+      trackedReportId
+        ? navigator.onLine
+          ? 'loading'
+          : 'unavailable'
+        : 'idle',
+    );
+  const [outcomeRefreshToken, setOutcomeRefreshToken] =
+    useState(0);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [online, setOnline] = useState(navigator.onLine);
@@ -78,6 +107,66 @@ export function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!trackedReportId) {
+      setOutcome(null);
+      setOutcomeState('idle');
+      return;
+    }
+
+    if (!bundle) {
+      return;
+    }
+
+    if (!online) {
+      setOutcome(null);
+      setOutcomeState('unavailable');
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setOutcome(null);
+    setOutcomeState('loading');
+
+    void loadMobilityReportOutcome(
+      trackedReportId,
+      bundle.resolvedCulture,
+      (input, init) =>
+        fetch(input, {
+          ...init,
+          signal: controller.signal,
+        }),
+    )
+      .then((result) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        if (result === null) {
+          setOutcome(null);
+          setOutcomeState('not-found');
+          return;
+        }
+
+        setOutcome(result);
+        setOutcomeState('ready');
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setOutcome(null);
+          setOutcomeState('unavailable');
+        }
+      });
+
+    return () => controller.abort();
+  }, [
+    bundle,
+    online,
+    outcomeRefreshToken,
+    trackedReportId,
+  ]);
+
   const labels = useMemo(() => {
     if (!bundle) {
       return null;
@@ -101,6 +190,12 @@ export function App() {
       successCreated: text(bundle, resourceKeys.successCreated),
       successExisting: text(bundle, resourceKeys.successExisting),
       caseLabel: text(bundle, resourceKeys.caseLabel),
+      reportLabel: text(bundle, resourceKeys.reportLabel),
+      outcomeTitle: text(bundle, resourceKeys.outcomeTitle),
+      outcomeLoading: text(bundle, resourceKeys.outcomeLoading),
+      outcomeUnavailable: text(bundle, resourceKeys.outcomeUnavailable),
+      outcomeNotFound: text(bundle, resourceKeys.outcomeNotFound),
+      outcomeRefresh: text(bundle, resourceKeys.outcomeRefresh),
     };
   }, [bundle]);
 
@@ -135,6 +230,20 @@ export function App() {
       );
 
       setAcceptance(result);
+      setOutcome(null);
+      setOutcomeState('loading');
+      setTrackedReportId(result.reportId);
+
+      const search = trackingSearchForReport(
+        window.location.search,
+        result.reportId,
+      );
+
+      window.history.replaceState(
+        window.history.state,
+        '',
+        `${window.location.pathname}${search}${window.location.hash}`,
+      );
     } catch (error) {
       if (error instanceof ApiProblemError && error.problem.detail) {
         setErrorDetail(error.problem.detail);
@@ -186,6 +295,71 @@ export function App() {
             <Text block className="mt-2 mb-4" size={400}>
               {labels.intro}
             </Text>
+
+            {trackedReportId && (
+              <div
+                className="status-message mb-4"
+                aria-live="polite"
+              >
+                <Text block weight="semibold">
+                  {labels.outcomeTitle}
+                </Text>
+                <Text block size={300}>
+                  {labels.reportLabel}: {trackedReportId}
+                </Text>
+
+                {outcomeState === 'loading' && (
+                  <div
+                    className="d-flex align-items-center gap-2 mt-2"
+                    role="status"
+                  >
+                    <Spinner size="tiny" />
+                    <Text size={300}>
+                      {labels.outcomeLoading}
+                    </Text>
+                  </div>
+                )}
+
+                {outcomeState === 'ready' && outcome && (
+                  <div className="mt-2">
+                    <Text block weight="semibold">
+                      {outcome.statusLabel}
+                    </Text>
+                    <Text block size={300}>
+                      {outcome.explanation}
+                    </Text>
+                    <Text block size={300}>
+                      {labels.caseLabel}: {outcome.caseId}
+                    </Text>
+                  </div>
+                )}
+
+                {outcomeState === 'not-found' && (
+                  <Text block className="mt-2" size={300}>
+                    {labels.outcomeNotFound}
+                  </Text>
+                )}
+
+                {outcomeState === 'unavailable' && (
+                  <Text block className="mt-2" size={300}>
+                    {labels.outcomeUnavailable}
+                  </Text>
+                )}
+
+                <Button
+                  className="mt-3"
+                  appearance="secondary"
+                  size="small"
+                  disabled={!online || outcomeState === 'loading'}
+                  onClick={() =>
+                    setOutcomeRefreshToken(
+                      (value) => value + 1,
+                    )}
+                >
+                  {labels.outcomeRefresh}
+                </Button>
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="d-grid gap-4">
               <Field label={labels.categoryLabel} required>
