@@ -84,7 +84,7 @@ public sealed class SmartCitiesAuthorizationTests
   }
 
   [Fact]
-  public async Task Feature_management_policy_requires_its_canonical_permission()
+  public async Task Feature_configuration_policy_requires_its_canonical_permission()
   {
     using var provider = BuildServices();
     var authorization = provider.GetRequiredService<
@@ -104,26 +104,26 @@ public sealed class SmartCitiesAuthorizationTests
             "provider-a"),
           new Claim(
             SmartCitiesClaimTypes.Permission,
-            SmartCitiesPermissions.ManageFeatureFlags),
+            SmartCitiesPermissions.ConfigureFeatureFlags),
         ],
         authenticationType: "provider-a"));
 
     var allowed = await authorization.AuthorizeAsync(
       permitted,
       resource: null,
-      SmartCitiesPolicies.ManageFeatureFlags);
+      SmartCitiesPolicies.ConfigureFeatureFlags);
 
     var denied = await authorization.AuthorizeAsync(
       CreateCanonicalReviewer("provider-a"),
       resource: null,
-      SmartCitiesPolicies.ManageFeatureFlags);
+      SmartCitiesPolicies.ConfigureFeatureFlags);
 
     Assert.True(allowed.Succeeded);
     Assert.False(denied.Succeeded);
   }
 
   [Fact]
-  public async Task Feature_management_permission_does_not_bypass_the_administration_whitelist()
+  public async Task Feature_configuration_permission_does_not_bypass_the_administration_whitelist()
   {
     using var provider = BuildServices(
       administrationAuthorized: false);
@@ -143,14 +143,14 @@ public sealed class SmartCitiesAuthorizationTests
             "provider-a"),
           new Claim(
             SmartCitiesClaimTypes.Permission,
-            SmartCitiesPermissions.ManageFeatureFlags),
+            SmartCitiesPermissions.ConfigureFeatureFlags),
         ],
         authenticationType: "provider-a"));
 
     var result = await authorization.AuthorizeAsync(
       principal,
       resource: null,
-      SmartCitiesPolicies.ManageFeatureFlags);
+      SmartCitiesPolicies.ConfigureFeatureFlags);
 
     Assert.False(result.Succeeded);
   }
