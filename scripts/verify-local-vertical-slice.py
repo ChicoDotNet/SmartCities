@@ -285,6 +285,10 @@ def main() -> None:
         "/api/administration/grants/catalog" in openapi["paths"],
         "OpenAPI does not expose the Administration grant catalog.",
     )
+    require(
+        "/api/administration/audit" in openapi["paths"],
+        "OpenAPI does not expose immutable Administration audit history.",
+    )
 
     anonymous_access_status, anonymous_access = request(
         "GET",
@@ -334,6 +338,7 @@ def main() -> None:
         ("authority-role", "town-hall-admin"),
         ("permission", "administration-grants.manage"),
         ("permission", "administration-whitelist.manage"),
+        ("permission", "administration-audit.read"),
         ("permission", "feature-flags.config"),
         ("permission", "citizen-mobility.config"),
     ]
@@ -651,6 +656,62 @@ def main() -> None:
             "Expected immediate post-revocation feature config 403, got "
             f"{revoked_config_status}: {revoked_config}"
         ),
+    )
+
+    audit_status, audit_entries = request(
+        "GET",
+        "/api/administration/audit?limit=100",
+        extra_headers=feature_admin_headers,
+    )
+    require(
+        audit_status == 200,
+        (
+            "Expected Administration audit history 200, got "
+            f"{audit_status}: {audit_entries}"
+        ),
+    )
+    require(
+        isinstance(audit_entries, list)
+        and len(audit_entries) >= 4,
+        f"Expected persisted control-plane audit entries, got {audit_entries}",
+    )
+
+    persisted_subject = persisted_admin_session["subjectId"]
+    persisted_actions = [
+        entry
+        for entry in audit_entries
+        if entry["actorSubjectId"] == persisted_subject
+    ]
+    require(
+        any(
+            entry["action"] == "feature-flag.set"
+            and entry["resourceId"] == "citizen-mobility"
+            for entry in persisted_actions
+        ),
+        "Audit history does not attribute feature configuration to the persisted administrator.",
+    )
+    require(
+        any(
+            entry["action"] == "administration-whitelist.ensure"
+            and "operator@operations.example" in entry["descriptor"]
+            for entry in persisted_actions
+        ),
+        "Audit history does not attribute whitelist mutation to the persisted administrator.",
+    )
+    require(
+        any(
+            entry["action"] == "administration-grant.delete"
+            and "citizen-mobility.config" in entry["descriptor"]
+            for entry in persisted_actions
+        ),
+        "Audit history does not attribute grant revocation to the persisted administrator.",
+    )
+    require(
+        all(
+            bool(entry["correlationId"])
+            for entry in audit_entries
+        ),
+        "Audit history contains an empty correlation identifier.",
     )
 
     report_id = "e2e-report-001"

@@ -30,6 +30,10 @@ import {
   type AdministrationWhitelistRule,
 } from './administration';
 import {
+  loadAdministrationAudit,
+  type AdministrationAuditEntry,
+} from './administrationAudit';
+import {
   addAdministrationGrant,
   deleteAdministrationGrant,
   loadAdministrationGrantCatalog,
@@ -65,6 +69,8 @@ const manageWhitelist =
   'administration-whitelist.manage';
 const manageAdministrationGrants =
   'administration-grants.manage';
+const readAdministrationAudit =
+  'administration-audit.read';
 
 interface AdministrationAppProps {
   bundle: LocalizationBundle;
@@ -446,6 +452,8 @@ function AdministrationWorkspace({
   bootstrapSession,
   onAuthorityChanged,
 }: AdministrationWorkspaceProps) {
+  const [auditRefreshToken, setAuditRefreshToken] =
+    useState(0);
   const hasAuthorityRole =
     session.authorityRoles.length > 0;
   const featurePermissions =
@@ -460,6 +468,20 @@ function AdministrationWorkspace({
     && session.permissions.includes(
       manageAdministrationGrants,
     );
+  const canReadAudit =
+    hasAuthorityRole
+    && session.permissions.includes(
+      readAdministrationAudit,
+    );
+  const handleControlPlaneChanged = useCallback(
+    () => {
+      setAuditRefreshToken(
+        (value) => value + 1,
+      );
+      onAuthorityChanged();
+    },
+    [onAuthorityChanged],
+  );
 
   return (
     <div className="d-grid gap-4">
@@ -473,23 +495,213 @@ function AdministrationWorkspace({
         online={online}
         hasAuthorityRole={hasAuthorityRole}
         permissions={featurePermissions}
-        onAuthorityChanged={onAuthorityChanged}
+        onAuthorityChanged={handleControlPlaneChanged}
       />
       <AuthorizationGrantManagementPanel
         bundle={bundle}
         online={online}
         canManage={canManageGrants}
         bootstrapSession={bootstrapSession}
-        onAuthorityChanged={onAuthorityChanged}
+        onAuthorityChanged={handleControlPlaneChanged}
       />
       <WhitelistManagementPanel
         bundle={bundle}
         online={online}
         canManage={canManageWhitelist}
         bootstrapSession={bootstrapSession}
+        onAuthorityChanged={handleControlPlaneChanged}
+      />
+      <AdministrationAuditPanel
+        bundle={bundle}
+        online={online}
+        canRead={canReadAudit}
+        refreshToken={auditRefreshToken}
         onAuthorityChanged={onAuthorityChanged}
       />
     </div>
+  );
+}
+
+interface AdministrationAuditPanelProps {
+  bundle: LocalizationBundle;
+  online: boolean;
+  canRead: boolean;
+  refreshToken: number;
+  onAuthorityChanged: () => void;
+}
+
+function AdministrationAuditPanel({
+  bundle,
+  online,
+  canRead,
+  refreshToken,
+  onAuthorityChanged,
+}: AdministrationAuditPanelProps) {
+  const [entries, setEntries] =
+    useState<AdministrationAuditEntry[] | null>(
+      null,
+    );
+  const [error, setError] =
+    useState<string | null>(null);
+
+  const labels = useMemo(
+    () => ({
+      title: text(
+        bundle,
+        resourceKeys.administrationAuditTitle,
+      ),
+      intro: text(
+        bundle,
+        resourceKeys.administrationAuditIntro,
+      ),
+      loading: text(
+        bundle,
+        resourceKeys.administrationAuditLoading,
+      ),
+      empty: text(
+        bundle,
+        resourceKeys.administrationAuditEmpty,
+      ),
+      noPermission: text(
+        bundle,
+        resourceKeys.administrationAuditNoPermission,
+      ),
+      actor: text(
+        bundle,
+        resourceKeys.administrationAuditActor,
+      ),
+      action: text(
+        bundle,
+        resourceKeys.administrationAuditAction,
+      ),
+      resource: text(
+        bundle,
+        resourceKeys.administrationAuditResource,
+      ),
+      change: text(
+        bundle,
+        resourceKeys.administrationAuditChange,
+      ),
+      correlation: text(
+        bundle,
+        resourceKeys.administrationAuditCorrelation,
+      ),
+      noChangeValue: text(
+        bundle,
+        resourceKeys.administrationAuditNoChangeValue,
+      ),
+      genericError: text(
+        bundle,
+        resourceKeys.administrationGenericError,
+      ),
+    }),
+    [bundle],
+  );
+
+  useEffect(() => {
+    if (!canRead || !online) {
+      setEntries(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    setEntries(null);
+    setError(null);
+
+    void loadAdministrationAudit(
+      50,
+      (input, init) =>
+        fetch(input, {
+          ...init,
+          signal: controller.signal,
+        }),
+    )
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          setEntries(result);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setEntries(null);
+          setError(labels.genericError);
+          onAuthorityChanged();
+        }
+      });
+
+    return () => controller.abort();
+  }, [
+    canRead,
+    labels.genericError,
+    online,
+    onAuthorityChanged,
+    refreshToken,
+  ]);
+
+  return (
+    <section className="administration-card">
+      <Title2>{labels.title}</Title2>
+      <Text block className="mt-2 mb-4">
+        {labels.intro}
+      </Text>
+
+      {!canRead && (
+        <div className="status-message">
+          {labels.noPermission}
+        </div>
+      )}
+
+      {canRead && entries === null && !error && (
+        <div role="status">
+          <Spinner size="small" />
+          <Text>{labels.loading}</Text>
+        </div>
+      )}
+
+      {error && (
+        <div className="status-message" role="alert">
+          {error}
+        </div>
+      )}
+
+      {entries?.length === 0 && (
+        <Text>{labels.empty}</Text>
+      )}
+
+      {entries?.map((entry) => (
+        <div
+          key={entry.eventId}
+          className="administration-audit-entry"
+        >
+          <Text block weight="semibold">
+            {new Date(
+              entry.occurredAtUtc,
+            ).toLocaleString()}
+          </Text>
+          <Text block size={300}>
+            {labels.actor}: {entry.actorSubjectId}
+            {' '}({entry.actorIdentityProvider})
+          </Text>
+          <Text block size={300}>
+            {labels.action}: {entry.action}
+          </Text>
+          <Text block size={300}>
+            {labels.resource}: {entry.descriptor}
+          </Text>
+          <Text block size={300}>
+            {labels.change}:{' '}
+            {entry.previousValue
+              ?? labels.noChangeValue}
+            {' → '}
+            {entry.newValue
+              ?? labels.noChangeValue}
+          </Text>
+          <Text block size={200}>
+            {labels.correlation}: {entry.correlationId}
+          </Text>
+        </div>
+      ))}
+    </section>
   );
 }
 

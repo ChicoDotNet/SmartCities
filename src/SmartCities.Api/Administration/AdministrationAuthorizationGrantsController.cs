@@ -84,6 +84,8 @@ public sealed class AdministrationAuthorizationGrantsController
         request.TargetValue,
         ParseGrantKind(request.GrantKind),
         request.Value,
+        AdministrationAuditContextFactory.Create(
+          HttpContext),
         cancellationToken)
       .ConfigureAwait(false);
 
@@ -108,6 +110,8 @@ public sealed class AdministrationAuthorizationGrantsController
     return await service
       .DeleteAsync(
         grantId,
+        AdministrationAuditContextFactory.Create(
+          HttpContext),
         cancellationToken)
       .ConfigureAwait(false)
         ? NoContent()

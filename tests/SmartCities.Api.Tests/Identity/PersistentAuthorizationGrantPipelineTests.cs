@@ -156,8 +156,23 @@ public sealed class PersistentAuthorizationGrantPipelineTests
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
 
+    public Task<AdministrationAuthorizationGrant> AddAsync(
+      AdministrationAccessRuleKind targetKind,
+      string targetValue,
+      AdministrationAuthorizationGrantKind kind,
+      string value,
+      AdministrationControlPlaneAuditContext auditContext,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
     public Task<bool> DeleteAsync(
       string grantId,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<bool> DeleteAsync(
+      string grantId,
+      AdministrationControlPlaneAuditContext auditContext,
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
   }

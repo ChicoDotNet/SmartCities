@@ -91,15 +91,43 @@ public sealed class SqliteAdministrationAuthorizationGrantStore
 
     return grants;
   }
-
   /// <inheritdoc />
-  public async Task AddAsync(
+  public Task AddAsync(
     string townHallId,
     AdministrationAuthorizationGrant grant,
+    CancellationToken cancellationToken = default) =>
+    AddCoreAsync(
+      townHallId,
+      grant,
+      auditEvent: null,
+      cancellationToken);
+
+  /// <inheritdoc />
+  public Task AddAsync(
+    string townHallId,
+    AdministrationAuthorizationGrant grant,
+    AdministrationControlPlaneAuditEvent auditEvent,
     CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(auditEvent);
+    return AddCoreAsync(
+      townHallId,
+      grant,
+      auditEvent,
+      cancellationToken);
+  }
+
+  private async Task AddCoreAsync(
+    string townHallId,
+    AdministrationAuthorizationGrant grant,
+    AdministrationControlPlaneAuditEvent? auditEvent,
+    CancellationToken cancellationToken)
   {
     ValidateTownHallId(townHallId);
     ArgumentNullException.ThrowIfNull(grant);
+    ValidateAuditPartition(
+      townHallId,
+      auditEvent);
     await EnsureSchemaAsync(cancellationToken)
       .ConfigureAwait(false);
 
@@ -109,8 +137,23 @@ public sealed class SqliteAdministrationAuthorizationGrantStore
       .OpenAsync(cancellationToken)
       .ConfigureAwait(false);
 
+    if (auditEvent is not null)
+    {
+      await SqliteControlPlaneAuditPersistence
+        .EnsureSchemaAsync(
+          connection,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+
+    await using var transaction =
+      (SqliteTransaction)await connection
+        .BeginTransactionAsync(cancellationToken)
+        .ConfigureAwait(false);
+
     await using var command =
       connection.CreateCommand();
+    command.Transaction = transaction;
     command.CommandText =
       """
       INSERT INTO administration_authorization_grants (
@@ -157,16 +200,60 @@ public sealed class SqliteAdministrationAuthorizationGrantStore
     await command
       .ExecuteNonQueryAsync(cancellationToken)
       .ConfigureAwait(false);
+
+    if (auditEvent is not null)
+    {
+      await SqliteControlPlaneAuditPersistence
+        .AppendAsync(
+          connection,
+          transaction,
+          auditEvent,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+
+    await transaction
+      .CommitAsync(cancellationToken)
+      .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<bool> DeleteAsync(
+  public Task<bool> DeleteAsync(
     string townHallId,
     string grantId,
+    CancellationToken cancellationToken = default) =>
+    DeleteCoreAsync(
+      townHallId,
+      grantId,
+      auditEvent: null,
+      cancellationToken);
+
+  /// <inheritdoc />
+  public Task<bool> DeleteAsync(
+    string townHallId,
+    string grantId,
+    AdministrationControlPlaneAuditEvent auditEvent,
     CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(auditEvent);
+    return DeleteCoreAsync(
+      townHallId,
+      grantId,
+      auditEvent,
+      cancellationToken);
+  }
+
+  private async Task<bool> DeleteCoreAsync(
+    string townHallId,
+    string grantId,
+    AdministrationControlPlaneAuditEvent? auditEvent,
+    CancellationToken cancellationToken)
   {
     ValidateTownHallId(townHallId);
     ArgumentException.ThrowIfNullOrWhiteSpace(grantId);
+    ValidateAuditPartition(
+      townHallId,
+      auditEvent);
     await EnsureSchemaAsync(cancellationToken)
       .ConfigureAwait(false);
 
@@ -176,8 +263,23 @@ public sealed class SqliteAdministrationAuthorizationGrantStore
       .OpenAsync(cancellationToken)
       .ConfigureAwait(false);
 
+    if (auditEvent is not null)
+    {
+      await SqliteControlPlaneAuditPersistence
+        .EnsureSchemaAsync(
+          connection,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+
+    await using var transaction =
+      (SqliteTransaction)await connection
+        .BeginTransactionAsync(cancellationToken)
+        .ConfigureAwait(false);
+
     await using var command =
       connection.CreateCommand();
+    command.Transaction = transaction;
     command.CommandText =
       """
       DELETE FROM administration_authorization_grants
@@ -191,9 +293,26 @@ public sealed class SqliteAdministrationAuthorizationGrantStore
       .Add("$grantId", SqliteType.Text)
       .Value = grantId.Trim();
 
-    return await command
+    var deleted = await command
       .ExecuteNonQueryAsync(cancellationToken)
       .ConfigureAwait(false) == 1;
+
+    if (deleted && auditEvent is not null)
+    {
+      await SqliteControlPlaneAuditPersistence
+        .AppendAsync(
+          connection,
+          transaction,
+          auditEvent,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+
+    await transaction
+      .CommitAsync(cancellationToken)
+      .ConfigureAwait(false);
+
+    return deleted;
   }
 
   /// <inheritdoc />
@@ -258,6 +377,22 @@ public sealed class SqliteAdministrationAuthorizationGrantStore
     finally
     {
       schemaGate.Release();
+    }
+  }
+
+  private static void ValidateAuditPartition(
+    string townHallId,
+    AdministrationControlPlaneAuditEvent? auditEvent)
+  {
+    if (auditEvent is not null
+      && !string.Equals(
+        auditEvent.TownHallId,
+        townHallId,
+        StringComparison.Ordinal))
+    {
+      throw new ArgumentException(
+        "Audit event Town Hall must match the mutation partition.",
+        nameof(auditEvent));
     }
   }
 

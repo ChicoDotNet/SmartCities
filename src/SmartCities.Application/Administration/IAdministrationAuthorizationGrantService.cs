@@ -25,8 +25,23 @@ public interface IAdministrationAuthorizationGrantService
     string value,
     CancellationToken cancellationToken = default);
 
+  /// <summary>Adds one validated grant assignment with immutable control-plane audit context.</summary>
+  Task<AdministrationAuthorizationGrant> AddAsync(
+    AdministrationAccessRuleKind targetKind,
+    string targetValue,
+    AdministrationAuthorizationGrantKind kind,
+    string value,
+    AdministrationControlPlaneAuditContext auditContext,
+    CancellationToken cancellationToken = default);
+
   /// <summary>Deletes one grant assignment.</summary>
   Task<bool> DeleteAsync(
     string grantId,
+    CancellationToken cancellationToken = default);
+
+  /// <summary>Deletes one grant assignment with immutable control-plane audit context.</summary>
+  Task<bool> DeleteAsync(
+    string grantId,
+    AdministrationControlPlaneAuditContext auditContext,
     CancellationToken cancellationToken = default);
 }

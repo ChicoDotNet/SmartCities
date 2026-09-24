@@ -93,6 +93,17 @@ export const resourceKeys = {
   administrationGrantsEmpty: 'administration.grants.empty',
   administrationGrantsNoPermission: 'administration.grants.noPermission',
   administrationGrantsBootstrapHint: 'administration.grants.bootstrapHint',
+  administrationAuditTitle: 'administration.audit.title',
+  administrationAuditIntro: 'administration.audit.intro',
+  administrationAuditLoading: 'administration.audit.loading',
+  administrationAuditEmpty: 'administration.audit.empty',
+  administrationAuditNoPermission: 'administration.audit.noPermission',
+  administrationAuditActor: 'administration.audit.actor',
+  administrationAuditAction: 'administration.audit.action',
+  administrationAuditResource: 'administration.audit.resource',
+  administrationAuditChange: 'administration.audit.change',
+  administrationAuditCorrelation: 'administration.audit.correlation',
+  administrationAuditNoChangeValue: 'administration.audit.noChangeValue',
   administrationGenericError: 'administration.genericError',
 } as const;
 

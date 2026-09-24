@@ -73,10 +73,37 @@ public sealed class AdministrationAccessService
       cancellationToken);
 
   /// <inheritdoc />
-  public async Task<AdministrationAccessRule> AddRuleAsync(
+  public Task<AdministrationAccessRule> AddRuleAsync(
     AdministrationAccessRuleKind kind,
     string value,
+    CancellationToken cancellationToken = default) =>
+    AddRuleCoreAsync(
+      kind,
+      value,
+      auditContext: null,
+      cancellationToken);
+
+  /// <inheritdoc />
+  public Task<AdministrationAccessRule> AddRuleAsync(
+    AdministrationAccessRuleKind kind,
+    string value,
+    AdministrationControlPlaneAuditContext auditContext,
     CancellationToken cancellationToken = default)
+  {
+    ArgumentNullException.ThrowIfNull(auditContext);
+
+    return AddRuleCoreAsync(
+      kind,
+      value,
+      auditContext,
+      cancellationToken);
+  }
+
+  private async Task<AdministrationAccessRule> AddRuleCoreAsync(
+    AdministrationAccessRuleKind kind,
+    string value,
+    AdministrationControlPlaneAuditContext? auditContext,
+    CancellationToken cancellationToken)
   {
     var candidate = AdministrationAccessRule.Create(
       Guid.NewGuid().ToString("N"),
@@ -98,12 +125,36 @@ public sealed class AdministrationAccessService
       return existing;
     }
 
-    await store
-      .AddAsync(
-        TownHallId,
-        candidate,
-        cancellationToken)
-      .ConfigureAwait(false);
+    if (auditContext is null)
+    {
+      await store
+        .AddAsync(
+          TownHallId,
+          candidate,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
+    else
+    {
+      var auditEvent =
+        AdministrationControlPlaneAuditEvent.CreateMutation(
+          TownHallId,
+          auditContext,
+          AdministrationAuditActions.WhitelistRuleEnsure,
+          AdministrationAuditResourceTypes.WhitelistRule,
+          candidate.RuleId,
+          $"{RuleKindValue(candidate.Kind)}:{candidate.Value}",
+          previousValue: null,
+          newValue: "present");
+
+      await store
+        .AddAsync(
+          TownHallId,
+          candidate,
+          auditEvent,
+          cancellationToken)
+        .ConfigureAwait(false);
+    }
 
     return candidate;
   }
@@ -120,6 +171,63 @@ public sealed class AdministrationAccessService
       ruleId.Trim(),
       cancellationToken);
   }
+
+  /// <inheritdoc />
+  public async Task<bool> DeleteRuleAsync(
+    string ruleId,
+    AdministrationControlPlaneAuditContext auditContext,
+    CancellationToken cancellationToken = default)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(ruleId);
+    ArgumentNullException.ThrowIfNull(auditContext);
+
+    var normalizedId = ruleId.Trim();
+    var existing = (await GetRulesAsync(cancellationToken)
+      .ConfigureAwait(false))
+      .SingleOrDefault(
+        rule => string.Equals(
+          rule.RuleId,
+          normalizedId,
+          StringComparison.Ordinal));
+
+    if (existing is null)
+    {
+      return false;
+    }
+
+    var auditEvent =
+      AdministrationControlPlaneAuditEvent.CreateMutation(
+        TownHallId,
+        auditContext,
+        AdministrationAuditActions.WhitelistRuleDelete,
+        AdministrationAuditResourceTypes.WhitelistRule,
+        existing.RuleId,
+        $"{RuleKindValue(existing.Kind)}:{existing.Value}",
+        previousValue: "present",
+        newValue: null);
+
+    return await store
+      .DeleteAsync(
+        TownHallId,
+        existing.RuleId,
+        auditEvent,
+        cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private static string RuleKindValue(
+    AdministrationAccessRuleKind kind) =>
+    kind switch
+    {
+      AdministrationAccessRuleKind.Email => "email",
+      AdministrationAccessRuleKind.EmailDomain => "email-domain",
+      AdministrationAccessRuleKind.CanonicalSubject => "canonical-subject",
+      _ => throw new ArgumentOutOfRangeException(
+        nameof(kind),
+        kind,
+        "Unsupported Administration whitelist rule kind."),
+    };
+
 
   private static bool Matches(
     AdministrationAccessRule rule,

@@ -217,6 +217,51 @@ public sealed class SmartCitiesAuthorizationTests
   }
 
   [Fact]
+  public async Task Administration_audit_read_requires_permission_and_current_admission()
+  {
+    var principal = new ClaimsPrincipal(
+      new ClaimsIdentity(
+        [
+          new Claim(
+            SmartCitiesClaimTypes.Subject,
+            "admin-42"),
+          new Claim(
+            SmartCitiesClaimTypes.AuthorityRole,
+            "town-hall-admin"),
+          new Claim(
+            SmartCitiesClaimTypes.IdentityProvider,
+            "provider-a"),
+          new Claim(
+            SmartCitiesClaimTypes.Permission,
+            SmartCitiesPermissions.ReadAdministrationAudit),
+        ],
+        authenticationType: "provider-a"));
+
+    using var admittedProvider = BuildServices(
+      administrationAuthorized: true);
+    using var deniedProvider = BuildServices(
+      administrationAuthorized: false);
+
+    Assert.True(
+      (await admittedProvider
+        .GetRequiredService<IAuthorizationService>()
+        .AuthorizeAsync(
+          principal,
+          resource: null,
+          SmartCitiesPolicies.ReadAdministrationAudit))
+      .Succeeded);
+
+    Assert.False(
+      (await deniedProvider
+        .GetRequiredService<IAuthorizationService>()
+        .AuthorizeAsync(
+          principal,
+          resource: null,
+          SmartCitiesPolicies.ReadAdministrationAudit))
+      .Succeeded);
+  }
+
+  [Fact]
   public void Canonical_principal_maps_to_the_existing_human_authority_contract()
   {
     var principal = CreateCanonicalReviewer(
@@ -307,8 +352,21 @@ public sealed class SmartCitiesAuthorizationTests
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
 
+    public Task<AdministrationAccessRule> AddRuleAsync(
+      AdministrationAccessRuleKind kind,
+      string value,
+      AdministrationControlPlaneAuditContext auditContext,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
     public Task<bool> DeleteRuleAsync(
       string ruleId,
+      CancellationToken cancellationToken = default) =>
+      throw new NotSupportedException();
+
+    public Task<bool> DeleteRuleAsync(
+      string ruleId,
+      AdministrationControlPlaneAuditContext auditContext,
       CancellationToken cancellationToken = default) =>
       throw new NotSupportedException();
   }

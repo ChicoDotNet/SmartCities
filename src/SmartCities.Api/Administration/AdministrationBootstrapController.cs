@@ -100,6 +100,7 @@ public sealed class AdministrationBootstrapController
         SmartCitiesPermissions.ConfigureFeatureFlags,
         SmartCitiesPermissions.ManageAdministrationWhitelist,
         SmartCitiesPermissions.ManageAdministrationGrants,
+        SmartCitiesPermissions.ReadAdministrationAudit,
         .. SmartCitiesFeatures.All.Select(
           SmartCitiesFeaturePermissions.Configure),
       ],
