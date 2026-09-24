@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using SmartCities.Api.Administration;
 using SmartCities.Identity;
 
 namespace SmartCities.Api.Identity;
@@ -22,6 +23,10 @@ public static class SmartCitiesAuthorizationExtensions
   {
     ArgumentNullException.ThrowIfNull(services);
 
+    services.AddSingleton<
+      IAuthorizationHandler,
+      AdministrationAccessAuthorizationHandler>();
+
     services.AddAuthorization(
       options =>
       {
@@ -40,6 +45,17 @@ public static class SmartCitiesAuthorizationExtensions
           });
 
         options.AddPolicy(
+          SmartCitiesPolicies.TownHallAdministrationAccess,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
+
+        options.AddPolicy(
           SmartCitiesPolicies.ManageFeatureFlags,
           policy =>
           {
@@ -51,6 +67,24 @@ public static class SmartCitiesAuthorizationExtensions
             policy.RequireClaim(
               SmartCitiesClaimTypes.Permission,
               SmartCitiesPermissions.ManageFeatureFlags);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
+          });
+
+        options.AddPolicy(
+          SmartCitiesPolicies.ManageAdministrationWhitelist,
+          policy =>
+          {
+            policy.RequireAuthenticatedUser();
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Subject);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.AuthorityRole);
+            policy.RequireClaim(
+              SmartCitiesClaimTypes.Permission,
+              SmartCitiesPermissions.ManageAdministrationWhitelist);
+            policy.AddRequirements(
+              new AdministrationAccessRequirement());
           });
       });
 
