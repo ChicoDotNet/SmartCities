@@ -16,7 +16,7 @@ namespace SmartCities.Api.Tests.Identity;
 public sealed class AuthenticationCanonicalizationPipelineTests
 {
   [Fact]
-  public async Task Registration_adds_authentication_services_without_selecting_a_default_provider()
+  public async Task Registration_uses_only_the_provider_neutral_fallback_when_no_real_provider_is_configured()
   {
     var services = new ServiceCollection();
     services.AddLogging();
@@ -29,7 +29,43 @@ public sealed class AuthenticationCanonicalizationPipelineTests
     var defaultScheme =
       await schemes.GetDefaultAuthenticateSchemeAsync();
 
-    Assert.Null(defaultScheme);
+    Assert.NotNull(defaultScheme);
+    Assert.Equal(
+      SmartCitiesNoProviderAuthenticationHandler.SchemeName,
+      defaultScheme.Name);
+  }
+
+  [Fact]
+  public async Task No_configured_provider_challenges_protected_routes_with_401_instead_of_failing_host_execution()
+  {
+    var builder = WebApplication.CreateBuilder();
+    builder.WebHost.UseTestServer();
+    builder.Services.AddSmartCitiesAuthenticationCanonicalization();
+    builder.Services.AddSmartCitiesAuthorization();
+
+    await using var app = builder.Build();
+
+    app.UseAuthentication();
+    app.UseSmartCitiesAuthenticationCanonicalization();
+    app.UseAuthorization();
+
+    app.MapGet(
+        "/protected-without-provider",
+        static () => Results.Ok())
+      .RequireAuthorization(
+        SmartCitiesPolicies.FinalizeDecisionReview);
+
+    await app.StartAsync(
+      TestContext.Current.CancellationToken);
+
+    using var client = app.GetTestClient();
+    using var response = await client.GetAsync(
+      "/protected-without-provider",
+      TestContext.Current.CancellationToken);
+
+    Assert.Equal(
+      HttpStatusCode.Unauthorized,
+      response.StatusCode);
   }
 
   [Fact]

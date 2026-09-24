@@ -112,6 +112,89 @@ public sealed record DecisionReview
       disposition: null);
   }
 
+  /// <summary>
+  /// Restores a validated decision-review snapshot from trusted persistence.
+  /// </summary>
+  /// <param name="recommendationId">Stable recommendation identifier.</param>
+  /// <param name="criterionRequestId">Optional originating Criterion request identifier.</param>
+  /// <param name="evidenceCaseId">Optional originating Evidence Case identifier.</param>
+  /// <param name="evidenceReferenceIds">Ordered evidence identifiers retained by the review.</param>
+  /// <param name="status">Persisted review status.</param>
+  /// <param name="authority">Persisted accountable authority for a finalized review.</param>
+  /// <param name="disposition">Persisted disposition for a finalized review.</param>
+  /// <returns>A validated immutable review snapshot.</returns>
+  public static DecisionReview Restore(
+    string recommendationId,
+    string? criterionRequestId,
+    string? evidenceCaseId,
+    IEnumerable<string> evidenceReferenceIds,
+    DecisionReviewStatus status,
+    HumanAuthority? authority,
+    DecisionDisposition? disposition)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(recommendationId);
+    ArgumentNullException.ThrowIfNull(evidenceReferenceIds);
+
+    if (criterionRequestId is not null)
+    {
+      ArgumentException.ThrowIfNullOrWhiteSpace(criterionRequestId);
+    }
+
+    if (evidenceCaseId is not null)
+    {
+      ArgumentException.ThrowIfNullOrWhiteSpace(evidenceCaseId);
+    }
+
+    if (!Enum.IsDefined(status))
+    {
+      throw new ArgumentOutOfRangeException(
+        nameof(status),
+        status,
+        "Unsupported decision review status.");
+    }
+
+    if (disposition is not null
+      && !Enum.IsDefined(disposition.Value))
+    {
+      throw new ArgumentOutOfRangeException(
+        nameof(disposition),
+        disposition,
+        "Unsupported decision disposition.");
+    }
+
+    var evidence = evidenceReferenceIds.ToArray();
+
+    if (evidence.Any(string.IsNullOrWhiteSpace))
+    {
+      throw new ArgumentException(
+        "Evidence reference identifiers cannot be empty or whitespace.",
+        nameof(evidenceReferenceIds));
+    }
+
+    if (status == DecisionReviewStatus.PendingHumanReview)
+    {
+      if (authority is not null || disposition is not null)
+      {
+        throw new InvalidOperationException(
+          "A pending decision review cannot carry final authority or disposition.");
+      }
+    }
+    else if (authority is null || disposition is null)
+    {
+      throw new InvalidOperationException(
+        "A finalized decision review must carry both human authority and disposition.");
+    }
+
+    return new DecisionReview(
+      recommendationId,
+      criterionRequestId,
+      evidenceCaseId,
+      Array.AsReadOnly(evidence),
+      status,
+      authority,
+      disposition);
+  }
+
   /// <summary>Records the final civic disposition under an explicit human authority.</summary>
   /// <param name="authority">The accountable human authority making the final disposition.</param>
   /// <param name="disposition">The disposition selected by that authority.</param>

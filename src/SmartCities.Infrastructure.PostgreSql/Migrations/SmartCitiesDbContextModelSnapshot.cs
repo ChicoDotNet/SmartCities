@@ -47,6 +47,45 @@ public sealed class SmartCitiesDbContextModelSnapshot : ModelSnapshot
       });
 
     modelBuilder.Entity(
+      "SmartCities.Infrastructure.Persistence.HumanOversight.DecisionReviewRecord",
+      entity =>
+      {
+        entity.Property<string>("RecommendationId")
+          .HasMaxLength(128)
+          .HasColumnType("character varying(128)");
+
+        entity.Property<string>("AuthorityRole")
+          .HasMaxLength(128)
+          .HasColumnType("character varying(128)");
+
+        entity.Property<string>("AuthoritySubjectId")
+          .HasMaxLength(256)
+          .HasColumnType("character varying(256)");
+
+        entity.Property<string>("CriterionRequestId")
+          .HasMaxLength(128)
+          .HasColumnType("character varying(128)");
+
+        entity.Property<int?>("Disposition")
+          .HasColumnType("integer");
+
+        entity.Property<string>("EvidenceCaseId")
+          .HasMaxLength(128)
+          .HasColumnType("character varying(128)");
+
+        entity.Property<string>("EvidenceReferenceIdsJson")
+          .IsRequired()
+          .HasColumnType("text");
+
+        entity.Property<int>("Status")
+          .HasColumnType("integer");
+
+        entity.HasKey("RecommendationId");
+
+        entity.ToTable("DecisionReviews");
+      });
+
+    modelBuilder.Entity(
       "SmartCities.Infrastructure.Persistence.Citizens.EvidenceReferenceRecord",
       entity =>
       {

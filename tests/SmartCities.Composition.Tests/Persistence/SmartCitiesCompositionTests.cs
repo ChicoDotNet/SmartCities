@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using SmartCities.Application.Citizens;
+using SmartCities.Application.HumanOversight;
 using SmartCities.Composition;
 using SmartCities.Infrastructure.Persistence;
 using Xunit;
@@ -60,6 +61,20 @@ public sealed class SmartCitiesCompositionTests
       descriptor =>
         descriptor.ServiceType == typeof(ICitizenMobilityReportRepository)
         && descriptor.ImplementationType?.Name == "EfCitizenMobilityReportRepository"
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
+        descriptor.ServiceType == typeof(IDecisionReviewService)
+        && descriptor.ImplementationType == typeof(DecisionReviewService)
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
+        descriptor.ServiceType == typeof(IDecisionReviewRepository)
+        && descriptor.ImplementationType?.Name == "EfDecisionReviewRepository"
         && descriptor.Lifetime == ServiceLifetime.Scoped);
 
     Assert.Contains(

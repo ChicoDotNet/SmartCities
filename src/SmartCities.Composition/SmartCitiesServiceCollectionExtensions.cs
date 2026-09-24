@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SmartCities.Application.Citizens;
+using SmartCities.Application.HumanOversight;
 using SmartCities.Infrastructure.Persistence;
 using SmartCities.Infrastructure.Persistence.Citizens;
+using SmartCities.Infrastructure.Persistence.HumanOversight;
 using SmartCities.Infrastructure.PostgreSql.Persistence;
 using SmartCities.Infrastructure.SqlServer.Persistence;
 
@@ -40,6 +42,14 @@ public static class SmartCitiesServiceCollectionExtensions
     services.AddScoped<
       ICitizenMobilityReportService,
       CitizenMobilityReportService>();
+
+    services.AddScoped<
+      IDecisionReviewRepository,
+      EfDecisionReviewRepository>();
+
+    services.AddScoped<
+      IDecisionReviewService,
+      DecisionReviewService>();
 
     services
       .AddHealthChecks()

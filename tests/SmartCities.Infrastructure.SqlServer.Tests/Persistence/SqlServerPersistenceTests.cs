@@ -50,6 +50,9 @@ public sealed class SqlServerPersistenceTests
     Assert.Contains(
       "20260923120000_InitialCitizenMobilityPersistence",
       context.Database.GetMigrations());
+    Assert.Contains(
+      "20260923180500_AddDecisionReviewPersistence",
+      context.Database.GetMigrations());
   }
 
   [Fact]
@@ -68,5 +71,7 @@ public sealed class SqlServerPersistenceTests
     Assert.Contains("CitizenMobilityEvidenceReferences", script, StringComparison.Ordinal);
     Assert.Contains("ReportId", script, StringComparison.Ordinal);
     Assert.Contains("CaseId", script, StringComparison.Ordinal);
+    Assert.Contains("DecisionReviews", script, StringComparison.Ordinal);
+    Assert.Contains("AuthoritySubjectId", script, StringComparison.Ordinal);
   }
 }

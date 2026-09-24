@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SmartCities.Infrastructure.Persistence.Citizens;
+using SmartCities.Infrastructure.Persistence.HumanOversight;
 
 namespace SmartCities.Infrastructure.Persistence;
 
@@ -22,6 +23,9 @@ public sealed class SmartCitiesDbContext : DbContext
 
   internal DbSet<CitizenMobilityReportRecord> CitizenMobilityReports =>
     Set<CitizenMobilityReportRecord>();
+
+  internal DbSet<DecisionReviewRecord> DecisionReviews =>
+    Set<DecisionReviewRecord>();
 
   /// <inheritdoc />
   protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -62,5 +66,19 @@ public sealed class SmartCitiesDbContext : DbContext
         entity.Position,
       })
       .IsUnique();
+
+    var review = modelBuilder.Entity<DecisionReviewRecord>();
+    review.ToTable("DecisionReviews");
+    review.HasKey(static entity => entity.RecommendationId);
+    review.Property(static entity => entity.RecommendationId)
+      .HasMaxLength(128);
+    review.Property(static entity => entity.CriterionRequestId)
+      .HasMaxLength(128);
+    review.Property(static entity => entity.EvidenceCaseId)
+      .HasMaxLength(128);
+    review.Property(static entity => entity.AuthoritySubjectId)
+      .HasMaxLength(256);
+    review.Property(static entity => entity.AuthorityRole)
+      .HasMaxLength(128);
   }
 }
