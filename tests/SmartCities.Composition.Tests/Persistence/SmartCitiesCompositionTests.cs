@@ -53,6 +53,13 @@ public sealed class SmartCitiesCompositionTests
     Assert.Contains(
       services,
       descriptor =>
+        descriptor.ServiceType == typeof(ICitizenMobilityDecisionPipeline)
+        && descriptor.ImplementationType == typeof(CitizenMobilityDecisionPipeline)
+        && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
         descriptor.ServiceType == typeof(ICitizenMobilityReportService)
         && descriptor.ImplementationType == typeof(CitizenMobilityReportService)
         && descriptor.Lifetime == ServiceLifetime.Scoped);
@@ -70,6 +77,13 @@ public sealed class SmartCitiesCompositionTests
         descriptor.ServiceType == typeof(IDecisionReviewService)
         && descriptor.ImplementationType == typeof(DecisionReviewService)
         && descriptor.Lifetime == ServiceLifetime.Scoped);
+
+    Assert.Contains(
+      services,
+      descriptor =>
+        descriptor.ServiceType == typeof(ICriterionKernel)
+        && descriptor.ImplementationType == typeof(MockCriterionKernel)
+        && descriptor.Lifetime == ServiceLifetime.Singleton);
 
     Assert.Contains(
       services,
