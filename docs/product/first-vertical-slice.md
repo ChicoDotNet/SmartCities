@@ -38,6 +38,28 @@ Required initially:
 - SmartCities.Localization;
 - Transparency & Decisions.
 
+## Executable MVP orchestration
+
+The reference F3 runtime connects the persisted citizen report path to the human-review path using the public deterministic `MockCriterionKernel`:
+
+```text
+accepted report
+  -> authoritative persisted Evidence Case
+  -> deterministic criterion request
+  -> MockCriterionKernel
+  -> trace validation
+  -> persisted pending DecisionReview
+  -> protected human finalization
+```
+
+Criterion request identifiers are deterministically derived from the authoritative Evidence Case identifier. The mock therefore produces the same recommendation identifier for an idempotent report replay.
+
+The report record and the decision-review record are not claimed to be one distributed/relational atomic write. Report acceptance is persisted first; every acceptance/replay then ensures the review from the authoritative persisted Evidence Case. If review creation is interrupted after the report commit, a retry repairs the missing review instead of creating a new case. If the review has already been finalized, a report replay preserves the original human authority and disposition.
+
+A conflicting trace for an already-known recommendation fails closed rather than replacing the authoritative review.
+
+This is intentionally the open-source MVP seam. A future Criterio E-Kernel adapter must preserve the same traceability and replay contracts without changing citizen-domain contracts.
+
 ## TDD acceptance contracts
 
 1. a valid citizen report creates exactly one case;
