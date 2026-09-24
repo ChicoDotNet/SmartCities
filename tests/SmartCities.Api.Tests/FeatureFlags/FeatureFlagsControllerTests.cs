@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SmartCities.Api.Citizens;
 using SmartCities.Api.FeatureFlags;
 using SmartCities.Application.FeatureFlags;
 using SmartCities.Identity;
@@ -37,6 +38,23 @@ public sealed class FeatureFlagsControllerTests
     Assert.Equal(
       "no-store",
       controller.Response.Headers.CacheControl.ToString());
+  }
+
+  [Theory]
+  [InlineData(typeof(CitizenMobilityReportsController))]
+  [InlineData(typeof(CitizenMobilityOutcomesController))]
+  public void Citizen_mobility_HTTP_surfaces_are_gated_by_the_registered_vertical_slice(
+    Type controllerType)
+  {
+    var gate = Assert.Single(
+      controllerType.GetCustomAttributes(
+        typeof(RequireFeatureAttribute),
+        inherit: true)
+      .Cast<RequireFeatureAttribute>());
+
+    Assert.Equal(
+      SmartCitiesFeatures.CitizenMobility,
+      gate.FeatureId);
   }
 
   [Fact]
