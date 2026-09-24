@@ -38,6 +38,17 @@ public static class SmartCitiesFeatureManagementServiceCollectionExtensions
     services.AddSingleton<
       IAdministrationAccessService,
       AdministrationAccessService>();
+    services.AddSingleton<
+      IAdministrationAuthorizationGrantStore>(
+        _ =>
+          new SqliteAdministrationAuthorizationGrantStore(
+            options.SqliteConnectionString));
+    services.AddSingleton<
+      IAdministrationAuthorizationGrantCatalog,
+      SmartCitiesAdministrationAuthorizationGrantCatalog>();
+    services.AddSingleton<
+      IAdministrationAuthorizationGrantService,
+      AdministrationAuthorizationGrantService>();
 
     services
       .AddHealthChecks()
