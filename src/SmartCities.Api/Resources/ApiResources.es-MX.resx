@@ -174,4 +174,40 @@
   <data name="featureFlags.unavailable" xml:space="preserve">
     <value>Las funciones habilitadas para esta instalación no están disponibles temporalmente.</value>
   </data>
+  <data name="administration.title" xml:space="preserve"><value>Administración del Ayuntamiento</value></data>
+  <data name="administration.intro" xml:space="preserve"><value>Administra las capacidades del despliegue y el acceso administrativo de este Ayuntamiento.</value></data>
+  <data name="administration.checking" xml:space="preserve"><value>Comprobando acceso administrativo…</value></data>
+  <data name="administration.unavailable" xml:space="preserve"><value>La Administración no está disponible temporalmente.</value></data>
+  <data name="administration.denied" xml:space="preserve"><value>Acceso administrativo denegado</value></data>
+  <data name="administration.denied.detail" xml:space="preserve"><value>Tu identidad autenticada no está admitida actualmente en el área de Administración de este Ayuntamiento.</value></data>
+  <data name="administration.townHall" xml:space="preserve"><value>Ayuntamiento</value></data>
+  <data name="administration.citizenPortal" xml:space="preserve"><value>Portal ciudadano</value></data>
+  <data name="administration.bootstrap.title" xml:space="preserve"><value>Inicializar Administración</value></data>
+  <data name="administration.bootstrap.intro" xml:space="preserve"><value>La lista de acceso está vacía. Usa la cuenta bootstrap del despliegue para agregar la primera regla de acceso administrativo.</value></data>
+  <data name="administration.bootstrap.account" xml:space="preserve"><value>Cuenta bootstrap</value></data>
+  <data name="administration.bootstrap.password" xml:space="preserve"><value>Contraseña bootstrap</value></data>
+  <data name="administration.bootstrap.submit" xml:space="preserve"><value>Iniciar sesión administrativa</value></data>
+  <data name="administration.bootstrap.submitting" xml:space="preserve"><value>Iniciando sesión administrativa…</value></data>
+  <data name="administration.bootstrap.invalid" xml:space="preserve"><value>La cuenta o contraseña bootstrap no es válida.</value></data>
+  <data name="administration.bootstrap.unavailable" xml:space="preserve"><value>La Administración bootstrap ya no está disponible. Inicia sesión con una identidad incluida en la lista de acceso.</value></data>
+  <data name="administration.features.title" xml:space="preserve"><value>Funciones habilitadas</value></data>
+  <data name="administration.features.intro" xml:space="preserve"><value>Elige qué vertical slices registrados expone este Ayuntamiento.</value></data>
+  <data name="administration.features.enabled" xml:space="preserve"><value>Habilitada</value></data>
+  <data name="administration.features.disabled" xml:space="preserve"><value>Deshabilitada</value></data>
+  <data name="administration.features.saving" xml:space="preserve"><value>Guardando…</value></data>
+  <data name="administration.features.noPermission" xml:space="preserve"><value>Puedes consultar el estado de las funciones, pero tu identidad no tiene permiso para modificarlas.</value></data>
+  <data name="administration.whitelist.title" xml:space="preserve"><value>Lista de acceso administrativo</value></data>
+  <data name="administration.whitelist.intro" xml:space="preserve"><value>Admite funcionarios por dominio de correo exacto, correo exacto o subject canónico.</value></data>
+  <data name="administration.whitelist.kind" xml:space="preserve"><value>Tipo de regla</value></data>
+  <data name="administration.whitelist.kind.emailDomain" xml:space="preserve"><value>Dominio de correo</value></data>
+  <data name="administration.whitelist.kind.email" xml:space="preserve"><value>Correo electrónico</value></data>
+  <data name="administration.whitelist.kind.canonicalSubject" xml:space="preserve"><value>Subject canónico</value></data>
+  <data name="administration.whitelist.value" xml:space="preserve"><value>Valor de la regla</value></data>
+  <data name="administration.whitelist.add" xml:space="preserve"><value>Agregar regla</value></data>
+  <data name="administration.whitelist.adding" xml:space="preserve"><value>Agregando…</value></data>
+  <data name="administration.whitelist.remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="administration.whitelist.empty" xml:space="preserve"><value>No hay reglas configuradas en la lista de acceso.</value></data>
+  <data name="administration.whitelist.noPermission" xml:space="preserve"><value>Tu identidad no tiene permiso para consultar o modificar la lista de acceso administrativo.</value></data>
+  <data name="administration.whitelist.bootstrapHint" xml:space="preserve"><value>Agrega como primera regla la identidad o dominio que administrará este Ayuntamiento. La sesión bootstrap perderá acceso administrativo inmediatamente después de guardarla.</value></data>
+  <data name="administration.genericError" xml:space="preserve"><value>No se pudo completar la solicitud administrativa. Actualiza el estado autoritativo e inténtalo de nuevo.</value></data>
 </root>
