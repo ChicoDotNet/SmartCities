@@ -3,6 +3,7 @@
     <Project Path="src/SmartCities.Api/SmartCities.Api.csproj" />
     <Project Path="src/SmartCities.Application/SmartCities.Application.csproj" />
     <Project Path="src/SmartCities.Composition/SmartCities.Composition.csproj" />
+    <Project Path="src/SmartCities.Configuration.Sqlite/SmartCities.Configuration.Sqlite.csproj" />
     <Project Path="src/SmartCities.Core/SmartCities.Core.csproj" />
     <Project Path="src/SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
     <Project Path="src/SmartCities.Infrastructure.PostgreSql/SmartCities.Infrastructure.PostgreSql.csproj" />
