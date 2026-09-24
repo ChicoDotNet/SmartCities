@@ -3,10 +3,23 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SmartCities.Api.Administration;
 
-internal sealed record AdministrationBootstrapConfiguration(
-  string UserName,
-  string? Password)
+/// <summary>
+/// Holds validated deployment bootstrap settings without exposing the configured secret through public APIs.
+/// </summary>
+public sealed class AdministrationBootstrapConfiguration
 {
+  internal AdministrationBootstrapConfiguration(
+    string userName,
+    string? password)
+  {
+    UserName = userName;
+    Password = password;
+  }
+
+  internal string UserName { get; }
+
+  internal string? Password { get; }
+
   internal bool IsEnabled =>
     Password is not null;
 
