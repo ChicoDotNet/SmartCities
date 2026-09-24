@@ -26,6 +26,28 @@ public sealed class FeatureFlagServiceTests
   }
 
   [Fact]
+  public async Task Urban_accessibility_is_registered_disabled_by_default()
+  {
+    var store = new RecordingConfigurationStore();
+    var service = new FeatureFlagService(
+      new TownHallContext("town-hall-a"),
+      store);
+
+    var state = await service.GetAsync(
+      SmartCitiesFeatures.UrbanAccessibility,
+      TestContext.Current.CancellationToken);
+
+    Assert.NotNull(state);
+    Assert.False(state.Enabled);
+    Assert.Equal(
+      SmartCitiesFeatures.UrbanAccessibility,
+      state.FeatureId);
+    Assert.Contains(
+      SmartCitiesFeatures.UrbanAccessibility,
+      SmartCitiesFeatures.All);
+  }
+
+  [Fact]
   public async Task Persisted_values_are_isolated_by_town_hall()
   {
     var store = new RecordingConfigurationStore();
