@@ -16,7 +16,7 @@ public sealed class SqliteNonSensitiveConfigurationStoreTests
 
     try
     {
-      var first = new SqliteNonSensitiveConfigurationStore(
+      using var first = new SqliteNonSensitiveConfigurationStore(
         connectionString);
 
       await first.SetAsync(
@@ -25,7 +25,7 @@ public sealed class SqliteNonSensitiveConfigurationStoreTests
         "false",
         TestContext.Current.CancellationToken);
 
-      var second =
+      using var second =
         new SqliteNonSensitiveConfigurationStore(
           connectionString);
 
@@ -48,6 +48,52 @@ public sealed class SqliteNonSensitiveConfigurationStoreTests
   }
 
   [Fact]
+  public async Task Concurrent_first_writes_initialize_the_schema_once_without_losing_values()
+  {
+    var databasePath = Path.Combine(
+      Path.GetTempPath(),
+      $"smartcities-config-{Guid.NewGuid():N}.db");
+    var connectionString =
+      $"Data Source={databasePath}";
+
+    try
+    {
+      using var store =
+        new SqliteNonSensitiveConfigurationStore(
+          connectionString);
+
+      await Task.WhenAll(
+        store.SetAsync(
+          "town-hall-a",
+          "feature:first:enabled",
+          "true",
+          TestContext.Current.CancellationToken),
+        store.SetAsync(
+          "town-hall-a",
+          "feature:second:enabled",
+          "false",
+          TestContext.Current.CancellationToken));
+
+      Assert.Equal(
+        "true",
+        await store.GetAsync(
+          "town-hall-a",
+          "feature:first:enabled",
+          TestContext.Current.CancellationToken));
+      Assert.Equal(
+        "false",
+        await store.GetAsync(
+          "town-hall-a",
+          "feature:second:enabled",
+          TestContext.Current.CancellationToken));
+    }
+    finally
+    {
+      File.Delete(databasePath);
+    }
+  }
+
+  [Fact]
   public async Task Store_round_trips_non_sensitive_text_without_sql_interpolation()
   {
     var databasePath = Path.Combine(
@@ -58,7 +104,7 @@ public sealed class SqliteNonSensitiveConfigurationStoreTests
 
     try
     {
-      var store = new SqliteNonSensitiveConfigurationStore(
+      using var store = new SqliteNonSensitiveConfigurationStore(
         connectionString);
       const string value =
         "O'Hara deployment label";
