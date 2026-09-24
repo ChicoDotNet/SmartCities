@@ -68,7 +68,8 @@ public sealed record CanonicalIdentity
         nameof(authorityRoles)),
       ValidateAuthorizationValues(
         permissions,
-        nameof(permissions)));
+        nameof(permissions)),
+      NormalizeEmailAddress(emailAddress));
   }
 
   private static string? NormalizeEmailAddress(
