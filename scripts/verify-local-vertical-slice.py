@@ -533,7 +533,7 @@ def main() -> None:
     )
 
     admin_headers = {
-        "Authorization": f"Bearer {create_feature_configurator_token()}",
+        "Authorization": f"Bearer {create_persisted_feature_configurator_token()}",
         "Content-Type": "application/json",
     }
     disabled_status, disabled = request(
