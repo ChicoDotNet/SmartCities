@@ -69,7 +69,12 @@ internal sealed class ConfiguredOidcAuthenticationProviderAdapter
         ProviderId,
         $"{ProviderId}:{tenant}:{identity.Subject}",
         roles,
-        permissions));
+        permissions,
+        CanonicalEmailClaimResolver.Resolve(
+          identity,
+          configuration.EmailClaimType,
+          configuration.EmailVerifiedClaimType,
+          configuration.RequireVerifiedEmail)));
   }
 
   private static void AddMappedValues(
