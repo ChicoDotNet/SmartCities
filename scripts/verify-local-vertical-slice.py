@@ -144,7 +144,11 @@ def create_token(
 def create_reviewer_token() -> str:
     return create_token(
         "mobility-reviewer",
-        ["decision-review.finalize"],
+        [
+            "feature-flags.manage",
+            "citizen-mobility.manage",
+            "decision-review.finalize",
+        ],
         "e2e-reviewer-001",
     )
 
