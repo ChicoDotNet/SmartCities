@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../SmartCities.Application/SmartCities.Application.csproj" />
+    <ProjectReference Include="../SmartCities.Configuration.Sqlite/SmartCities.Configuration.Sqlite.csproj" />
     <ProjectReference Include="../SmartCities.Infrastructure/SmartCities.Infrastructure.csproj" />
     <ProjectReference Include="../SmartCities.Infrastructure.PostgreSql/SmartCities.Infrastructure.PostgreSql.csproj" />
     <ProjectReference Include="../SmartCities.Infrastructure.SqlServer/SmartCities.Infrastructure.SqlServer.csproj" />

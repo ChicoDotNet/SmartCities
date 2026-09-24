@@ -10,4 +10,10 @@ public static class SmartCitiesPolicies
   /// </summary>
   public const string FinalizeDecisionReview =
     "smartcities.decision-review.finalize";
+
+  /// <summary>
+  /// Requires an authenticated canonical Town Hall authority with permission to manage feature flags.
+  /// </summary>
+  public const string ManageFeatureFlags =
+    "smartcities.feature-flags.manage";
 }

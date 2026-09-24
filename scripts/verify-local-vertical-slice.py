@@ -60,7 +60,7 @@ def base64url(value: bytes) -> str:
     return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
 
 
-def create_reviewer_token() -> str:
+def create_token(role: str, permission: str) -> str:
     now = int(time.time())
     header = {
         "alg": "HS256",
@@ -69,9 +69,13 @@ def create_reviewer_token() -> str:
     payload = {
         "iss": os.environ["SMARTCITIES_E2E_JWT_ISSUER"],
         "aud": os.environ["SMARTCITIES_E2E_JWT_AUDIENCE"],
-        "sub": "e2e-reviewer-001",
-        "role": "mobility-reviewer",
-        "permission": "decision-review.finalize",
+        "sub": (
+            "e2e-feature-admin-001"
+            if permission == "feature-flags.manage"
+            else "e2e-reviewer-001"
+        ),
+        "role": role,
+        "permission": permission,
         "iat": now,
         "nbf": now - 5,
         "exp": now + 300,
@@ -86,6 +90,20 @@ def create_reviewer_token() -> str:
         hashlib.sha256,
     ).digest()
     return f"{signing_input}.{base64url(signature)}"
+
+
+def create_reviewer_token() -> str:
+    return create_token(
+        "mobility-reviewer",
+        "decision-review.finalize",
+    )
+
+
+def create_feature_manager_token() -> str:
+    return create_token(
+        "town-hall-admin",
+        "feature-flags.manage",
+    )
 
 
 def recommendation_id_for_case(case_id: str) -> str:
@@ -135,6 +153,10 @@ def main() -> None:
     require(ready_status == 200, f"Expected ready 200, got {ready_status}: {ready}")
     require(ready["status"] == "Healthy", "Readiness is not healthy.")
     require(ready["checks"]["database"] == "Healthy", "Database readiness check is not healthy.")
+    require(
+        ready["checks"]["configuration"] == "Healthy",
+        "Town Hall configuration readiness check is not healthy.",
+    )
 
     build_status, build = request(
         "GET",
@@ -165,6 +187,109 @@ def main() -> None:
         "/api/citizen/mobility-reports/{reportId}/outcome"
         in openapi["paths"],
         "OpenAPI does not expose the citizen outcome route.",
+    )
+    require(
+        "/api/system/features" in openapi["paths"],
+        "OpenAPI does not expose Town Hall feature flags.",
+    )
+    require(
+        "/api/system/features/{featureId}" in openapi["paths"],
+        "OpenAPI does not expose Town Hall feature management.",
+    )
+
+    feature_status, feature_snapshot = request(
+        "GET",
+        "/api/system/features",
+    )
+    require(
+        feature_status == 200,
+        f"Expected feature snapshot 200, got {feature_status}: {feature_snapshot}",
+    )
+    require(
+        feature_snapshot["townHallId"] == "e2e-town-hall",
+        "Feature snapshot has the wrong Town Hall identity.",
+    )
+    mobility = next(
+        item
+        for item in feature_snapshot["features"]
+        if item["featureId"] == "citizen-mobility"
+    )
+    require(
+        mobility["enabled"] is True,
+        "Citizen mobility must preserve its enabled-by-default compatibility behavior.",
+    )
+
+    admin_headers = {
+        "Authorization": f"Bearer {create_feature_manager_token()}",
+        "Content-Type": "application/json",
+    }
+    disabled_status, disabled = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": False},
+        admin_headers,
+    )
+    require(
+        disabled_status == 200,
+        f"Expected feature disable 200, got {disabled_status}: {disabled}",
+    )
+    require(
+        disabled["featureId"] == "citizen-mobility"
+        and disabled["enabled"] is False,
+        "Feature disable did not persist the requested state.",
+    )
+
+    disabled_snapshot_status, disabled_snapshot = request(
+        "GET",
+        "/api/system/features",
+    )
+    require(
+        disabled_snapshot_status == 200,
+        (
+            "Expected disabled feature snapshot 200, got "
+            f"{disabled_snapshot_status}: {disabled_snapshot}"
+        ),
+    )
+    disabled_mobility = next(
+        item
+        for item in disabled_snapshot["features"]
+        if item["featureId"] == "citizen-mobility"
+    )
+    require(
+        disabled_mobility["enabled"] is False,
+        "Feature snapshot did not recover the persisted SQLite override.",
+    )
+
+    gated_status, gated = request(
+        "POST",
+        "/api/citizen/mobility-reports",
+        {
+            "reportId": "gated-report",
+            "caseId": "gated-case",
+            "categoryKey": "road-safety",
+            "locationReference": "Feature gate",
+            "description": "This request must not enter the disabled vertical slice.",
+            "evidenceReferences": [],
+        },
+    )
+    require(
+        gated_status == 404,
+        f"Expected disabled vertical slice 404, got {gated_status}: {gated}",
+    )
+
+    enabled_status, enabled = request(
+        "PUT",
+        "/api/system/features/citizen-mobility",
+        {"enabled": True},
+        admin_headers,
+    )
+    require(
+        enabled_status == 200,
+        f"Expected feature enable 200, got {enabled_status}: {enabled}",
+    )
+    require(
+        enabled["enabled"] is True,
+        "Feature re-enable did not persist the requested state.",
     )
 
     report_id = "e2e-report-001"
@@ -397,7 +522,8 @@ def main() -> None:
 
     print(
         "Local vertical slice verified: live -> ready -> build -> OpenAPI "
-        "-> create -> replay -> recover -> pending citizen outcome "
+        "-> Town Hall feature disable/gate/re-enable -> create -> replay "
+        "-> recover -> pending citizen outcome "
         "-> mock criterion -> human finalize -> localized reviewed outcome "
         "-> post-finalization replay preserves authority."
     )

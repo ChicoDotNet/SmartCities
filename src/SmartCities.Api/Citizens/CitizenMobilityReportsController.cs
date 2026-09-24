@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using SmartCities.Api.FeatureFlags;
 using SmartCities.Application.Citizens;
+using SmartCities.Application.FeatureFlags;
 using SmartCities.Citizens;
 using SmartCities.Evidence;
 
@@ -13,6 +15,7 @@ namespace SmartCities.Api.Citizens;
 /// DbContext, EF Core, or relational providers.
 /// </remarks>
 [ApiController]
+[RequireFeature(SmartCitiesFeatures.CitizenMobility)]
 [Route("api/citizen/mobility-reports")]
 public sealed class CitizenMobilityReportsController : ControllerBase
 {

@@ -171,4 +171,7 @@
   <data name="citizen.mobilityOutcome.explanation.deferred" xml:space="preserve">
     <value>An authorized person completed the review and deferred a final course of action for later consideration.</value>
   </data>
+  <data name="featureFlags.unavailable" xml:space="preserve">
+    <value>Deployment features are temporarily unavailable.</value>
+  </data>
 </root>

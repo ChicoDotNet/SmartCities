@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using SmartCities.Application.Citizens;
+using SmartCities.Application.Configuration;
+using SmartCities.Application.FeatureFlags;
 using SmartCities.Application.HumanOversight;
 using SmartCities.Composition;
 using SmartCities.Criterion;
@@ -104,6 +106,36 @@ public sealed class SmartCitiesCompositionTests
       descriptor =>
         descriptor.ServiceType == typeof(SmartCitiesDbContext)
         && descriptor.Lifetime == ServiceLifetime.Scoped);
+  }
+
+  [Fact]
+  public void Composition_registers_per_Town_Hall_feature_management_separately_from_domain_persistence()
+  {
+    var services = new ServiceCollection();
+
+    services.AddSmartCitiesFeatureManagement(
+      SmartCitiesFeatureManagementOptions.Create(
+        "town-hall-a",
+        "Data Source=:memory:"));
+
+    using var provider = services.BuildServiceProvider();
+
+    Assert.Equal(
+      "town-hall-a",
+      provider
+        .GetRequiredService<TownHallContext>()
+        .TownHallId);
+    Assert.IsType<FeatureFlagService>(
+      provider.GetRequiredService<
+        IFeatureFlagService>());
+    Assert.NotNull(
+      provider.GetRequiredService<
+        INonSensitiveConfigurationStore>());
+    Assert.DoesNotContain(
+      services,
+      descriptor =>
+        descriptor.ServiceType
+        == typeof(SmartCitiesDbContext));
   }
 
   [Fact]

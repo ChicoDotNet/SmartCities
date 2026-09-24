@@ -171,4 +171,7 @@
   <data name="citizen.mobilityOutcome.explanation.deferred" xml:space="preserve">
     <value>Una persona autorizada concluyó la revisión y dejó diferida la decisión final para una consideración posterior.</value>
   </data>
+  <data name="featureFlags.unavailable" xml:space="preserve">
+    <value>Las funciones habilitadas para esta instalación no están disponibles temporalmente.</value>
+  </data>
 </root>

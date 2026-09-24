@@ -25,6 +25,7 @@ export const resourceKeys = {
   outcomeUnavailable: 'citizen.mobilityOutcome.unavailable',
   outcomeNotFound: 'citizen.mobilityOutcome.notFound',
   outcomeRefresh: 'citizen.mobilityOutcome.refresh',
+  featuresUnavailable: 'featureFlags.unavailable',
   authenticationTitle: 'authentication.title',
   authenticationIntro: 'authentication.intro',
   authenticationLoading: 'authentication.loading',

@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSmartCitiesFromConfiguration(
   builder.Configuration);
+builder.Services.AddSmartCitiesFeatureManagementFromConfiguration(
+  builder.Configuration);
 builder.Services.AddSmartCitiesApiControllers();
 builder.Services.AddSmartCitiesApiDiagnostics();
 builder.Services.AddSmartCitiesApiObservability(

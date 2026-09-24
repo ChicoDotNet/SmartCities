@@ -22,6 +22,10 @@ Mexico ships first as `es-MX`; neutral resources remain canonical English.
 
 `Citizen mobility report → Evidence Case → Mock Criterion → Human Review → Explainable Outcome`
 
+## Platform capability — per-Town-Hall feature management
+
+After the F3 MVP, deployments can enable or disable registered vertical slices independently. Non-sensitive feature/configuration state uses a dedicated per-Town-Hall SQLite control plane and remains separate from SQL Server/PostgreSQL domain persistence.
+
 ## F4 — Criterio E-Kernel Core adapter
 
 Integrate the first released NuGet package without changing public SmartCities domain contracts. Use contract replay.

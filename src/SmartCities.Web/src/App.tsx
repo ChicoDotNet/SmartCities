@@ -28,6 +28,11 @@ import {
 } from './localization';
 import { resourceKeys } from './resourceKeys';
 import { AuthenticationEntry } from './AuthenticationEntry';
+import {
+  isFeatureEnabled,
+  loadFeatureFlagSnapshot,
+  type FeatureFlagSnapshot,
+} from './features';
 
 const categories = [
   {
@@ -51,11 +56,24 @@ type OutcomeLoadState =
   | 'not-found'
   | 'unavailable';
 
+type FeatureLoadState =
+  | 'loading'
+  | 'ready'
+  | 'unavailable';
+
 export function App() {
   const [culture, setCulture] = useState<SupportedCulture>(
     preferredCulture(navigator.language),
   );
   const [bundle, setBundle] = useState<LocalizationBundle | null>(null);
+  const [featureSnapshot, setFeatureSnapshot] =
+    useState<FeatureFlagSnapshot | null>(null);
+  const [featureLoadState, setFeatureLoadState] =
+    useState<FeatureLoadState>(
+      navigator.onLine
+        ? 'loading'
+        : 'unavailable',
+    );
   const [category, setCategory] = useState('');
   const [location, setLocation] = useState('');
   const [description, setDescription] = useState('');
@@ -108,6 +126,55 @@ export function App() {
   }, []);
 
   useEffect(() => {
+    if (!online) {
+      setFeatureSnapshot(null);
+      setFeatureLoadState('unavailable');
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setFeatureSnapshot(null);
+    setFeatureLoadState('loading');
+
+    void loadFeatureFlagSnapshot(
+      (input, init) =>
+        fetch(input, {
+          ...init,
+          signal: controller.signal,
+        }),
+    )
+      .then((snapshot) => {
+        if (!controller.signal.aborted) {
+          setFeatureSnapshot(snapshot);
+          setFeatureLoadState('ready');
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setFeatureSnapshot(null);
+          setFeatureLoadState('unavailable');
+        }
+      });
+
+    return () => controller.abort();
+  }, [online]);
+
+  const mobilityEnabled =
+    featureLoadState === 'ready'
+    && featureSnapshot !== null
+    && isFeatureEnabled(
+      featureSnapshot,
+      'citizen-mobility',
+    );
+
+  useEffect(() => {
+    if (!mobilityEnabled) {
+      setOutcome(null);
+      setOutcomeState('idle');
+      return;
+    }
+
     if (!trackedReportId) {
       setOutcome(null);
       setOutcomeState('idle');
@@ -162,6 +229,7 @@ export function App() {
     return () => controller.abort();
   }, [
     bundle,
+    mobilityEnabled,
     online,
     outcomeRefreshToken,
     trackedReportId,
@@ -196,6 +264,10 @@ export function App() {
       outcomeUnavailable: text(bundle, resourceKeys.outcomeUnavailable),
       outcomeNotFound: text(bundle, resourceKeys.outcomeNotFound),
       outcomeRefresh: text(bundle, resourceKeys.outcomeRefresh),
+      featuresUnavailable: text(
+        bundle,
+        resourceKeys.featuresUnavailable,
+      ),
     };
   }, [bundle]);
 
@@ -213,7 +285,13 @@ export function App() {
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!online || !category || !location.trim() || !description.trim()) {
+    if (
+      !online
+      || !mobilityEnabled
+      || !category
+      || !location.trim()
+      || !description.trim()
+    ) {
       return;
     }
 
@@ -288,9 +366,30 @@ export function App() {
         </div>
       </section>
 
-      <section className="row justify-content-center">
-        <div className="col-12 col-lg-8 col-xl-7">
-          <div className="citizen-card">
+      {featureLoadState === 'loading' && (
+        <section className="row justify-content-center">
+          <div className="col-12 col-lg-8 col-xl-7">
+            <div className="citizen-card" role="status">
+              <Spinner size="small" />
+            </div>
+          </div>
+        </section>
+      )}
+
+      {featureLoadState === 'unavailable' && (
+        <section className="row justify-content-center">
+          <div className="col-12 col-lg-8 col-xl-7">
+            <div className="status-message" role="alert">
+              {labels.featuresUnavailable}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {mobilityEnabled && (
+        <section className="row justify-content-center">
+          <div className="col-12 col-lg-8 col-xl-7">
+            <div className="citizen-card">
             <Title1>{labels.title}</Title1>
             <Text block className="mt-2 mb-4" size={400}>
               {labels.intro}
@@ -437,9 +536,10 @@ export function App() {
                 </Button>
               </div>
             </form>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </main>
   );
 }

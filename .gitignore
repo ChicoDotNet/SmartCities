@@ -15,3 +15,6 @@ docs/site/.vite/
 .env
 .env.*
 !.env.example
+smartcities.configuration.db
+smartcities.configuration.db-shm
+smartcities.configuration.db-wal

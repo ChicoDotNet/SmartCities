@@ -10,4 +10,10 @@ public static class SmartCitiesPermissions
   /// </summary>
   public const string FinalizeDecisionReview =
     "decision-review.finalize";
+
+  /// <summary>
+  /// Allows an authenticated Town Hall administrator to manage known deployment feature flags.
+  /// </summary>
+  public const string ManageFeatureFlags =
+    "feature-flags.manage";
 }
