@@ -31,5 +31,7 @@ jobs:
           cache-dependency-path: src/SmartCities.Web/package-lock.json
       - name: Install locked dependencies
         run: npm ci --no-audit --no-fund
+      - name: Test product web client
+        run: npm test
       - name: Build product web client
         run: npm run build

@@ -116,6 +116,19 @@ public sealed class ApiLocalizationResourceTests
     Assert.Equal(
       "Seguridad peatonal",
       spanish.Resources["citizen.mobilityReport.category.pedestrianSafety"]);
+
+    Assert.Equal(
+      "Sign in",
+      english.Resources["authentication.title"]);
+    Assert.Equal(
+      "Iniciar sesión",
+      spanish.Resources["authentication.title"]);
+    Assert.Equal(
+      "User name",
+      english.Resources["authentication.local.userName"]);
+    Assert.Equal(
+      "Usuario",
+      spanish.Resources["authentication.local.userName"]);
   }
 
   [Fact]
