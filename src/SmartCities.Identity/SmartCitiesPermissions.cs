@@ -42,4 +42,10 @@ public static class SmartCitiesPermissions
   /// </summary>
   public const string ManageAdministrationGrants =
     "administration-grants.manage";
+
+  /// <summary>
+  /// Allows an admitted Town Hall administrator to read immutable control-plane audit history.
+  /// </summary>
+  public const string ReadAdministrationAudit =
+    "administration-audit.read";
 }
