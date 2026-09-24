@@ -132,4 +132,40 @@
   <data name="authentication.session.loggingOut" xml:space="preserve">
     <value>Signing out…</value>
   </data>
+  <data name="citizen.mobilityReport.report.label" xml:space="preserve">
+    <value>Report</value>
+  </data>
+  <data name="citizen.mobilityOutcome.title" xml:space="preserve">
+    <value>Case status</value>
+  </data>
+  <data name="citizen.mobilityOutcome.loading" xml:space="preserve">
+    <value>Checking case status…</value>
+  </data>
+  <data name="citizen.mobilityOutcome.unavailable" xml:space="preserve">
+    <value>Case status is temporarily unavailable.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.notFound" xml:space="preserve">
+    <value>We could not find a report with this reference.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.refresh" xml:space="preserve">
+    <value>Refresh status</value>
+  </data>
+  <data name="citizen.mobilityOutcome.status.pendingHumanReview" xml:space="preserve">
+    <value>Under human review</value>
+  </data>
+  <data name="citizen.mobilityOutcome.status.finalized" xml:space="preserve">
+    <value>Review complete</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.pendingHumanReview" xml:space="preserve">
+    <value>Your report is waiting for review by an authorized person. No final civic disposition has been recorded yet.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.accepted" xml:space="preserve">
+    <value>An authorized person completed the review. The proposed course of action was accepted as the final disposition.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.modified" xml:space="preserve">
+    <value>An authorized person completed the review. The proposed course of action was modified before the final disposition was recorded.</value>
+  </data>
+  <data name="citizen.mobilityOutcome.explanation.rejected" xml:space="preserve">
+    <value>An authorized person completed the review. The proposed course of action was rejected as the final disposition.</value>
+  </data>
 </root>
