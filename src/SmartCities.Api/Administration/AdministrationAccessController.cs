@@ -15,13 +15,17 @@ public sealed class AdministrationAccessController
   : ControllerBase
 {
   private readonly IAdministrationAccessService service;
+  private readonly AdministrationBootstrapConfiguration bootstrap;
 
   /// <summary>Initializes the Administration access boundary.</summary>
   public AdministrationAccessController(
-    IAdministrationAccessService service)
+    IAdministrationAccessService service,
+    AdministrationBootstrapConfiguration bootstrap)
   {
     ArgumentNullException.ThrowIfNull(service);
+    ArgumentNullException.ThrowIfNull(bootstrap);
     this.service = service;
+    this.bootstrap = bootstrap;
   }
 
   /// <summary>Gets current Town Hall Administration admission state.</summary>
@@ -34,9 +38,11 @@ public sealed class AdministrationAccessController
   {
     SetNoStore();
 
-    var bootstrapAvailable = await service
-      .IsBootstrapAvailableAsync(cancellationToken)
-      .ConfigureAwait(false);
+    var bootstrapAvailable =
+      bootstrap.IsEnabled
+      && await service
+        .IsBootstrapAvailableAsync(cancellationToken)
+        .ConfigureAwait(false);
 
     if (User.Identity?.IsAuthenticated != true)
     {

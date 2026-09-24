@@ -2,6 +2,8 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using SmartCities.Api.Administration;
 using SmartCities.Application.Administration;
 using SmartCities.Identity;
@@ -18,7 +20,8 @@ public sealed class AdministrationAccessControllerTests
       new RecordingAdministrationAccessService(
         isAuthorized: false,
         bootstrapAvailable: true),
-      authenticated: false);
+      authenticated: false,
+      bootstrapConfigured: true);
 
     var result = await controller.GetAccessAsync(
       TestContext.Current.CancellationToken);
@@ -31,13 +34,34 @@ public sealed class AdministrationAccessControllerTests
   }
 
   [Fact]
+  public async Task Empty_whitelist_does_not_advertise_bootstrap_when_the_deployment_secret_is_absent()
+  {
+    var controller = CreateController(
+      new RecordingAdministrationAccessService(
+        isAuthorized: false,
+        bootstrapAvailable: true),
+      authenticated: false,
+      bootstrapConfigured: false);
+
+    var result = await controller.GetAccessAsync(
+      TestContext.Current.CancellationToken);
+
+    var payload = Assert.IsType<AdministrationAccessResponse>(
+      Assert.IsType<OkObjectResult>(result.Result).Value);
+
+    Assert.False(payload.Authorized);
+    Assert.False(payload.BootstrapAvailable);
+  }
+
+  [Fact]
   public async Task Canonical_whitelisted_identity_is_admitted()
   {
     var controller = CreateController(
       new RecordingAdministrationAccessService(
         isAuthorized: true,
         bootstrapAvailable: false),
-      authenticated: true);
+      authenticated: true,
+      bootstrapConfigured: true);
 
     var result = await controller.GetAccessAsync(
       TestContext.Current.CancellationToken);
@@ -68,10 +92,34 @@ public sealed class AdministrationAccessControllerTests
 
   private static AdministrationAccessController CreateController(
     IAdministrationAccessService service,
-    bool authenticated)
+    bool authenticated,
+    bool bootstrapConfigured)
   {
+    var configurationValues =
+      new Dictionary<string, string?>();
+
+    if (bootstrapConfigured)
+    {
+      configurationValues[
+        "SmartCities:Administration:Bootstrap:Password"] =
+        "test-bootstrap-password";
+    }
+
+    var services = new ServiceCollection();
+    services.AddSmartCitiesAdministrationBootstrap(
+      new ConfigurationBuilder()
+        .AddInMemoryCollection(configurationValues)
+        .Build());
+
+    using var provider =
+      services.BuildServiceProvider();
+    var bootstrap = provider.GetRequiredService<
+      AdministrationBootstrapConfiguration>();
+
     var controller =
-      new AdministrationAccessController(service);
+      new AdministrationAccessController(
+        service,
+        bootstrap);
     var context = new DefaultHttpContext();
 
     if (authenticated)

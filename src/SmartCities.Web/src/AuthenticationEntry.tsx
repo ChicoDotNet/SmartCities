@@ -31,6 +31,7 @@ import { resourceKeys } from './resourceKeys';
 interface AuthenticationEntryProps {
   bundle: LocalizationBundle;
   online: boolean;
+  onSessionChanged?: () => void;
 }
 
 type SessionState =
@@ -45,6 +46,7 @@ type SessionState =
 export function AuthenticationEntry({
   bundle,
   online,
+  onSessionChanged,
 }: AuthenticationEntryProps) {
   const [sessionState, setSessionState] =
     useState<SessionState>(
@@ -245,6 +247,7 @@ export function AuthenticationEntry({
         session: authoritative,
       });
       setUserName('');
+      onSessionChanged?.();
     } catch (error) {
       if (
         error instanceof AuthenticationClientError
@@ -284,6 +287,7 @@ export function AuthenticationEntry({
       }
 
       setSessionState({ status: 'anonymous' });
+      onSessionChanged?.();
     } catch {
       setLocalError(labels.genericError);
     } finally {

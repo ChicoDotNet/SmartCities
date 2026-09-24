@@ -27,6 +27,7 @@ import {
   type SupportedCulture,
 } from './localization';
 import { resourceKeys } from './resourceKeys';
+import { AdministrationApp } from './AdministrationApp';
 import { AuthenticationEntry } from './AuthenticationEntry';
 import {
   isFeatureEnabled,
@@ -268,6 +269,10 @@ export function App() {
         bundle,
         resourceKeys.featuresUnavailable,
       ),
+      administrationTitle: text(
+        bundle,
+        resourceKeys.administrationTitle,
+      ),
     };
   }, [bundle]);
 
@@ -276,6 +281,20 @@ export function App() {
       <main className="app-loading" aria-busy="true">
         <Spinner />
       </main>
+    );
+  }
+
+  if (
+    window.location.pathname === '/administration'
+    || window.location.pathname === '/administration/'
+  ) {
+    return (
+      <AdministrationApp
+        bundle={bundle}
+        culture={culture}
+        online={online}
+        onCultureChange={setCulture}
+      />
     );
   }
 
@@ -339,7 +358,14 @@ export function App() {
         <Text weight="semibold" size={500}>
           {labels.appTitle}
         </Text>
-        <div className="d-flex gap-2" aria-label="locale">
+        <div className="d-flex flex-wrap gap-2" aria-label="locale">
+          <Button
+            appearance="subtle"
+            as="a"
+            href="/administration"
+          >
+            {labels.administrationTitle}
+          </Button>
           <Button
             appearance={culture === 'en' ? 'primary' : 'secondary'}
             size="small"
