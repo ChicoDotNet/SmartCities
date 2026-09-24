@@ -13,6 +13,10 @@ namespace SmartCities.Api.Administration;
 /// <summary>
 /// Establishes the temporary empty-whitelist Administration bootstrap session.
 /// </summary>
+/// <remarks>
+/// The endpoint is rate-limited and becomes unavailable as soon as any whitelist rule exists.
+/// Existing bootstrap cookies are re-evaluated by Administration authorization and lose admission immediately.
+/// </remarks>
 [ApiController]
 [AllowAnonymous]
 [EnableRateLimiting("administration-bootstrap")]
