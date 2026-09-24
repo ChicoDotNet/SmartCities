@@ -162,6 +162,17 @@ Every executable adapter should eventually document:
 - troubleshooting;
 - replacement/custom-adapter tutorial.
 
+## Standards references
+
+Current public candidates should be verified against their official upstream documentation before adapter implementation:
+
+- [OGC SensorThings API](https://www.ogc.org/standards/sensorthings/) — Part 1: Sensing 1.1 is the current sensing baseline recognized by this architecture.
+- [OGC API – Features](https://www.ogc.org/standards/ogcapi-features/) — geospatial feature API building blocks; use only where feature semantics fit.
+- [GTFS Schedule](https://gtfs.org/documentation/schedule/reference/) — scheduled public-transport data.
+- [GTFS Realtime](https://gtfs.org/documentation/realtime/reference/) — realtime transit updates.
+
+These are interoperability options, not mandatory wrappers for every source.
+
 ## Compatibility states
 
 Never infer support from a product name in a roadmap.
@@ -175,6 +186,20 @@ Use one of:
 | Documented | Mapping/instructions exist but no executable compatibility claim is made. |
 | Proposed | Candidate integration only. |
 | Blocked by external access | More documentation, licensing, credentials, software, or lawful test data are required. |
+
+## Commercial compatibility backlog
+
+The following are examples of candidate product families only; none are claimed as implemented by this architecture document.
+
+| Candidate family | Intended SmartCities boundary | Current status |
+| --- | --- | --- |
+| Eco-Counter-style count platforms | Count/classification observations with time, direction, location, quality, and provenance. | Proposed |
+| intuVision-style video analytics | Derived count/speed/direction/occupancy/safety observations; no raw-video or biometric domain. | Proposed |
+| Bentley/CUBE-style transportation models | Provider-neutral scenario/model execution or externally produced result import. | Proposed |
+| LEGION-style pedestrian/station simulation | Provider-neutral simulation execution/result/artifact mapping. | Proposed |
+| OpenRail/Bentley engineering tools | Versioned external engineering/model artifact references and usable outputs. | Proposed |
+
+Before moving any row beyond Proposed, verify current official documentation or a lawful customer integration contract, access mechanism, supported versions, redistribution/licensing constraints, and reusable contract-test evidence.
 
 ## Privacy and provenance
 
