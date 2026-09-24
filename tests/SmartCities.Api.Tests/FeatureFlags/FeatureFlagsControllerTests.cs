@@ -181,11 +181,22 @@ public sealed class FeatureFlagsControllerTests
     {
       context.User = new System.Security.Claims.ClaimsPrincipal(
         new System.Security.Claims.ClaimsIdentity(
-          permissions.Select(
-            permission =>
-              new System.Security.Claims.Claim(
-                SmartCitiesClaimTypes.Permission,
-                permission)),
+          [
+            new System.Security.Claims.Claim(
+              SmartCitiesClaimTypes.Subject,
+              "test-provider:town-hall:test-admin"),
+            new System.Security.Claims.Claim(
+              SmartCitiesClaimTypes.IdentityProvider,
+              "test-provider"),
+            new System.Security.Claims.Claim(
+              SmartCitiesClaimTypes.AuthorityRole,
+              "town-hall-admin"),
+            .. permissions.Select(
+              permission =>
+                new System.Security.Claims.Claim(
+                  SmartCitiesClaimTypes.Permission,
+                  permission)),
+          ],
           authenticationType: "test"));
     }
 
