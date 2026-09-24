@@ -102,3 +102,31 @@ test('report tracking survives refresh through the URL and preserves unrelated q
     null,
   );
 });
+
+
+test('citizen outcome contract rejects a response for a different report', async () => {
+  await assert.rejects(
+    loadMobilityReportOutcome(
+      'report-requested',
+      'en',
+      async () =>
+        new Response(
+          JSON.stringify({
+            reportId: 'report-different',
+            caseId: 'case-001',
+            status: 'finalized',
+            disposition: 'accepted',
+            statusLabel: 'Review complete',
+            explanation: 'Completed.',
+          }),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          },
+        ),
+    ),
+    /mobility_outcome_contract_invalid/,
+  );
+});
