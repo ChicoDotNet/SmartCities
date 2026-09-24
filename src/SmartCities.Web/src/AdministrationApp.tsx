@@ -11,6 +11,7 @@ import {
   Title2,
 } from '@fluentui/react-components';
 import {
+  useCallback,
   useEffect,
   useMemo,
   useState,
@@ -233,6 +234,13 @@ export function AdministrationApp({
     }
   }
 
+  const handleAuthorityChanged = useCallback(
+    () => setRefreshToken(
+      (value) => value + 1,
+    ),
+    [],
+  );
+
   const view =
     state.status === 'ready'
       ? resolveAdministrationView(
@@ -365,10 +373,7 @@ export function AdministrationApp({
             <AuthenticationEntry
               bundle={bundle}
               online={online}
-              onSessionChanged={() =>
-                setRefreshToken(
-                  (value) => value + 1,
-                )}
+              onSessionChanged={handleAuthorityChanged}
             />
           )}
 
@@ -401,10 +406,7 @@ export function AdministrationApp({
                   state.session.identityProvider
                     === 'local-bootstrap'
                 }
-                onAuthorityChanged={() =>
-                  setRefreshToken(
-                    (value) => value + 1,
-                  )}
+                onAuthorityChanged={handleAuthorityChanged}
               />
             )}
         </>
