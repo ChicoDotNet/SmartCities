@@ -1,3 +1,5 @@
+using SmartCities.Application.Administration;
+
 namespace SmartCities.Application.Configuration;
 
 /// <summary>
@@ -20,5 +22,13 @@ public interface INonSensitiveConfigurationStore
     string townHallId,
     string key,
     string value,
+    CancellationToken cancellationToken = default);
+
+  /// <summary>Persists a non-sensitive setting and its immutable audit event atomically.</summary>
+  Task SetAsync(
+    string townHallId,
+    string key,
+    string value,
+    AdministrationControlPlaneAuditEvent auditEvent,
     CancellationToken cancellationToken = default);
 }
