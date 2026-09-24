@@ -10,6 +10,10 @@ namespace SmartCities.Api.Citizens;
 /// <summary>
 /// Exposes the public-safe reviewed outcome for an accepted citizen mobility report.
 /// </summary>
+/// <remarks>
+/// This boundary is intentionally privacy-minimal and non-cacheable: localization may change presentation,
+/// but the authoritative report, case, review status, and human disposition always come from backend persistence.
+/// </remarks>
 [ApiController]
 [AllowAnonymous]
 [Route("api/citizen/mobility-reports/{reportId}/outcome")]

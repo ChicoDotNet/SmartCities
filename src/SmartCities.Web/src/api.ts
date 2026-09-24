@@ -81,6 +81,7 @@ export async function submitMobilityReport(
   return response.json() as Promise<MobilityReportAcceptance>;
 }
 
+// Always recover citizen outcome state from the backend; URL tracking is only a reference, never outcome authority.
 export async function loadMobilityReportOutcome(
   reportId: string,
   culture: string,
