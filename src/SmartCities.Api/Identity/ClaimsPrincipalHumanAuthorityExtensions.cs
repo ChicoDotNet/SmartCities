@@ -46,6 +46,50 @@ public static class ClaimsPrincipalHumanAuthorityExtensions
       authorityRole);
   }
 
+  /// <summary>
+  /// Creates a domain human authority using one explicit canonical role already granted to the principal.
+  /// </summary>
+  /// <param name="principal">Authenticated canonical principal.</param>
+  /// <param name="authorityRole">Canonical role selected for the accountable action.</param>
+  /// <returns>The accountable human authority.</returns>
+  public static HumanAuthority ToHumanAuthority(
+    this ClaimsPrincipal principal,
+    string authorityRole)
+  {
+    ArgumentNullException.ThrowIfNull(principal);
+    ArgumentException.ThrowIfNullOrWhiteSpace(authorityRole);
+
+    if (principal.Identity?.IsAuthenticated != true)
+    {
+      throw new InvalidOperationException(
+        "An unauthenticated principal cannot become a human authority.");
+    }
+
+    var subjectId = GetSingleRequiredClaim(
+      principal,
+      SmartCitiesClaimTypes.Subject,
+      "canonical subject");
+
+    var normalizedRole = authorityRole.Trim();
+    var hasRole = principal.FindAll(
+        SmartCitiesClaimTypes.AuthorityRole)
+      .Any(
+        claim => string.Equals(
+          claim.Value,
+          normalizedRole,
+          StringComparison.Ordinal));
+
+    if (!hasRole)
+    {
+      throw new InvalidOperationException(
+        "The selected authority role is not granted to the canonical principal.");
+    }
+
+    return HumanAuthority.Create(
+      subjectId,
+      normalizedRole);
+  }
+
   private static string GetSingleRequiredClaim(
     ClaimsPrincipal principal,
     string claimType,
