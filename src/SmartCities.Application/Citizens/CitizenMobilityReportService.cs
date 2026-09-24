@@ -8,14 +8,20 @@ namespace SmartCities.Application.Citizens;
 public sealed class CitizenMobilityReportService : ICitizenMobilityReportService
 {
   private readonly ICitizenMobilityReportRepository repository;
+  private readonly ICitizenMobilityDecisionPipeline decisionPipeline;
 
-  /// <summary>Initializes a report service with its repository boundary.</summary>
+  /// <summary>Initializes a report service with persistence and decision-pipeline boundaries.</summary>
   /// <param name="repository">Repository responsible for idempotent case acceptance and retrieval.</param>
+  /// <param name="decisionPipeline">Pipeline that ensures the authoritative Evidence Case enters accountable human review.</param>
   public CitizenMobilityReportService(
-    ICitizenMobilityReportRepository repository)
+    ICitizenMobilityReportRepository repository,
+    ICitizenMobilityDecisionPipeline decisionPipeline)
   {
     ArgumentNullException.ThrowIfNull(repository);
+    ArgumentNullException.ThrowIfNull(decisionPipeline);
+
     this.repository = repository;
+    this.decisionPipeline = decisionPipeline;
   }
 
   /// <inheritdoc />
@@ -68,6 +74,12 @@ public sealed class CitizenMobilityReportService : ICitizenMobilityReportService
       throw new InvalidOperationException(
         "Repository acceptance result does not match the submitted report identifier.");
     }
+
+    await decisionPipeline
+      .EnsureReviewAsync(
+        acceptance.EvidenceCase,
+        cancellationToken)
+      .ConfigureAwait(false);
 
     return acceptance;
   }
