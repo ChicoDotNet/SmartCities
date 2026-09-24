@@ -20,17 +20,21 @@ public static class SmartCitiesFeatureManagementServiceCollectionExtensions
 
     var townHall =
       new TownHallContext(options.TownHallId);
-    var store =
-      new SqliteNonSensitiveConfigurationStore(
-        options.SqliteConnectionString);
-
     services.AddSingleton(townHall);
     services.AddSingleton<
       INonSensitiveConfigurationStore>(
-        store);
+        _ =>
+          new SqliteNonSensitiveConfigurationStore(
+            options.SqliteConnectionString));
     services.AddSingleton<
       IFeatureFlagService,
       FeatureFlagService>();
+
+    services
+      .AddHealthChecks()
+      .AddCheck<FeatureManagementHealthCheck>(
+        name: "configuration",
+        tags: ["ready"]);
 
     return services;
   }
