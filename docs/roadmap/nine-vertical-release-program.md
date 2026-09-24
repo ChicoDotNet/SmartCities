@@ -336,6 +336,159 @@ Provider-specific types must not escape their adapters.
 
 ---
 
+# Cross-cutting provider-agnostic mobility integration program
+
+This is a transversal capability of V1–V9, **not a tenth vertical**.
+
+Canonical architecture:
+
+```text
+physical world
+  -> observations / datasets
+  -> evidence
+  -> models
+  -> scenarios
+  -> recommendation / decision support
+  -> human authority
+  -> operation
+  -> measured outcome
+```
+
+SmartCities owns public contracts, normalized semantics, provenance, evidence linkage, workflow, comparison, authority, auditability, and citizen/official explanation.
+
+External systems may own sensing, routing, assignment, simulation, CAD/BIM, rail/station engineering, photogrammetry, or other specialized algorithms.
+
+The architectural contract is defined by [ADR 0010](../architecture/0010-provider-agnostic-mobility-integrations.md) and the contributor-facing rules in [docs/integrations](../integrations/README.md).
+
+## Raw sensing material versus derived urban observation
+
+The program distinguishes:
+
+```text
+raw sensing material
+  !=
+derived urban observation
+```
+
+When an outcome can be supported by a derived observation, SmartCities should not retain source video/images or other high-risk raw material.
+
+Examples of useful provider-neutral derived semantics include:
+
+- mobility counts and classifications;
+- direction;
+- speed;
+- occupancy/density;
+- parking occupancy;
+- bounded safety events;
+- observation interval/time;
+- location/geometry;
+- acquisition method;
+- unit;
+- quality/confidence;
+- provenance;
+- privacy classification.
+
+Facial recognition, face matching, biometric identity, identifiable mobility traces, and unrelated surveillance capabilities are outside the normal mobility-domain boundary.
+
+## Aggregated mobility data
+
+The program should support, when required by a vertical:
+
+- origin/destination observations and matrices;
+- volume profiles;
+- speed profiles;
+- route/flow information;
+- temporal and spatial aggregation;
+- mode/class;
+- uncertainty/quality;
+- provenance;
+- privacy classification.
+
+Prefer aggregated information when person-level traces are unnecessary.
+
+## External models, simulations, and engineering artifacts
+
+SmartCities must support two legitimate execution patterns:
+
+```text
+SmartCities scenario
+  -> provider-neutral port
+  -> external execution
+  -> normalized results/artifacts
+  -> evidence/scenario comparison
+```
+
+and:
+
+```text
+externally executed model
+  -> result/artifact import
+  -> normalized SmartCities references
+  -> evidence/scenario comparison
+```
+
+Provider/model/version, assumptions, uncertainty, provenance, generated artifacts, and result semantics must remain explicit.
+
+Specialized engineering artifacts are referenced and consumed; proprietary CAD/BIM/rail/station formats are not copied into SmartCities domain contracts.
+
+## Integration mechanisms
+
+Adapters may use the mechanism that best fits the source:
+
+- REST/JSON;
+- CSV/file import;
+- webhook/event ingestion;
+- OGC SensorThings API for heterogeneous IoT observations when appropriate;
+- OGC API – Features for geospatial features when appropriate;
+- GTFS Schedule and GTFS Realtime for transit-specific data.
+
+No standard is forced where its semantic model does not fit.
+
+## Integration rollout by vertical
+
+The provider-agnostic capability is paid for by concrete product needs:
+
+| Vertical | Integration responsibility |
+| --- | --- |
+| V1 | Routing port, GTFS Schedule, pedestrian/network inputs, real routing adapter. |
+| V2 | GTFS Realtime and operational transit sources. |
+| V3 | External model/simulation lifecycle, deterministic provider, execution/import paths, normalized results/artifacts. |
+| V4 | Introduce only the minimum source-neutral safety/event observations required by Safety Cases. |
+| V5 | Generalize urban observations and mobility datasets from proven needs; add synthetic sensing, counts, video-derived observations, parking occupancy, OD/flow datasets, public indicators, and standards-based ingestion where it fits. |
+| V6 | Reuse V5 observations plus routing/safety for cycling and shared mobility. |
+| V7 | Reuse observations/GIS for public-space and public-life measurements. |
+| V8 | Reuse journey/place/accessibility information; no new provider infrastructure by default. |
+| V9 | Reference/version external engineering, field-survey, photogrammetry, and asset artifacts where required by operations. |
+
+This preserves the program rule against speculative horizontal infrastructure.
+
+## Commercial compatibility backlog
+
+Commercial-product compatibility is a backlog of **candidate adapters**, not a support claim.
+
+Examples include count/sensing platforms, video-analytics platforms, transportation-model suites, pedestrian/station simulators, and rail/engineering tools. Candidate families may include products such as Eco-Counter, intuVision, Bentley/CUBE, LEGION, and OpenRail.
+
+Before any such adapter is marked Implemented:
+
+1. current official documentation or a lawful customer integration contract must be available;
+2. the actual API/file/event/SDK mechanism must be confirmed;
+3. licensing and redistribution restrictions must be reviewed;
+4. credentials and non-redistributable proprietary material must remain outside the public repository;
+5. the adapter must pass the reusable SmartCities contract suite;
+6. semantic gaps and supported versions must be documented.
+
+When access is insufficient, work is limited to generic contracts, deterministic simulations, synthetic fixtures, mapping guidance, or a clearly labeled skeleton.
+
+Compatibility status must use explicit labels:
+
+- Implemented;
+- Simulated;
+- Documented;
+- Proposed;
+- Blocked by external access.
+
+---
+
 # Demo Town
 
 A synthetic distributable municipality should grow with the nine verticals.
@@ -727,19 +880,21 @@ An official can:
 1. Scenario/version domain.
 2. Baseline/intervention model.
 3. Assumption/constraint/provenance contracts.
-4. Demand-model port + deterministic model.
-5. Demand dataset/import boundary.
-6. Traffic-model port.
-7. Microsimulation port.
-8. First real microsimulation adapter.
-9. Simulation job lifecycle.
-10. Result normalization.
-11. Appraisal port.
-12. Technical/economic/social/environmental indicators.
+4. Provider-neutral model descriptor plus external execution/import boundary.
+5. Deterministic external simulation provider for lifecycle TDD.
+6. Demand-model port + deterministic model.
+7. Demand dataset/import boundary.
+8. Traffic/microsimulation ports.
+9. First real open reference simulation adapter where technically justified.
+10. Simulation job lifecycle, cancellation, idempotency, and failure semantics.
+11. Normalized results/artifacts plus Evidence Hub linkage.
+12. Appraisal port and technical/economic/social/environmental indicators.
 13. Official Scenario Workspace.
 14. Citizen scenario comparison.
-15. Build-your-own model/simulation adapter docs.
-16. Reproducibility E2E and MVP promotion.
+15. Build-your-own model/simulation provider documentation and replay fixtures.
+16. Reproducibility E2E, external-result import proof, and MVP promotion.
+
+Commercial model suites remain optional adapters and cannot define the scenario domain.
 
 ---
 
@@ -786,16 +941,19 @@ A Traffic Impact Case can represent:
 
 1. Safety Case domain.
 2. Crash/hazard evidence contract.
-3. Spatial aggregation/hotspots.
-4. Safety/risk indicators.
-5. Citizen hazard-report extension.
-6. Official hotspot queue/map.
-7. Intervention lifecycle.
-8. Before/after measurement.
-9. Traffic Impact Case.
-10. Mitigation commitments and verification.
-11. External safety/data adapter guide.
-12. E2E and MVP promotion.
+3. Smallest source-neutral safety/event observation contract required by the Safety Case.
+4. Spatial aggregation/hotspots.
+5. Safety/risk indicators.
+6. Citizen hazard-report extension.
+7. Official hotspot queue/map.
+8. Intervention lifecycle.
+9. Before/after measurement.
+10. Traffic Impact Case.
+11. Mitigation commitments and verification.
+12. External safety/data adapter guide and replay fixtures.
+13. E2E and MVP promotion.
+
+Do not generalize a universal sensor platform here. V5 extracts/generalizes only after V4 and earlier verticals provide concrete reuse evidence.
 
 ---
 
@@ -834,18 +992,24 @@ Officials can ingest/catalog/validate/reuse datasets such as:
 
 ## Planned increments
 
-1. Dataset catalog.
-2. Provenance/licensing metadata.
-3. Data-quality dimensions.
-4. Spatial/temporal coverage.
-5. `IMobilityDataSource`.
-6. Generic tabular importer.
-7. OD matrix contracts.
-8. Survey/stated-preference contracts.
-9. OGC-facing geospatial collections.
-10. Official data-quality workspace.
-11. Citizen Open Indicators.
-12. Integration cookbook and MVP promotion.
+1. Observation/dataset catalog with provenance, licensing, privacy classification, and quality dimensions.
+2. Canonical mobility-observation contract generalized from actual V1–V4 needs.
+3. Deterministic synthetic sensor adapter + reusable ingestion/normalization contract tests.
+4. PostgreSQL/SQL Server persistence and bounded query/read model where justified by the observable workflow.
+5. REST/JSON, CSV/file, and webhook ingestion patterns with duplicate/idempotency and timestamp/unit normalization semantics.
+6. OGC SensorThings compatibility adapter when the observation semantics fit.
+7. Count-provider compatibility slice using synthetic provider payloads; evaluate a real commercial adapter separately only after official documentation/licensing review.
+8. Video-derived traffic observation slice: classified counts, speed, direction, occupancy/density, and bounded safety events converging on the same canonical contracts without storing raw video.
+9. Parking occupancy mapping into the existing Parking, Curb & Urban Freight capability plus evidence/indicator query.
+10. OD/flow/volume/speed profile contracts with explicit aggregation, uncertainty, geography, mode, and privacy semantics.
+11. Synthetic aggregated mobility-dataset ingestion and scenario/evidence consumption.
+12. OGC API – Features boundary for geospatial collections where appropriate.
+13. Survey/stated-preference and field-observation compatibility.
+14. Official data-quality/provenance workspace.
+15. Citizen Open Indicators/public-display/API path consuming approved SmartCities contracts rather than source providers.
+16. Build-your-own mobility sensor/data adapter tutorials, replay fixtures, real E2E evidence, and MVP promotion.
+
+The Observatory remains the deliberate point where repeated needs are generalized. It is not permission to build a speculative data lake.
 
 ---
 
@@ -1013,12 +1177,13 @@ asset
 1. Field Asset contract.
 2. Inspection/checklist domain.
 3. Evidence attachment/provenance.
-4. Commissioning lifecycle.
-5. Field-friendly official UX.
-6. Photogrammetry/reference linkage.
-7. Citizen-visible operational status.
-8. Equipment/vendor adapter cookbook.
-9. E2E and MVP promotion.
+4. External engineering/model artifact reference with source-system, version, geometry/scenario/asset linkage, and privacy/licensing metadata.
+5. Commissioning lifecycle.
+6. Field-friendly official UX.
+7. Photogrammetry/reference linkage.
+8. Citizen-visible operational status.
+9. Equipment/engineering-provider adapter cookbook with synthetic examples and explicit compatibility states.
+10. E2E and MVP promotion.
 
 ## Specialized training
 
@@ -1248,13 +1413,13 @@ The estimates below are intentionally ranges of coherent engineering increments,
 | V1 Access to the City | 14–16 |
 | V2 Public Transport & Multimodal | 10–12 |
 | V3 Scenario & Investment Lab | 14–16 |
-| V4 Road Safety & Traffic Impact | 10–12 |
-| V5 Mobility Data Observatory | 10–12 |
+| V4 Road Safety & Traffic Impact | 11–13 |
+| V5 Mobility Data Observatory | 14–16 |
 | V6 Cycling & Micromobility | 8–10 |
 | V7 Public Space & Public Life | 8–10 |
 | V8 Urban Wayfinding | 7–9 |
-| V9 Field Survey & Asset Operations | 7–9 |
-| **Approximate total** | **89–108** |
+| V9 Field Survey & Asset Operations | 8–10 |
+| **Approximate total** | **95–114** |
 
 Documentation/integration-DX work is included inside the vertical ranges rather than treated as an optional separate phase.
 
@@ -1326,17 +1491,21 @@ The currently intended execution sequence is:
 
 ## Step 0
 
-Certify the current `dev` platform baseline.
+Merge and certify the provider-agnostic integration architecture/roadmap documentation so the stable baseline records the intended external-system boundary before V1 starts.
 
 ## Step 1
 
-Promote the current F3 + Administration platform baseline from `dev` to `main`.
+Certify the resulting exact `dev` platform baseline.
 
 ## Step 2
 
-Perform the required content-neutral `main -> dev` synchronization.
+Promote the current F3 + Administration platform baseline from `dev` to `main`.
 
 ## Step 3
+
+Perform the required content-neutral `main -> dev` synchronization.
+
+## Step 4
 
 Start:
 
@@ -1347,11 +1516,13 @@ Product Contract + ADR + documentation skeleton
 + urban-accessibility feature registration
 ```
 
-## Step 4
+## Step 5
 
-Before freezing V1 integration choices, review the integration backlog and candidate external systems.
+Start V1 implementation from the synchronized `dev` state. Routing/GTFS contracts remain V1-specific; generic sensing/dataset infrastructure stays deferred until a vertical proves it is required.
 
-New integration discoveries should be added to this roadmap or linked integration documents before implementation so architectural choices remain explicit rather than tribal.
+## Step 6
+
+Before implementing any commercial adapter, re-check current official documentation, access mechanisms, version support, and licensing. Record the compatibility state without overclaiming.
 
 ---
 
