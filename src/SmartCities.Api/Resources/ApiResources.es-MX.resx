@@ -210,4 +210,18 @@
   <data name="administration.whitelist.noPermission" xml:space="preserve"><value>Tu identidad no tiene permiso para consultar o modificar la lista de acceso administrativo.</value></data>
   <data name="administration.whitelist.bootstrapHint" xml:space="preserve"><value>Agrega como primera regla la identidad o dominio que administrará este Ayuntamiento. La sesión bootstrap perderá acceso administrativo inmediatamente después de guardarla.</value></data>
   <data name="administration.genericError" xml:space="preserve"><value>No se pudo completar la solicitud administrativa. Actualiza el estado autoritativo e inténtalo de nuevo.</value></data>
+  <data name="administration.grants.title" xml:space="preserve"><value>Asignaciones de autorización</value></data>
+  <data name="administration.grants.intro" xml:space="preserve"><value>Asigna roles y permisos persistentes de SmartCities a identidades municipales admitidas por dominio, correo o subject canónico.</value></data>
+  <data name="administration.grants.targetKind" xml:space="preserve"><value>Tipo de destino</value></data>
+  <data name="administration.grants.targetValue" xml:space="preserve"><value>Valor de destino</value></data>
+  <data name="administration.grants.grantKind" xml:space="preserve"><value>Tipo de asignación</value></data>
+  <data name="administration.grants.grantValue" xml:space="preserve"><value>Rol o permiso</value></data>
+  <data name="administration.grants.kind.authorityRole" xml:space="preserve"><value>Rol de autoridad</value></data>
+  <data name="administration.grants.kind.permission" xml:space="preserve"><value>Permiso</value></data>
+  <data name="administration.grants.add" xml:space="preserve"><value>Agregar asignación</value></data>
+  <data name="administration.grants.adding" xml:space="preserve"><value>Agregando…</value></data>
+  <data name="administration.grants.remove" xml:space="preserve"><value>Quitar</value></data>
+  <data name="administration.grants.empty" xml:space="preserve"><value>No hay asignaciones persistentes de autorización configuradas.</value></data>
+  <data name="administration.grants.noPermission" xml:space="preserve"><value>Tu identidad no tiene permiso para administrar asignaciones persistentes de autorización.</value></data>
+  <data name="administration.grants.bootstrapHint" xml:space="preserve"><value>Antes de agregar la primera regla de whitelist, preasigna permisos administrativos al dominio, correo o subject canónico que administrará este Ayuntamiento.</value></data>
 </root>

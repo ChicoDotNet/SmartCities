@@ -1,3 +1,5 @@
+using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Application.Administration;
 using SmartCities.Identity;
 
 namespace SmartCities.Api.Identity;
@@ -47,8 +49,13 @@ public sealed class SmartCitiesAuthenticationCanonicalizationMiddleware
 
     if (canonicalFeature is not null)
     {
+      var effective = await ApplyPersistedGrantsAsync(
+          context,
+          canonicalFeature.Identity)
+        .ConfigureAwait(false);
+
       context.User =
-        canonicalFeature.Identity.ToClaimsPrincipal(
+        effective.ToClaimsPrincipal(
           canonicalFeature.AuthenticationScheme);
 
       await next(context).ConfigureAwait(false);
@@ -93,10 +100,67 @@ public sealed class SmartCitiesAuthenticationCanonicalizationMiddleware
       return;
     }
 
+    canonicalIdentity = await ApplyPersistedGrantsAsync(
+        context,
+        canonicalIdentity)
+      .ConfigureAwait(false);
+
     context.User = canonicalIdentity.ToClaimsPrincipal(
       feature.ProviderContext.AuthenticationScheme);
 
     await next(context).ConfigureAwait(false);
+  }
+
+  private async Task<CanonicalIdentity> ApplyPersistedGrantsAsync(
+    HttpContext context,
+    CanonicalIdentity identity)
+  {
+    var grantService = context.RequestServices
+      .GetService<IAdministrationAuthorizationGrantService>();
+
+    if (grantService is null)
+    {
+      return identity;
+    }
+
+    AdministrationEffectiveGrants grants;
+
+    try
+    {
+      grants = await grantService
+        .GetEffectiveAsync(
+          AdministrationIdentity.Create(
+            identity.SubjectId,
+            identity.EmailAddress),
+          context.RequestAborted)
+        .ConfigureAwait(false);
+    }
+    catch (Exception exception)
+      when (exception is not OperationCanceledException)
+    {
+      AuthenticationCanonicalizationLog.PersistedGrantsUnavailable(
+        logger,
+        exception);
+
+      return identity;
+    }
+
+    if (grants.AuthorityRoles.Count == 0
+      && grants.Permissions.Count == 0)
+    {
+      return identity;
+    }
+
+    return CanonicalIdentity.Create(
+      identity.IdentityProvider,
+      identity.SubjectId,
+      identity.AuthorityRoles
+        .Concat(grants.AuthorityRoles)
+        .Distinct(StringComparer.Ordinal),
+      identity.Permissions
+        .Concat(grants.Permissions)
+        .Distinct(StringComparer.Ordinal),
+      identity.EmailAddress);
   }
 }
 
@@ -119,5 +183,14 @@ internal static partial class AuthenticationCanonicalizationLog
   internal static partial void Rejected(
     ILogger logger,
     string authenticationScheme,
+    Exception exception);
+
+  [LoggerMessage(
+    EventId = 1202,
+    EventName = "PersistedAuthorizationGrantsUnavailable",
+    Level = LogLevel.Warning,
+    Message = "Persisted Town Hall authorization grants could not be resolved; only provider/session canonical grants remain effective for this request.")]
+  internal static partial void PersistedGrantsUnavailable(
+    ILogger logger,
     Exception exception);
 }

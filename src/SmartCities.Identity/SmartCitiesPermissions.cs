@@ -36,4 +36,10 @@ public static class SmartCitiesPermissions
   /// </summary>
   public const string ManageAdministrationWhitelist =
     "administration-whitelist.manage";
+
+  /// <summary>
+  /// Allows an admitted Town Hall administrator to assign persisted canonical roles and permissions.
+  /// </summary>
+  public const string ManageAdministrationGrants =
+    "administration-grants.manage";
 }

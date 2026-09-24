@@ -86,6 +86,24 @@ All admitted administrators can view the public feature snapshot. A toggle is en
 
 The backend policy remains authoritative and can still return 403. An operational `manage` grant never authorizes feature configuration.
 
+## Persisted authorization grants
+
+Town Hall Administration can persist canonical roles and permissions independently of static IdP mappings.
+
+Grant targets use the same portable selectors as admission:
+
+- `email-domain`;
+- `email`;
+- `canonical-subject`.
+
+Grant values are restricted to a code-owned catalog. Arbitrary role or permission strings cannot be persisted through Administration.
+
+Persisted grants are applied **per request after provider/session canonicalization**. They are not written into browser-local authority state. Consequently, adding or removing a grant takes effect on the next request without requiring a new login.
+
+Persisted grants are effective only while the identity is currently admitted by the Administration whitelist. Provider-derived canonical grants remain independent and additive.
+
+Bootstrap receives `administration-grants.manage` while the whitelist is empty, allowing the initial operator to pre-provision grants for the future municipal domain/email/subject before adding the first whitelist rule. The first whitelist record still revokes bootstrap admission immediately.
+
 ## Administration whitelist
 
 Whitelist contents are loaded only when the current canonical session has:
@@ -116,7 +134,7 @@ This increment is deliberately an Administration v1 shell. It does not introduce
 
 - provider branding/wrappers;
 - user directory browsing;
-- role/permission assignment;
+- external directory synchronization;
 - audit-log UI;
 - remote centralized configuration;
 - secret management.
