@@ -35,6 +35,13 @@ public static class SmartCitiesAuthenticationProviderExtensions
     var configured =
       SmartCitiesAuthenticationProviderConfiguration.Read(
         configuration);
+    var bootstrapSessionEnabled =
+      !string.IsNullOrWhiteSpace(
+        configuration[
+          "SmartCities:Administration:Bootstrap:Password"]);
+    var sessionEnabled =
+      configured.RequiresSession
+      || bootstrapSessionEnabled;
     var descriptors =
       new List<SmartCitiesAuthenticationProviderDescriptor>();
 
@@ -86,7 +93,7 @@ public static class SmartCitiesAuthenticationProviderExtensions
             };
         });
 
-    if (configured.RequiresSession)
+    if (sessionEnabled)
     {
       authentication.AddCookie(
         SmartCitiesAuthenticationSchemes.Session,
@@ -153,7 +160,7 @@ public static class SmartCitiesAuthenticationProviderExtensions
     services.Replace(
       ServiceDescriptor.Singleton(
         new SmartCitiesAuthenticationRouting(
-          configured.RequiresSession,
+          sessionEnabled,
           configured.Local is not null)));
     services.AddSingleton(
       new SmartCitiesAuthenticationProviderRegistry(
