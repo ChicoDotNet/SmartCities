@@ -41,6 +41,38 @@ public sealed class ConfigurableAuthenticationProviderTests
   }
 
   [Fact]
+  public async Task Bootstrap_credential_alone_registers_the_shared_browser_session_without_a_real_provider()
+  {
+    var services = new ServiceCollection();
+    services.AddLogging();
+
+    services.AddSmartCitiesAuthenticationProviders(
+      BuildConfiguration(
+        new Dictionary<string, string?>
+        {
+          ["SmartCities:Administration:Bootstrap:Password"] =
+            "bootstrap-password-16-plus",
+        }));
+
+    using var provider = services.BuildServiceProvider();
+    var registry = provider.GetRequiredService<
+      SmartCitiesAuthenticationProviderRegistry>();
+    var schemes = provider.GetRequiredService<
+      IAuthenticationSchemeProvider>();
+
+    Assert.Empty(registry.Providers);
+
+    var registered = await schemes.GetAllSchemesAsync();
+
+    Assert.Contains(
+      registered,
+      item => item.Name == SmartCitiesAuthenticationSchemes.Session);
+    Assert.DoesNotContain(
+      registered,
+      item => item.Name == SmartCitiesAuthenticationSchemes.LocalJwt);
+  }
+
+  [Fact]
   public async Task Complete_local_configuration_registers_cookie_and_jwt_in_parallel()
   {
     var services = new ServiceCollection();
