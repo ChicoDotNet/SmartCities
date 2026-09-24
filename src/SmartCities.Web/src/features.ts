@@ -38,6 +38,77 @@ export async function loadFeatureFlagSnapshot(
   return validateSnapshot(payload);
 }
 
+export async function setFeatureFlag(
+  featureId: string,
+  enabled: boolean,
+  fetcher: FeatureFetchLike = fetch,
+): Promise<FeatureFlagState> {
+  const normalizedFeatureId = featureId.trim();
+
+  if (!normalizedFeatureId) {
+    throw new Error(
+      'feature_flag_identifier_invalid',
+    );
+  }
+
+  const response = await fetcher(
+    `/api/system/features/${encodeURIComponent(normalizedFeatureId)}`,
+    {
+      method: 'PUT',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        enabled,
+      }),
+    },
+  );
+
+  if (response.status === 401) {
+    throw new Error(
+      'feature_flag_unauthenticated',
+    );
+  }
+
+  if (response.status === 403) {
+    throw new Error(
+      'feature_flag_forbidden',
+    );
+  }
+
+  if (response.status === 404) {
+    throw new Error(
+      'feature_flag_not_found',
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      'feature_flag_update_failed',
+    );
+  }
+
+  const payload = await response.json() as unknown;
+
+  if (
+    !isRecord(payload)
+    || stringValue(payload.featureId) !== normalizedFeatureId
+    || typeof payload.enabled !== 'boolean'
+  ) {
+    throw new Error(
+      'feature_flag_contract_invalid',
+    );
+  }
+
+  return {
+    featureId: normalizedFeatureId,
+    enabled: payload.enabled,
+  };
+}
+
 export function isFeatureEnabled(
   snapshot: FeatureFlagSnapshot,
   featureId: string,
