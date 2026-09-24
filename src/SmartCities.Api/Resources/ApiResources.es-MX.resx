@@ -168,4 +168,7 @@
   <data name="citizen.mobilityOutcome.explanation.rejected" xml:space="preserve">
     <value>Una persona autorizada concluyó la revisión. La propuesta fue rechazada como disposición final.</value>
   </data>
+  <data name="citizen.mobilityOutcome.explanation.deferred" xml:space="preserve">
+    <value>Una persona autorizada concluyó la revisión y dejó diferida la decisión final para una consideración posterior.</value>
+  </data>
 </root>
