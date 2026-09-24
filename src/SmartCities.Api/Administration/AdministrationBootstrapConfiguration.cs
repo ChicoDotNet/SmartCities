@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SmartCities.Application.Administration;
 
 namespace SmartCities.Api.Administration;
 
@@ -38,8 +39,6 @@ public sealed class AdministrationBootstrapConfiguration
 
     if (password is not null)
     {
-      password = password.Trim();
-
       if (password.Length < 16)
       {
         throw new InvalidOperationException(
