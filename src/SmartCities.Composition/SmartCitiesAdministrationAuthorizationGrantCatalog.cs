@@ -20,6 +20,7 @@ internal sealed class SmartCitiesAdministrationAuthorizationGrantCatalog
       SmartCitiesPermissions.ConfigureFeatureFlags,
       SmartCitiesPermissions.ManageAdministrationWhitelist,
       SmartCitiesPermissions.ManageAdministrationGrants,
+      SmartCitiesPermissions.ReadAdministrationAudit,
     }
     .Concat(
       SmartCitiesFeatures.All.SelectMany(
