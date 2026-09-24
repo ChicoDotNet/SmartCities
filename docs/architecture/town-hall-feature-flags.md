@@ -82,8 +82,11 @@ The initial registry contains:
 | Feature ID | Default | Purpose |
 | --- | --- | --- |
 | `citizen-mobility` | enabled | F3 mobility report → reviewed outcome vertical slice |
+| `urban-accessibility` | disabled | V1 Access to the City / Urban Accessibility under construction |
 
-The default is enabled to preserve backward compatibility with the already-certified F3 deployment. Every future vertical slice must register an explicit default.
+`citizen-mobility` remains enabled by default to preserve backward compatibility with the certified F3 deployment.
+
+New verticals register an explicit default. `urban-accessibility` is intentionally disabled while V1 has no executable citizen/official path; registration makes its configuration and canonical permission surface available without claiming the vertical is usable.
 
 Persisted overrides use the generic non-sensitive store, scoped by Town Hall.
 
@@ -114,11 +117,14 @@ feature-flags.manage
 <feature-id>.manage
 ```
 
-For citizen mobility:
+For example:
 
 ```text
 feature-flags.manage
 citizen-mobility.manage
+
+feature-flags.manage
+urban-accessibility.manage
 ```
 
 This pair means the authority may enter the operational surface for that slice. It does not replace finer permissions. For example, finalizing a citizen mobility review additionally requires:
@@ -134,11 +140,14 @@ feature-flags.config
 <feature-id>.config
 ```
 
-For citizen mobility:
+For example:
 
 ```text
 feature-flags.config
 citizen-mobility.config
+
+feature-flags.config
+urban-accessibility.config
 ```
 
 The endpoint:
