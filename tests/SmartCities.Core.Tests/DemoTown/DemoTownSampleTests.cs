@@ -97,12 +97,12 @@ public sealed class DemoTownSampleTests
 
     Assert.Equal(
       3,
-      zones.Count);
+      zones.Length);
     Assert.Equal(
       4,
-      pointsOfInterest.Count);
+      pointsOfInterest.Length);
     Assert.True(
-      pedestrianLinks.Count >= 4);
+      pedestrianLinks.Length >= 4);
 
     var zoneIds =
       zones
@@ -380,12 +380,12 @@ public sealed class DemoTownSampleTests
       agencies);
     Assert.Equal(
       3,
-      stops.Count);
+      stops.Length);
     Assert.Single(
       routes);
     Assert.Equal(
       2,
-      trips.Count);
+      trips.Length);
     Assert.Single(
       calendars);
     Assert.Single(
