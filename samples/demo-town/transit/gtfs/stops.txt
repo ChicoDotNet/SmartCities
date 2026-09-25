@@ -1,0 +1,4 @@
+stop_id,stop_name,stop_lat,stop_lon
+stop-north,North Stop,20.0100,-100.0000
+stop-central,Central Stop,20.0000,-100.0000
+stop-south,South Stop,19.9900,-100.0000
