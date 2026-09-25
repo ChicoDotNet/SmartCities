@@ -66,9 +66,17 @@ public sealed class CityContextTests
   }
 
   [Fact]
-  public void Provenance_rejects_missing_required_source_identity()
+  public void Provenance_rejects_missing_required_source_identity_or_blank_version()
   {
-    var retrievedAt = DateTimeOffset.UtcNow;
+    var retrievedAt =
+      new DateTimeOffset(
+        2026,
+        9,
+        24,
+        18,
+        0,
+        0,
+        TimeSpan.Zero);
 
     Assert.Throws<ArgumentException>(
       () => CityContextProvenance.Create(
@@ -82,6 +90,13 @@ public sealed class CityContextTests
         "municipal-open-data",
         " ",
         null,
+        null,
+        retrievedAt));
+    Assert.Throws<ArgumentException>(
+      () => CityContextProvenance.Create(
+        "municipal-open-data",
+        "zones",
+        " ",
         null,
         retrievedAt));
   }
@@ -182,6 +197,17 @@ public sealed class CityContextTests
     Assert.Equal(
       "demo-town:network:01",
       network.NetworkReference);
+  }
+
+  [Fact]
+  public void Mobility_network_reference_rejects_undefined_kind()
+  {
+    Assert.Throws<ArgumentOutOfRangeException>(
+      () => MobilityNetworkReference.Create(
+        "network-01",
+        (MobilityNetworkKind)999,
+        "demo-town:network:01",
+        Provenance("networks")));
   }
 
   [Fact]
