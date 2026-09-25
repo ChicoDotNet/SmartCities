@@ -134,6 +134,71 @@ public sealed class DemoTownSampleTests
   }
 
   [Fact]
+  public void Demo_town_manifest_references_existing_local_boundary_and_network_resources()
+  {
+    using var manifest =
+      OpenJson("city-context.json");
+
+    var root =
+      manifest.RootElement;
+    var boundaryReference =
+      RequiredString(
+        root,
+        "boundaryReference");
+    var boundaryParts =
+      boundaryReference.Split(
+        '#',
+        2);
+
+    Assert.Equal(
+      2,
+      boundaryParts.Length);
+    Assert.True(
+      File.Exists(
+        Path.Combine(
+          SampleRoot,
+          boundaryParts[0])));
+
+    var boundaryFeatures =
+      ReadFeatures(
+        boundaryParts[0],
+        "Polygon");
+    var expectedBoundaryId =
+      boundaryParts[1]
+        .Replace(
+          "feature=",
+          string.Empty,
+          StringComparison.Ordinal);
+
+    Assert.Contains(
+      boundaryFeatures,
+      feature =>
+        RequiredString(
+          feature.GetProperty("properties"),
+          "boundaryId")
+        == expectedBoundaryId);
+
+    foreach (var network in root
+      .GetProperty("networks")
+      .EnumerateArray())
+    {
+      var reference =
+        RequiredString(
+          network,
+          "reference");
+      var path =
+        Path.Combine(
+          SampleRoot,
+          reference);
+
+      Assert.True(
+        File.Exists(path)
+        || Directory.Exists(path),
+        $"Demo Town network reference '{reference}' does not resolve inside the sample.");
+    }
+  }
+
+  [Fact]
   public void Demo_town_city_context_maps_to_the_v1_3_domain_contracts()
   {
     using var manifest =
