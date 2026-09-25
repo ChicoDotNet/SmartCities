@@ -638,12 +638,17 @@ Documentation skeleton is created here, not at the end.
 
 Introduce only the primitives required by V1:
 
-- coordinate;
+- point;
 - bounding box;
-- line/path reference;
+- line/path;
 - zone/polygon reference;
 - CRS conventions;
+- coordinate validation;
 - distance units/semantics.
+
+Canonical executable semantics are documented in [Urban Accessibility geospatial primitives](../architecture/urban-accessibility-geospatial-primitives.md).
+
+This increment adds no GIS SDK, map, routing engine, polygon engine, spatial persistence, coordinate transform, or distance calculator.
 
 ### V1.3 — City Context v1
 
