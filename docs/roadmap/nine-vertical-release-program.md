@@ -690,12 +690,20 @@ V1.4 does not implement routing or production GTFS ingestion.
 
 Define:
 
-- capabilities;
-- query/result contract;
-- failure taxonomy;
-- cancellation;
-- time semantics;
-- accessibility-known/unknown states.
+- explicit point-to-point query/result contract;
+- walking/public-transport journey modes;
+- journey legs and transfer semantics;
+- capability discovery;
+- execution timeout and caller cancellation;
+- UTC routing-time semantics;
+- path/network distance constraints;
+- engine/adapter/source provenance;
+- provider-neutral failure taxonomy;
+- accessibility known/limited/inaccessible/unknown states.
+
+Canonical executable semantics are documented in [Urban Accessibility routing port](../architecture/urban-accessibility-routing-port.md).
+
+Destination-category resolution remains outside the routing engine. V1.5 adds no routing algorithm or provider adapter.
 
 ### V1.6 — Deterministic routing engine
 
