@@ -333,3 +333,24 @@ The repository tests load the distributed sample artifacts and reconstruct a val
 GeoJSON and GTFS remain external fixture formats. Their DTO/file models do not become SmartCities domain contracts.
 
 V1.4 deliberately implements no routing, production GTFS ingestion, API, UI, persistence, map rendering, network topology, or real municipal data.
+
+## V1.5 — Accessibility routing engine port
+
+V1.5 introduces the provider-neutral `IAccessibilityRoutingEngine` boundary and normalized routing contracts for:
+
+- explicit point-to-point queries;
+- walking/public-transport modes;
+- departure-time semantics;
+- execution timeout and caller cancellation;
+- capability discovery;
+- journeys/legs/transfers;
+- network/path distance semantics;
+- accessibility known/limited/inaccessible/unknown states;
+- engine/adapter/source provenance;
+- expected provider-neutral failure categories.
+
+The canonical contract is documented in [Urban Accessibility routing port](../architecture/urban-accessibility-routing-port.md).
+
+Destination categories remain a City Context/application concern: the routing engine receives explicit destination points rather than municipal taxonomy.
+
+V1.5 defines no routing implementation and claims no compatibility with OpenTripPlanner or any other engine.
