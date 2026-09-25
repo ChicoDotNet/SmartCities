@@ -1,0 +1,23 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "boundaryId": "demo-town-boundary"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-100.0200, 19.9800],
+            [-99.9800, 19.9800],
+            [-99.9800, 20.0200],
+            [-100.0200, 20.0200],
+            [-100.0200, 19.9800]
+          ]
+        ]
+      }
+    }
+  ]
+}

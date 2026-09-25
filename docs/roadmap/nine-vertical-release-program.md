@@ -666,15 +666,25 @@ Canonical executable semantics are documented in [Urban Accessibility City Conte
 
 This increment adds no persistence, GIS analysis, GTFS ingestion, network topology, routing, or Demo Town data.
 
-### V1.4 — Demo Town geography
+### V1.4 — Demo Town v1
 
-Create the first usable Demo Town:
+Create the first executable synthetic Demo Town fixture:
 
 - municipal boundary;
 - zones;
-- sample destinations;
-- network references;
+- destination categories and sample POIs;
+- pedestrian network reference/data;
+- public-transport network and stops;
+- tiny standards-based GTFS Schedule fixture;
+- deterministic provenance/version metadata;
+- executable sample consistency tests;
 - documentation.
+
+The fixture lives under [`samples/demo-town/`](../../samples/demo-town/README.md).
+
+GeoJSON and GTFS are fixture/interchange formats only; their provider/file-specific representations do not enter SmartCities domain contracts.
+
+V1.4 does not implement routing or production GTFS ingestion.
 
 ### V1.5 — `IAccessibilityRoutingEngine`
 

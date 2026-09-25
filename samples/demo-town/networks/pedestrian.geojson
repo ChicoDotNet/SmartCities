@@ -1,0 +1,70 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "linkId": "walk-north-central-west"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-100.0050, 20.0140],
+          [-100.0050, 20.0000]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "linkId": "walk-central-south-west"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-100.0050, 20.0000],
+          [-100.0050, 19.9860]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "linkId": "walk-north-central-east"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-99.9950, 20.0140],
+          [-99.9950, 20.0000]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "linkId": "walk-central-south-east"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-99.9950, 20.0000],
+          [-99.9950, 19.9860]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "linkId": "walk-central-crossing"
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-100.0050, 20.0000],
+          [-99.9950, 20.0000]
+        ]
+      }
+    }
+  ]
+}

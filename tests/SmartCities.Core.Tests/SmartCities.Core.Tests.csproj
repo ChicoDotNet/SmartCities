@@ -13,4 +13,11 @@
   <ItemGroup>
     <ProjectReference Include="../../src/SmartCities.Core/SmartCities.Core.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../../samples/demo-town/**/*">
+      <Link>samples/demo-town/%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>

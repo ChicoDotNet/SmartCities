@@ -1,0 +1,41 @@
+{
+  "townId": "demo-town",
+  "version": "v1",
+  "dataClassification": "synthetic",
+  "redistributable": true,
+  "crs": {
+    "authority": "EPSG",
+    "code": "4326"
+  },
+  "provenance": {
+    "sourceSystem": "smartcities-demo-town",
+    "sourceReference": "samples/demo-town",
+    "sourceVersion": "v1",
+    "effectiveAt": "2026-01-01T00:00:00Z",
+    "retrievedAt": "2026-01-01T00:00:00Z"
+  },
+  "boundaryReference": "geography/boundary.geojson#feature=demo-town-boundary",
+  "destinationCategories": [
+    {
+      "categoryId": "healthcare"
+    },
+    {
+      "categoryId": "education"
+    },
+    {
+      "categoryId": "public-services"
+    }
+  ],
+  "networks": [
+    {
+      "networkId": "pedestrian-network",
+      "kind": "Pedestrian",
+      "reference": "networks/pedestrian.geojson"
+    },
+    {
+      "networkId": "transit-network",
+      "kind": "PublicTransport",
+      "reference": "transit/gtfs"
+    }
+  ]
+}

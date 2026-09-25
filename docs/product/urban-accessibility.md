@@ -312,3 +312,24 @@ V1.3 adds the smallest immutable city-context vocabulary required for citizen de
 Canonical semantics and limitations are documented in [Urban Accessibility City Context v1](../architecture/urban-accessibility-city-context.md).
 
 V1.3 deliberately adds no persistence, API, GIS analysis, GTFS ingestion, network topology, routing, or Demo Town data. Unknown source version/effective time remains explicitly unknown rather than fabricated.
+
+## V1.4 — Demo Town v1
+
+V1.4 provides the first executable synthetic municipality fixture under [`samples/demo-town/`](../../samples/demo-town/README.md).
+
+It contains:
+
+- one synthetic municipal boundary;
+- three synthetic zones;
+- healthcare, education, and public-services destination categories;
+- four synthetic POIs;
+- a small GeoJSON pedestrian line network;
+- three public-transport stops;
+- one synthetic bus route with two scheduled trips in GTFS Schedule;
+- deterministic source/version/effective/retrieval metadata.
+
+The repository tests load the distributed sample artifacts and reconstruct a valid V1.3 `CityContextSnapshot`, while separately checking basic GTFS referential consistency.
+
+GeoJSON and GTFS remain external fixture formats. Their DTO/file models do not become SmartCities domain contracts.
+
+V1.4 deliberately implements no routing, production GTFS ingestion, API, UI, persistence, map rendering, network topology, or real municipal data.

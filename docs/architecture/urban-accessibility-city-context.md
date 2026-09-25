@@ -228,15 +228,18 @@ POI/zone/network fixtures in the public repository must remain synthetic or lawf
 
 ### V1.4 — Demo Town
 
-V1.4 can now create reproducible synthetic:
+V1.4 provides the reproducible synthetic [Demo Town fixture](../../samples/demo-town/README.md):
 
 - destination categories;
-- zones;
-- POIs;
-- pedestrian/public-transport network references;
-- transit stops;
+- zones backed by GeoJSON polygon references;
+- POIs backed by GeoJSON points;
+- a pedestrian GeoJSON line network;
+- a public-transport network backed by a tiny GTFS Schedule fixture;
+- transit stops mapped from GTFS into these provider-neutral contracts.
 
-against these contracts.
+The sample test suite reconstructs `CityContextSnapshot` from the distributed artifacts so the sample cannot silently drift away from the domain contracts.
+
+This does not make GeoJSON or GTFS the City Context domain model.
 
 ### V1.5 — Routing port
 

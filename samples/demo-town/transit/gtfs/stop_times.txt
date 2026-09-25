@@ -1,0 +1,7 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence
+trip-southbound,08:00:00,08:00:00,stop-north,1
+trip-southbound,08:10:00,08:10:00,stop-central,2
+trip-southbound,08:20:00,08:20:00,stop-south,3
+trip-northbound,08:30:00,08:30:00,stop-south,1
+trip-northbound,08:40:00,08:40:00,stop-central,2
+trip-northbound,08:50:00,08:50:00,stop-north,3
