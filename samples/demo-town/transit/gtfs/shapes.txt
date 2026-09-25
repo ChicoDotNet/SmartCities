@@ -1,0 +1,7 @@
+shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence
+shape-southbound,20.0100,-100.0000,1
+shape-southbound,20.0000,-100.0000,2
+shape-southbound,19.9900,-100.0000,3
+shape-northbound,19.9900,-100.0000,1
+shape-northbound,20.0000,-100.0000,2
+shape-northbound,20.0100,-100.0000,3
