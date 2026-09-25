@@ -296,3 +296,19 @@ V1.2 implements the small SmartCities-owned geospatial vocabulary required by th
 Canonical semantics and limitations are documented in [Urban Accessibility geospatial primitives](../architecture/urban-accessibility-geospatial-primitives.md).
 
 The increment deliberately adds no GIS library, map, routing behavior, polygon engine, coordinate transformation, spatial persistence, or distance calculation.
+
+## V1.3 — City Context v1
+
+V1.3 adds the smallest immutable city-context vocabulary required for citizen destinations and later official accessibility analysis:
+
+- destination categories;
+- zones backed by external polygon references;
+- points of interest/destinations;
+- pedestrian and public-transport network references;
+- transit stop references;
+- source/version/freshness provenance;
+- referentially consistent `CityContextSnapshot`.
+
+Canonical semantics and limitations are documented in [Urban Accessibility City Context v1](../architecture/urban-accessibility-city-context.md).
+
+V1.3 deliberately adds no persistence, API, GIS analysis, GTFS ingestion, network topology, routing, or Demo Town data. Unknown source version/effective time remains explicitly unknown rather than fabricated.
