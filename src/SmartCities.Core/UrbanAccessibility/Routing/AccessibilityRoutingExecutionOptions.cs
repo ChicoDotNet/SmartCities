@@ -19,7 +19,7 @@ public sealed record AccessibilityRoutingExecutionOptions
     TimeSpan timeout)
   {
     if (timeout <= TimeSpan.Zero
-        || timeout == Timeout.InfiniteTimeSpan)
+        || timeout == System.Threading.Timeout.InfiniteTimeSpan)
     {
       throw new ArgumentOutOfRangeException(
         nameof(timeout),
