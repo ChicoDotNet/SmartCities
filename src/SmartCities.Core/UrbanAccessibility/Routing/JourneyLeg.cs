@@ -119,8 +119,13 @@ public sealed record JourneyLeg
 
     if (mode == JourneyMode.PublicTransport)
     {
-      ArgumentException.ThrowIfNullOrWhiteSpace(
-        transitServiceReference);
+      if (string.IsNullOrWhiteSpace(
+          transitServiceReference))
+      {
+        throw new ArgumentException(
+          "Public-transport legs require a transit service reference.",
+          nameof(transitServiceReference));
+      }
     }
     else if (transitServiceReference is not null)
     {
