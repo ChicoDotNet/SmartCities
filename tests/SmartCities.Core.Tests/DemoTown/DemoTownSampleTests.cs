@@ -490,7 +490,7 @@ public sealed class DemoTownSampleTests
           SampleRoot,
           relativePath)));
 
-  private static IReadOnlyList<JsonElement> ReadFeatures(
+  private static JsonElement[] ReadFeatures(
     string relativePath,
     string expectedGeometryType)
   {
@@ -533,7 +533,7 @@ public sealed class DemoTownSampleTests
     return features;
   }
 
-  private static IReadOnlyList<Dictionary<string, string>> ReadCsv(
+  private static Dictionary<string, string>[] ReadCsv(
     string relativePath)
   {
     var path =
