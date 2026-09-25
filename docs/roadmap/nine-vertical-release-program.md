@@ -656,8 +656,15 @@ Introduce:
 
 - destination/POI categories;
 - municipal zones;
-- network references;
-- source/provenance metadata.
+- points of interest/destinations;
+- pedestrian/public-transport network references;
+- transit stop references;
+- source/version/freshness provenance;
+- immutable snapshot referential integrity.
+
+Canonical executable semantics are documented in [Urban Accessibility City Context v1](../architecture/urban-accessibility-city-context.md).
+
+This increment adds no persistence, GIS analysis, GTFS ingestion, network topology, routing, or Demo Town data.
 
 ### V1.4 — Demo Town geography
 
