@@ -56,7 +56,7 @@ public sealed class AccessibilityRoutingContractTests
           500_000,
           2_420_000,
           CoordinateReferenceSystem.Epsg(32614)),
-        DateTimeOffset.UtcNow,
+        Instant(8, 30),
         [JourneyMode.Walking]));
 
     Assert.Throws<ArgumentException>(
@@ -64,7 +64,7 @@ public sealed class AccessibilityRoutingContractTests
         "request",
         Point(-100.0050, 20.0140),
         Point(-99.9960, 19.9880),
-        DateTimeOffset.UtcNow,
+        Instant(8, 30),
         []));
 
     Assert.Throws<ArgumentException>(
@@ -72,7 +72,7 @@ public sealed class AccessibilityRoutingContractTests
         "request",
         Point(-100.0050, 20.0140),
         Point(-99.9960, 19.9880),
-        DateTimeOffset.UtcNow,
+        Instant(8, 30),
         [
           JourneyMode.Walking,
           JourneyMode.Walking,
@@ -83,7 +83,7 @@ public sealed class AccessibilityRoutingContractTests
         "request",
         Point(-100.0050, 20.0140),
         Point(-99.9960, 19.9880),
-        DateTimeOffset.UtcNow,
+        Instant(8, 30),
         [(JourneyMode)999]));
   }
 
@@ -212,6 +212,25 @@ public sealed class AccessibilityRoutingContractTests
       () => JourneyAccessibility.Create(
         AccessibilityStatus.KnownLimited,
         []));
+  }
+
+  [Theory]
+  [InlineData(DistanceSemantics.Geodesic)]
+  [InlineData(DistanceSemantics.Planar)]
+  public void Journey_leg_rejects_straight_line_distance_semantics(
+    DistanceSemantics semantics)
+  {
+    Assert.Throws<ArgumentException>(
+      () => JourneyLeg.Create(
+        JourneyMode.Walking,
+        Point(-100.0050, 20.0140),
+        Point(-100.0000, 20.0100),
+        Instant(8, 30),
+        Instant(8, 36),
+        Distance.CreateMeters(
+          520,
+          semantics),
+        JourneyAccessibility.KnownAccessible()));
   }
 
   [Fact]
