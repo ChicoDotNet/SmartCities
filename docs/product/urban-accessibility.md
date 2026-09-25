@@ -281,3 +281,18 @@ V1.1 is complete when:
 - privacy/no-overclaim rules are explicit;
 - architecture and feature-management docs match executable registration;
 - exact-head CI is green.
+
+## V1.2 — Geospatial primitives
+
+V1.2 implements the small SmartCities-owned geospatial vocabulary required by the vertical:
+
+- `CoordinateReferenceSystem`;
+- `GeoPoint`;
+- `GeoBoundingBox`;
+- `GeoPath`;
+- `ZonePolygonReference`;
+- `Distance` + explicit `DistanceSemantics`.
+
+Canonical semantics and limitations are documented in [Urban Accessibility geospatial primitives](../architecture/urban-accessibility-geospatial-primitives.md).
+
+The increment deliberately adds no GIS library, map, routing behavior, polygon engine, coordinate transformation, spatial persistence, or distance calculation.
