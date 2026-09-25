@@ -1,0 +1,49 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "pointOfInterestId": "poi-north-clinic",
+        "categoryId": "healthcare"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-100.0050, 20.0120]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "pointOfInterestId": "poi-central-school",
+        "categoryId": "education"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-99.9950, 20.0020]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "pointOfInterestId": "poi-civic-center",
+        "categoryId": "public-services"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-100.0030, 19.9980]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "pointOfInterestId": "poi-south-health-post",
+        "categoryId": "healthcare"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-99.9960, 19.9880]
+      }
+    }
+  ]
+}
