@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@fluentui/react-components": "9.74.9",
-    "bootstrap": "5.3.8",
+    "bootstrap": "5.3.9",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
